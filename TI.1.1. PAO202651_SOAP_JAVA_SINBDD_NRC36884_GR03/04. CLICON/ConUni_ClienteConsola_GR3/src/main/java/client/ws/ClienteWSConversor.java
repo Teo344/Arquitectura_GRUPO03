@@ -122,6 +122,16 @@ public class ClienteWSConversor {
         return this.tokenSesion;
     }
 
+    public List<ContratoWSConversor.Categoria> consultarCatalogo() {
+        List<ContratoWSConversor.Categoria> categorias = puerto.consultarCatalogo().categorias;
+        return categorias == null ? List.of() : categorias;
+    }
+
+    public List<ContratoWSConversor.Unidad> consultarUnidades(String categoria) {
+        List<ContratoWSConversor.Unidad> unidades = puerto.consultarUnidades(categoria).unidades;
+        return unidades == null ? List.of() : unidades;
+    }
+
     public double convertirLongitud(double valor, String unidadInicial, String unidadFinal) {
         return puerto.convertirLongitud(new ContratoWSConversor.Solicitud(valor, unidadInicial, unidadFinal)).resultado;
     }

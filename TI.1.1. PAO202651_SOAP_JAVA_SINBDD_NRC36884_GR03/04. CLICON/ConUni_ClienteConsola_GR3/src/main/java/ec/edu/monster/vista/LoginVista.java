@@ -1,5 +1,6 @@
 package ec.edu.monster.vista;
 
+import ec.edu.monster.controlador.CatalogoControlador;
 import ec.edu.monster.controlador.ConversionControlador;
 import ec.edu.monster.controlador.LoginControlador;
 import ec.edu.monster.modelo.LoginModelo;
@@ -38,9 +39,14 @@ public class LoginVista {
                 mensajes.mostrarMensaje("Inicio de sesion exitoso. Token: " + token);
 
                 ConversionControlador controladorConversion = loginControlador.crearControladorConversion();
-                new ConversionVista(controladorConversion).ejecutarMenu();
+                CatalogoControlador controladorCatalogo = loginControlador.crearControladorCatalogo();
+                boolean cerrarSesion = new ConversionVista(controladorConversion, controladorCatalogo).ejecutarMenu();
 
                 loginControlador.cerrarSesion();
+                if (cerrarSesion) {
+                    mensajes.mostrarMensaje("Sesion cerrada. Ingrese sus credenciales para continuar.");
+                    continue;
+                }
                 mensajes.mostrarMensaje("Sesion finalizada.");
                 return;
             } catch (SOAPFaultException ex) {

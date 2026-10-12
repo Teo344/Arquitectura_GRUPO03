@@ -7,11 +7,23 @@ import jakarta.jws.WebService;
 import jakarta.jws.soap.SOAPBinding;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlType;
+import java.util.List;
 
 @WebService(name = "ConversionUnidadesWS", targetNamespace = "http://wservicios.controladores.monster.edu.ec/")
 @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.WRAPPED)
 public interface ContratoWSConversor {
+
+    @WebMethod(operationName = "consultarCatalogo")
+    @WebResult(name = "return")
+    Respuesta consultarCatalogo();
+
+    @WebMethod(operationName = "consultarUnidades")
+    @WebResult(name = "return")
+    Respuesta consultarUnidades(
+            @WebParam(name = "categoria") String categoria);
 
     @WebMethod(operationName = "convertirLongitud")
     @WebResult(name = "return")
@@ -72,5 +84,34 @@ public interface ContratoWSConversor {
         public String unidadDestino;
         public String token;
         public String expiraEn;
+
+        @XmlElementWrapper(name = "categorias")
+        @XmlElement(name = "categoria")
+        public List<Categoria> categorias;
+
+        @XmlElementWrapper(name = "unidades")
+        @XmlElement(name = "unidad")
+        public List<Unidad> unidades;
+    }
+
+    // Categoria del catalogo que devuelve el servidor
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "categoria")
+    class Categoria {
+
+        public String codigo;
+        public String nombre;
+        public Boolean convertible;
+    }
+
+    // Unidad del catalogo que devuelve el servidor
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "unidad")
+    class Unidad {
+
+        public String codigo;
+        public String nombre;
+        public String simbolo;
+        public String categoria;
     }
 }

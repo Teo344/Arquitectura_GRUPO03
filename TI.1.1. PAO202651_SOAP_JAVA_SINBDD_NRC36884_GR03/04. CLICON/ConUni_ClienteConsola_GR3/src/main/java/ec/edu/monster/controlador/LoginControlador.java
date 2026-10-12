@@ -19,6 +19,10 @@ public class LoginControlador {
         return new ConversionControlador(clienteWs);
     }
 
+    public CatalogoControlador crearControladorCatalogo() {
+        return new CatalogoControlador(clienteWs);
+    }
+
     public String getEndpointActivo() {
         return clienteWs.getEndpointActivo();
     }
