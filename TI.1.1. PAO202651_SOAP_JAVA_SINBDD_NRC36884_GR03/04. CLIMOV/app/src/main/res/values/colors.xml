@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Colores de la identidad visual "Azul" (template.txt) usados fuera de Compose -->
+<resources>
+    <color name="azul_marca">#FF2F6FEB</color>
+    <color name="azul_oscuro">#FF0B1D44</color>
+    <color name="blanco">#FFFFFFFF</color>
+</resources>
