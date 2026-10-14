@@ -165,6 +165,16 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link SolicitudConversion }
+     * 
+     * @return
+     *     the new instance of {@link SolicitudConversion }
+     */
+    public SolicitudConversion createSolicitudConversion() {
+        return new SolicitudConversion();
+    }
+
+    /**
      * Create an instance of {@link Categoria }
      * 
      * @return
@@ -182,16 +192,6 @@ public class ObjectFactory {
      */
     public Unidad createUnidad() {
         return new Unidad();
-    }
-
-    /**
-     * Create an instance of {@link SolicitudConversion }
-     * 
-     * @return
-     *     the new instance of {@link SolicitudConversion }
-     */
-    public SolicitudConversion createSolicitudConversion() {
-        return new SolicitudConversion();
     }
 
     /**
