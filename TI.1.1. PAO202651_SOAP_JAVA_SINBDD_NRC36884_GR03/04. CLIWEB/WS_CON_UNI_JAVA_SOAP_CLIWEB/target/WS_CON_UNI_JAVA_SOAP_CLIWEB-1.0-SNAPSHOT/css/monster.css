@@ -1,0 +1,432 @@
+/*
+ * Identidad visual "Azul" del cliente de escritorio (Convertidor_CLIESC).
+ * Colores, tamaños y espaciados copiados de LoginView, MenuView,
+ * ConversionView y CatalogoView. Igual que en Swing, si "Plus Jakarta Sans"
+ * no está instalada se usa Arial.
+ */
+:root {
+    --azul-marca: #2F6FEB;
+    --azul-accion: #1D56CC;
+    --azul-hover: #1744A3;
+    --azul-presionado: #153A82;
+    --azul-suave: #EDF4FF;
+    --borde-suave: #B8D2FF;
+    --texto: #141C31;
+    --secundario: #4A5A78;
+    --borde: #B1BFD4;
+    --borde-combo: #7A8A99;
+    --divisor: #D3DCEA;
+    --fondo-seccion: #E9EEF6;
+    --superficie: #F5F8FC;
+    --azul-oscuro: #0B1D44;
+    --azul-foco: #5B93F7;
+    --cian: #12A9C9;
+    --acento-texto: #0B6B83;
+    --exito-texto: #0F7A52;
+    --exito-fondo: #E7F6EF;
+    --error-texto: #C0392B;
+    --error-fondo: #FCEBE8;
+    --info-texto: #1744A3;
+    --info-fondo: #EDF4FF;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+    font-family: "Plus Jakarta Sans", Arial, sans-serif;
+    color: var(--texto);
+    /* Swing usa la fuente lógica "Dialog" (varias fuentes combinadas) y sus líneas miden ~1.3 veces el tamaño */
+    line-height: 1.3;
+    background: var(--superficie);
+}
+h1, h2, p { margin: 0; }
+button, input, select { font-family: inherit; }
+a { text-decoration: none; }
+
+/* ---------- Botones compartidos ---------- */
+.boton-primario, .boton-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
+}
+.boton-primario {
+    background: var(--azul-accion);
+    color: #fff;
+    border: none;
+    font-size: 15px;
+}
+.boton-primario:hover { background: var(--azul-hover); }
+.boton-primario:active { background: var(--azul-presionado); }
+.boton-primario:disabled { background: var(--fondo-seccion); color: #8A97AB; cursor: default; }
+.boton-secundario {
+    background: var(--azul-suave);
+    color: var(--azul-hover);
+    border: 1px solid var(--borde-suave);
+    border-radius: 1px;
+    font-size: 13px;
+    padding: 9px 15px;
+}
+
+/* ---------- Página con barra superior (menú, conversor, catálogo) ---------- */
+.pagina { display: flex; flex-direction: column; min-height: 100vh; background: var(--superficie); }
+/* Conversor y catálogo ocupan la ventana y sus listas se desplazan por dentro */
+.pagina-ajustada { height: 100vh; min-height: 620px; }
+.barra {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    background: var(--azul-oscuro);
+    padding: 13px 28px;
+}
+.barra-titulo { color: #fff; font-weight: 700; font-size: 16px; }
+.barra-subtitulo { color: var(--borde-suave); font-size: 12px; }
+.barra .boton-secundario { align-self: stretch; }
+
+/* ---------- LoginView ---------- */
+.login {
+    display: flex;
+    min-height: 100vh;
+    padding: 24px 32px;
+    background: var(--fondo-seccion);
+}
+.login-tarjeta {
+    flex: 1;
+    display: flex;
+    min-width: 850px;
+    min-height: 540px;
+    background: #fff;
+    border: 1px solid var(--divisor);
+    border-radius: 1px;
+}
+.login-visual {
+    position: relative;
+    flex: 0 0 460px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 30px;
+    overflow: hidden;
+    background: var(--azul-oscuro);
+}
+/* Figuras que LoginView dibuja cuando no hay imagen */
+.figura { position: absolute; }
+.figura-tarjeta {
+    left: 11.111%;
+    top: 33.333%;
+    width: 77.778%;
+    height: 33.333%;
+    background: var(--azul-accion);
+    border: 1px solid var(--borde-suave);
+    border-radius: 12px;
+}
+.figura-circulo-grande {
+    left: 25%;
+    top: calc(33.333% + 28px);
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--azul-marca);
+}
+.figura-circulo-pequeno {
+    left: 66.667%;
+    top: 50%;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--cian);
+}
+.login-visual-marca {
+    position: relative;
+    padding: 28px 30px 0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+}
+.login-visual-pie { position: relative; padding: 0 30px 24px 38px; }
+.login-visual-pie h2 { color: #fff; font-size: 27px; font-weight: 700; }
+.login-visual-pie p { margin-top: 8px; color: var(--borde-suave); font-size: 16px; }
+
+.login-formulario {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    /* 32 px de escritorio + 14 px: GridBagLayout centra el bloque un poco más arriba */
+    padding: 36px 56px 46px;
+    background: var(--superficie);
+}
+.login-contenido { width: 100%; display: flex; flex-direction: column; }
+.login-sobretitulo { text-align: center; color: var(--azul-accion); font-size: 12px; font-weight: 700; }
+.login-titulo { text-align: center; color: var(--azul-oscuro); font-size: 30px; font-weight: 700; }
+.login-titulo.primero { padding: 8px 0 3px; }
+.login-grupo { text-align: center; color: var(--secundario); font-size: 12px; padding: 7px 0 22px; }
+/* En escritorio el recuadro mide 64 px con 22 px de margen inferior pintados del
+   mismo color, y por eso solo se ve "¡Bienvenido!". Se reproduce igual. */
+.bienvenida { height: 64px; padding-bottom: 22px; background: var(--azul-suave); }
+.bienvenida-interior {
+    height: 100%;
+    padding: 12px 15px;
+    border-left: 4px solid var(--azul-accion);
+}
+.bienvenida-textos { height: 100%; overflow: hidden; }
+.bienvenida-textos strong { display: block; color: var(--texto); font-size: 14px; }
+.bienvenida-textos span { display: block; margin-top: 4px; color: var(--secundario); font-size: 13px; }
+
+.campo-login { display: flex; flex-direction: column; gap: 7px; }
+.campo-login + .campo-login { margin-top: 14px; }
+.campo-login label { color: var(--texto); font-size: 14px; font-weight: 700; }
+.campo-login input {
+    height: 50px;
+    padding: 0 14px;
+    border: 1px solid var(--borde);
+    border-radius: 0;
+    background: #fff;
+    color: var(--texto);
+    caret-color: var(--azul-accion);
+    font-size: 15px;
+    outline: none;
+}
+.campo-login input:focus { border: 2px solid var(--azul-foco); padding: 0 13px; }
+.login .boton-primario { width: 100%; height: 48px; margin-top: 22px; padding: 10px 20px; }
+.login-pie { text-align: center; color: var(--secundario); font-size: 12px; padding: 17px 0 6px; }
+.mensaje {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--info-texto);
+    background: var(--info-fondo);
+}
+.mensaje.error { color: var(--error-texto); background: var(--error-fondo); }
+
+/* ---------- MenuView ---------- */
+.barra-menu { padding: 14px 28px; align-items: center; }
+.barra-menu .barra-titulo { font-size: 18px; }
+.barra-acciones { display: flex; align-items: center; gap: 12px; }
+.barra-tipo-cliente { color: var(--borde-suave); font-size: 13px; font-weight: 700; }
+.boton-cerrar-sesion {
+    padding: 9px 14px;
+    border: 1px solid var(--borde-suave);
+    border-radius: 1px;
+    background: var(--azul-oscuro);
+    color: var(--borde-suave);
+    font-size: 12px;
+    font-weight: 700;
+}
+.menu-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 38px;
+    padding: 42px 54px 30px;
+}
+.menu-encabezado { text-align: center; }
+.menu-sobre { color: var(--azul-accion); font-size: 12px; font-weight: 700; }
+.menu-titulo { padding: 8px 0 5px; color: var(--azul-oscuro); font-size: 34px; font-weight: 700; }
+.menu-detalle { color: var(--secundario); font-size: 16px; }
+.menu-tarjetas {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding: 0 20px;
+}
+.menu-tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid var(--divisor);
+    border-radius: 1px;
+}
+.menu-tarjeta-cima { display: flex; justify-content: space-between; align-items: stretch; }
+.menu-insignia {
+    display: flex;
+    align-items: center;
+    padding: 5px 12px;
+    background: var(--azul-suave);
+    color: var(--azul-accion);
+    font-size: 13px;
+    font-weight: 700;
+}
+.menu-tarjeta-textos { flex: 1; }
+.menu-tarjeta-textos h2 { padding: 4px 0 9px; color: var(--texto); font-size: 22px; font-weight: 700; }
+.menu-tarjeta-textos p { max-width: 410px; color: var(--secundario); font-size: 15px; }
+.menu-tarjeta .boton-primario,
+.menu-tarjeta .boton-secundario { width: 190px; height: 48px; font-size: 15px; }
+.menu-tarjeta .boton-secundario { padding: 9px 17px; }
+.menu-pie { text-align: center; color: var(--secundario); font-size: 12px; }
+
+/* ---------- ConversionView ---------- */
+.conversion-contenido {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    padding: 38px 42px 34px;
+}
+.tarjeta {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid var(--divisor);
+    border-radius: 1px;
+}
+.tarjeta-titulo { color: var(--azul-oscuro); font-size: 22px; font-weight: 700; }
+.tarjeta-detalle { margin-top: 4px; color: var(--secundario); font-size: 13px; }
+/* GridLayout(4, 1, 0, 14): filas iguales que crecen con la ventana */
+.conversion-campos {
+    flex: 1;
+    display: grid;
+    grid-template-rows: repeat(4, minmax(69px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+}
+.conversion-campo { display: flex; flex-direction: column; gap: 7px; min-height: 0; }
+.conversion-campo label { color: var(--texto); font-size: 14px; font-weight: 700; }
+.conversion-campo input,
+.conversion-campo select {
+    flex: 1;
+    min-height: 48px;
+    width: 100%;
+    color: var(--texto);
+    font-size: 14px;
+    background-color: #fff;
+    border-radius: 0;
+    outline: none;
+}
+.conversion-campo input {
+    padding: 0 12px;
+    border: 1px solid var(--borde);
+    caret-color: var(--azul-accion);
+}
+/* Combo con la flecha separada del estilo Metal de Swing */
+.conversion-campo select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0 24px 0 2px;
+    border: 1px solid var(--borde-combo);
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='5'%3E%3Cpath d='M0 0h10L5 5z' fill='%23000'/%3E%3C/svg%3E"),
+        linear-gradient(var(--borde-combo), var(--borde-combo));
+    background-repeat: no-repeat, no-repeat;
+    background-position: right 5px center, right 19px top;
+    background-size: 10px 5px, 1px 100%;
+    cursor: pointer;
+}
+.conversion-fila-doble { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.conversion-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.conversion-botones button { height: 100%; min-height: 48px; }
+.conversion-botones .boton-secundario { font-size: 13px; }
+.estado {
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--exito-texto);
+    background: var(--exito-fondo);
+}
+.estado.error { color: var(--error-texto); background: var(--error-fondo); }
+
+.historial {
+    flex: 1;
+    min-height: 0;
+    margin: 16px 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+    background: #fff;
+    border: 1px solid var(--borde);
+}
+.historial-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 64px;
+    padding: 5px 2px;
+    border-bottom: 1px solid var(--divisor);
+    color: var(--texto);
+    font-size: 14px;
+    cursor: default;
+}
+.historial-item.seleccionado { background: var(--azul-suave); }
+.historial-fecha { color: var(--secundario); font-size: 14.5px; }
+.nota { color: var(--secundario); font-size: 12px; }
+
+/* ---------- CatalogoView ---------- */
+.barra-catalogo .barra-titulo { font-size: 17px; }
+.catalogo-cuerpo {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 22px;
+    padding: 28px 32px 24px;
+}
+.panel-blanco {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 22px;
+    background: #fff;
+    border: 1px solid var(--divisor);
+    border-radius: 1px;
+}
+.panel-titulo { color: var(--secundario); font-size: 14px; font-weight: 700; }
+.desplazable { flex: 1; min-height: 0; margin-top: 14px; overflow-y: auto; }
+/* GridLayout(0, 2, 14, 14): todas las filas con la altura de la tarjeta más alta */
+.categorias { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 14px; }
+.tarjeta-categoria {
+    display: block;
+    padding: 16px 12px 12px 15px;
+    background: #fff;
+    border: 1px solid var(--divisor);
+    border-radius: 1px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.tarjeta-categoria.seleccionada { border: 2px solid var(--azul-accion); padding: 15px 11px 11px 14px; }
+.tarjeta-categoria-contenido { max-width: 246.5px; }
+.tarjeta-categoria-tipo { color: var(--azul-accion); font-size: 14.5px; }
+.tarjeta-categoria-nombre { margin: 17px 0 16.5px; color: var(--azul-oscuro); font-size: 25px; }
+.tarjeta-categoria-descripcion { color: var(--secundario); font-size: 17px; }
+
+.detalle-titulo { color: var(--azul-oscuro); font-size: 22px; font-weight: 700; }
+/* BorderLayout(0, 6) suma el espacio dos veces: arriba y abajo del centro vacío */
+.detalle-texto { margin-top: 12px; color: var(--secundario); font-size: 13px; }
+.unidades { display: flex; flex-direction: column; gap: 9px; }
+.fila-unidad {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--superficie);
+    border: 1px solid var(--divisor);
+    border-radius: 1px;
+}
+.fila-unidad-datos { flex: 1; }
+.fila-unidad-nombre { color: var(--texto); font-size: 15px; font-weight: 700; }
+.fila-unidad-codigo { color: var(--secundario); font-size: 12px; }
+.fila-unidad-simbolo {
+    width: 66px;
+    line-height: 38px;
+    text-align: center;
+    color: var(--acento-texto);
+    font-size: 18px;
+    font-weight: 700;
+}
+.mensaje-unidades {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.mensaje-unidades p { max-width: 340px; text-align: center; color: var(--secundario); font-size: 14px; }
+.catalogo-estado { padding: 0 36px 12px; color: var(--secundario); font-size: 13px; }
+.catalogo-estado.error { color: var(--error-texto); }
