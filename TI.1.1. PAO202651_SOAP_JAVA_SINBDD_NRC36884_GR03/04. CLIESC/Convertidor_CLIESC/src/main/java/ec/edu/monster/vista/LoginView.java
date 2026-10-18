@@ -152,7 +152,13 @@ public class LoginView extends JFrame {
         grupo.setAlignmentX(CENTER_ALIGNMENT);
         grupo.setForeground(TEXTO_SECUNDARIO);
         grupo.setFont(new Font(FUENTE, Font.PLAIN, 12));
-        grupo.setBorder(BorderFactory.createEmptyBorder(7, 0, 22, 0));
+        grupo.setBorder(BorderFactory.createEmptyBorder(7, 0, 5, 0));
+
+        JLabel protocolo = new JLabel("Conexión mediante SOAP", SwingConstants.CENTER);
+        protocolo.setAlignmentX(CENTER_ALIGNMENT);
+        protocolo.setForeground(AZUL_ACCION);
+        protocolo.setFont(new Font(FUENTE, Font.BOLD, 13));
+        protocolo.setBorder(BorderFactory.createEmptyBorder(0, 0, 18, 0));
 
         JPanel bienvenida = new JPanel(new BorderLayout(0, 4));
         bienvenida.setBackground(AZUL_SUAVE);
@@ -176,6 +182,7 @@ public class LoginView extends JFrame {
         contenido.add(titulo);
         contenido.add(tituloDos);
         contenido.add(grupo);
+        contenido.add(protocolo);
         contenido.add(bienvenida);
         contenido.add(crearCampo("Usuario", campoUsuario));
         contenido.add(javax.swing.Box.createVerticalStrut(14));
