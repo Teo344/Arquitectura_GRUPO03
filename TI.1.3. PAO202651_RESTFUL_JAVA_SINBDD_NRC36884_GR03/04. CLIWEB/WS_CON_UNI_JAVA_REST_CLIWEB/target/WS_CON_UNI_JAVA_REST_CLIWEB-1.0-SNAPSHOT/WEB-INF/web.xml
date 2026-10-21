@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+   version="6.0">
+    <!-- URL base del servidor REST (equivale a -Dapi.base del cliente de escritorio) -->
+    <context-param>
+        <param-name>api.base</param-name>
+        <param-value>http://localhost:8080/WS_CON_UNI_JAVA_REST/api</param-value>
+    </context-param>
+    <!-- Formularios con tildes o eñes -->
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <response-character-encoding>UTF-8</response-character-encoding>
+    <!-- Igual que la duración del token del servidor -->
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+</web-app>

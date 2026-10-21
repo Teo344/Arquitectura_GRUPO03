@@ -1,0 +1,15 @@
+ec\edu\monster\controlador\LoginController.class
+ec\edu\monster\modelo\Unidad.class
+ec\edu\monster\controlador\ConversionController.class
+ec\edu\monster\controlador\ConfiguracionCliente.class
+ec\edu\monster\modelo\RegistroConversion.class
+ec\edu\monster\modelo\Sesion.class
+ec\edu\monster\servicio\ApiRest$1.class
+ec\edu\monster\controlador\FiltroSesion.class
+ec\edu\monster\servicio\ErrorApi.class
+ec\edu\monster\controlador\MenuController.class
+ec\edu\monster\controlador\CatalogoController.class
+ec\edu\monster\controlador\ControladorBase.class
+ec\edu\monster\servicio\ApiRest.class
+ec\edu\monster\servicio\ApiRest$2.class
+ec\edu\monster\modelo\Categoria.class
