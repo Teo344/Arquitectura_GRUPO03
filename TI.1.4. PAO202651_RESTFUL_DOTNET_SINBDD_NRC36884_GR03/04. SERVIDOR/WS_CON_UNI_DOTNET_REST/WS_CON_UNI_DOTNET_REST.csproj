@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Si no está instalado el runtime de .NET 8, corre sobre la versión mayor más reciente -->
+    <RollForward>LatestMajor</RollForward>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WS_CON_UNI_DOTNET_REST</RootNamespace>
+    <AssemblyName>WS_CON_UNI_DOTNET_REST</AssemblyName>
+  </PropertyGroup>
+
+</Project>
