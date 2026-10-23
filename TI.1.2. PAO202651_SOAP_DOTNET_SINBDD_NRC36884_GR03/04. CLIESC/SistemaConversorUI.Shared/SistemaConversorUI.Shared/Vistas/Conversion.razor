@@ -1,0 +1,263 @@
+@using System.Globalization
+@using SistemaConversorUI.Shared.Interfaces
+@using SistemaConversorUI.Shared.Modelos
+@inject IConversionSoap ConversionSoap
+
+<main class="conversion-page">
+    <header class="conversion-bar">
+        <div class="conversion-brand">
+            <strong>MONSTER</strong>
+            <span>Conversor de unidades · longitud, masa y temperatura</span>
+        </div>
+        <div class="conversion-account">
+            <span>@Sesion.Usuario</span>
+            <button type="button" class="back-button" @onclick="VolverAsync">Volver al inicio</button>
+        </div>
+    </header>
+
+    <section class="conversion-content">
+        <div class="conversion-form card-surface">
+            <div class="section-title">
+                <p class="conversion-eyebrow">CONVERSIÓN SOAP</p>
+                <h1>Conversor de unidades</h1>
+                <p>Realiza una conversión con las opciones del servidor.</p>
+            </div>
+
+            <div class="form-fields">
+                <div class="field-group">
+                    <label for="categoria">Tipo de conversión</label>
+                    <select id="categoria" value="@categoriaSeleccionada" @onchange="CambiarCategoriaAsync" disabled="@cargando">
+                        @if (categorias.Count == 0)
+                        {
+                            <option value="">Cargando categorías…</option>
+                        }
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.Codigo">@categoria.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <label for="valor">Valor</label>
+                    <input id="valor" type="text" inputmode="decimal" @bind="valorTexto" placeholder="Ej.: 12,5" disabled="@cargando" />
+                </div>
+
+                <div class="units-row">
+                    <div class="field-group">
+                        <label for="origen">Unidad inicial</label>
+                        <select id="origen" @bind="unidadOrigen" disabled="@(cargando || unidades.Count == 0)">
+                            @foreach (var unidad in unidades)
+                            {
+                                <option value="@unidad.Codigo">@unidad.Nombre (@unidad.Simbolo)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="destino">Unidad final</label>
+                        <select id="destino" @bind="unidadDestino" disabled="@(cargando || unidades.Count == 0)">
+                            @foreach (var unidad in unidades)
+                            {
+                                <option value="@unidad.Codigo">@unidad.Nombre (@unidad.Simbolo)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-row">
+                    <button class="convert-button" type="button" @onclick="ConvertirAsync" disabled="@(cargando || unidades.Count == 0)">
+                        @(cargando ? "Consultando servidor…" : "Convertir")
+                    </button>
+                    <button class="clear-button" type="button" @onclick="Limpiar" disabled="cargando">Limpiar</button>
+                </div>
+            </div>
+
+            <div class="conversion-status @(hayError ? "status-error" : "status-info")" role="status" aria-live="polite">
+                <span class="status-indicator" aria-hidden="true"></span>
+                @estado
+            </div>
+        </div>
+
+        <aside class="history-card card-surface">
+            <div class="section-title">
+                <p class="conversion-eyebrow">ESTA SESIÓN</p>
+                <h2>Historial de conversiones</h2>
+                <p>Resultados obtenidos en esta sesión.</p>
+            </div>
+
+            @if (historial.Count == 0)
+            {
+                <div class="history-empty">
+                    <span class="empty-mark" aria-hidden="true">↔</span>
+                    <strong>Aún no hay conversiones</strong>
+                    <span>El resultado aparecerá aquí después de convertir.</span>
+                </div>
+            }
+            else
+            {
+                <ol class="history-list">
+                    @foreach (var item in historial)
+                    {
+                        <li>
+                            <span class="history-date">@item.Fecha</span>
+                            <strong>@item.Expresion</strong>
+                        </li>
+                    }
+                </ol>
+            }
+            <p class="history-footnote">El historial se conserva mientras esta pantalla esté abierta.</p>
+        </aside>
+    </section>
+</main>
+
+@code {
+    [Parameter, EditorRequired]
+    public SesionCliente Sesion { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnVolver { get; set; }
+
+    private readonly List<ConversionHistorial> historial = new();
+    private List<CategoriaCliente> categorias = new();
+    private List<UnidadCliente> unidades = new();
+    private string categoriaSeleccionada = string.Empty;
+    private string unidadOrigen = string.Empty;
+    private string unidadDestino = string.Empty;
+    private string valorTexto = "0";
+    private string estado = "Cargando el catálogo del servidor…";
+    private bool cargando;
+    private bool hayError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cargando = true;
+        try
+        {
+            categorias = (await ConversionSoap.ConsultarCatalogoAsync(Sesion.Token))
+                .Where(c => c.Convertible)
+                .ToList();
+
+            if (categorias.Count == 0)
+            {
+                estado = "El servidor no devolvió categorías convertibles.";
+                hayError = true;
+                return;
+            }
+
+            categoriaSeleccionada = categorias[0].Codigo;
+            await CargarUnidadesAsync(categoriaSeleccionada);
+            estado = "Selecciona las unidades e ingresa un valor para comenzar.";
+        }
+        catch (Exception ex)
+        {
+            estado = $"No se pudo cargar el catálogo: {ex.Message}";
+            hayError = true;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CambiarCategoriaAsync(ChangeEventArgs args)
+    {
+        categoriaSeleccionada = args.Value?.ToString() ?? string.Empty;
+        cargando = true;
+        hayError = false;
+        unidades.Clear();
+        try
+        {
+            await CargarUnidadesAsync(categoriaSeleccionada);
+            estado = "Selecciona las unidades e ingresa un valor para comenzar.";
+        }
+        catch (Exception ex)
+        {
+            estado = $"No se pudieron cargar las unidades: {ex.Message}";
+            hayError = true;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CargarUnidadesAsync(string codigoCategoria)
+    {
+        unidades = (await ConversionSoap.ConsultarUnidadesAsync(codigoCategoria, Sesion.Token)).ToList();
+        unidadOrigen = unidades.FirstOrDefault()?.Codigo ?? string.Empty;
+        unidadDestino = unidades.Skip(1).FirstOrDefault()?.Codigo ?? unidadOrigen;
+    }
+
+    private async Task ConvertirAsync()
+    {
+        if (!double.TryParse(valorTexto.Trim().Replace(',', '.'), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var valor) || !double.IsFinite(valor))
+        {
+            estado = "Ingresa un valor numérico válido.";
+            hayError = true;
+            return;
+        }
+
+        if (categoriaSeleccionada != "TEMPERATURA" && valor < 0)
+        {
+            estado = "Para longitud y masa, el valor debe ser cero o positivo.";
+            hayError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(unidadOrigen) || string.IsNullOrWhiteSpace(unidadDestino))
+        {
+            estado = "Selecciona la unidad inicial y la unidad final.";
+            hayError = true;
+            return;
+        }
+
+        cargando = true;
+        hayError = false;
+        try
+        {
+            var solicitud = new SolicitudConversionCliente(valor, unidadOrigen, unidadDestino);
+            var resultado = categoriaSeleccionada switch
+            {
+                "LONGITUD" => await ConversionSoap.ConvertirLongitudAsync(solicitud, Sesion.Token),
+                "MASA" => await ConversionSoap.ConvertirMasaAsync(solicitud, Sesion.Token),
+                "TEMPERATURA" => await ConversionSoap.ConvertirTemperaturaAsync(solicitud, Sesion.Token),
+                _ => throw new InvalidOperationException("La categoría seleccionada no admite conversiones.")
+            };
+
+            var origen = unidades.FirstOrDefault(u => u.Codigo == unidadOrigen);
+            var destino = unidades.FirstOrDefault(u => u.Codigo == unidadDestino);
+            var valorFmt = Formatear(valor);
+            var resultadoFmt = Formatear(resultado);
+            estado = $"Resultado: {resultadoFmt} {destino?.Simbolo}";
+            historial.Insert(0, new ConversionHistorial(
+                DateTime.Now.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture),
+                $"{valorFmt} {origen?.Simbolo} → {resultadoFmt} {destino?.Simbolo}"));
+        }
+        catch (Exception ex)
+        {
+            estado = ex.Message;
+            hayError = true;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void Limpiar()
+    {
+        valorTexto = "0";
+        unidadOrigen = unidades.FirstOrDefault()?.Codigo ?? string.Empty;
+        unidadDestino = unidades.Skip(1).FirstOrDefault()?.Codigo ?? unidadOrigen;
+        estado = "Listo para convertir.";
+        hayError = false;
+    }
+
+    private Task VolverAsync() => OnVolver.InvokeAsync();
+
+    private static string Formatear(double valor)
+        => valor.ToString("0.########", CultureInfo.InvariantCulture);
+
+    private sealed record ConversionHistorial(string Fecha, string Expresion);
+}
