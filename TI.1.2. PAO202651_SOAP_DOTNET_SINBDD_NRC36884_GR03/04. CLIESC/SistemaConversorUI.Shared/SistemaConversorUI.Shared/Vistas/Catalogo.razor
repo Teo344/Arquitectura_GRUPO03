@@ -1,0 +1,208 @@
+@using SistemaConversorUI.Shared.Interfaces
+@using SistemaConversorUI.Shared.Modelos
+@inject IConversionSoap ConversionSoap
+
+<main class="catalog-page">
+    <header class="catalog-bar">
+        <div class="catalog-brand">
+            <strong>MONSTER</strong>
+            <span>Catálogo de unidades · consulta las categorías y unidades</span>
+        </div>
+        <div class="catalog-account">
+            <span>@Sesion.Usuario</span>
+            <button type="button" class="catalog-back" @onclick="VolverAsync">Volver al inicio</button>
+        </div>
+    </header>
+
+    <section class="catalog-layout" aria-label="Catálogo de unidades">
+        <section class="category-panel" aria-labelledby="categories-title">
+            <div class="panel-label-row">
+                <h1 id="categories-title">Categorías</h1>
+                <button type="button" class="reload-button" @onclick="CargarCatalogoAsync" disabled="@cargando">
+                    @(cargando ? "Actualizando…" : "Actualizar")
+                </button>
+            </div>
+
+            @if (cargando && categorias.Count == 0)
+            {
+                <div class="catalog-state" role="status">Consultando categorías del servidor…</div>
+            }
+            else if (categorias.Count > 0)
+            {
+                <div class="category-grid">
+                    @for (var i = 0; i < categorias.Count; i++)
+                    {
+                        var categoria = categorias[i];
+                        var seleccionada = categoriaSeleccionada?.Codigo == categoria.Codigo;
+                        <button type="button"
+                                class="category-card @(seleccionada ? "category-selected" : "")"
+                                aria-pressed="@seleccionada"
+                                @onclick="() => SeleccionarCategoriaAsync(categoria)">
+                            <span class="category-status">
+                                <span>@(i + 1).ToString("00")</span>
+                                @(categoria.Convertible ? "CONVERSIÓN DISPONIBLE" : "SOLO CONSULTA")
+                            </span>
+                            <strong class="category-name">@categoria.Nombre</strong>
+                            <span class="category-description">@DescripcionCategoria(categoria.Codigo)</span>
+                        </button>
+                    }
+                </div>
+            }
+            else if (!cargando)
+            {
+                <div class="catalog-state">El servidor no devolvió categorías.</div>
+            }
+        </section>
+
+        <section class="units-panel" aria-labelledby="units-title">
+            @if (categoriaSeleccionada is not null)
+            {
+                <h2 id="units-title">@categoriaSeleccionada.Nombre</h2>
+                <p class="units-subtitle">Unidades registradas para esta categoría</p>
+
+                @if (cargandoUnidades)
+                {
+                    <div class="catalog-state">Consultando unidades…</div>
+                }
+                else if (!string.IsNullOrWhiteSpace(errorUnidades))
+                {
+                    <div class="catalog-error" role="alert">@errorUnidades</div>
+                }
+                else if (unidades.Count == 0)
+                {
+                    <div class="catalog-state">No hay unidades registradas para esta categoría.</div>
+                }
+                else
+                {
+                    <ul class="unit-list">
+                        @foreach (var unidad in unidades)
+                        {
+                            <li class="unit-card">
+                                <span class="unit-details">
+                                    <strong>@unidad.Nombre</strong>
+                                    <small>Código: @unidad.Codigo</small>
+                                </span>
+                                <strong class="unit-symbol">@unidad.Simbolo</strong>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+            else
+            {
+                <div class="catalog-state">Selecciona una categoría para consultar sus unidades.</div>
+            }
+        </section>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <p class="catalog-feedback @(hayError ? "feedback-error" : "")" role="status" aria-live="polite">@mensaje</p>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired]
+    public SesionCliente Sesion { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnVolver { get; set; }
+
+    private List<CategoriaCliente> categorias = new();
+    private List<UnidadCliente> unidades = new();
+    private CategoriaCliente? categoriaSeleccionada;
+    private string? mensaje;
+    private string? errorUnidades;
+    private bool cargando;
+    private bool cargandoUnidades;
+    private bool hayError;
+    private int solicitudUnidades;
+
+    protected override Task OnInitializedAsync() => CargarCatalogoAsync();
+
+    private async Task CargarCatalogoAsync()
+    {
+        cargando = true;
+        hayError = false;
+        mensaje = null;
+        unidades.Clear();
+        errorUnidades = null;
+
+        try
+        {
+            categorias = (await ConversionSoap.ConsultarCatalogoAsync(Sesion.Token)).ToList();
+            if (categorias.Count == 0)
+            {
+                categoriaSeleccionada = null;
+                mensaje = "El servidor respondió correctamente, pero no contiene categorías.";
+                return;
+            }
+
+            categoriaSeleccionada = categorias.FirstOrDefault(c => c.Codigo == categoriaSeleccionada?.Codigo)
+                ?? categorias[0];
+            await CargarUnidadesAsync(categoriaSeleccionada);
+            mensaje = "Catálogo consultado: " + categoriaSeleccionada.Nombre + ".";
+        }
+        catch (Exception ex)
+        {
+            categorias.Clear();
+            categoriaSeleccionada = null;
+            mensaje = $"No se pudo cargar el catálogo: {ex.Message}";
+            hayError = true;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task SeleccionarCategoriaAsync(CategoriaCliente categoria)
+    {
+        categoriaSeleccionada = categoria;
+        mensaje = null;
+        await CargarUnidadesAsync(categoria);
+        if (string.IsNullOrWhiteSpace(errorUnidades))
+            mensaje = "Unidades consultadas: " + categoria.Nombre + ".";
+    }
+
+    private async Task CargarUnidadesAsync(CategoriaCliente categoria)
+    {
+        var idSolicitud = ++solicitudUnidades;
+        cargandoUnidades = true;
+        errorUnidades = null;
+        unidades.Clear();
+
+        try
+        {
+            var resultado = await ConversionSoap.ConsultarUnidadesAsync(categoria.Codigo, Sesion.Token);
+            if (idSolicitud == solicitudUnidades)
+                unidades = resultado.ToList();
+        }
+        catch (Exception ex)
+        {
+            if (idSolicitud == solicitudUnidades)
+            {
+                errorUnidades = ex.Message;
+                hayError = true;
+            }
+        }
+        finally
+        {
+            if (idSolicitud == solicitudUnidades)
+                cargandoUnidades = false;
+        }
+    }
+
+    private Task VolverAsync() => OnVolver.InvokeAsync();
+
+    private static string DescripcionCategoria(string codigo) => codigo.ToUpperInvariant() switch
+    {
+        "LONGITUD" => "Distancias y medidas lineales.",
+        "MASA" => "Medidas de masa y peso.",
+        "VOLUMEN" => "Capacidad y espacio ocupado.",
+        "TIEMPO" => "Unidades para medir duración.",
+        "TEMPERATURA" => "Escalas de temperatura.",
+        "AREA" or "ÁREA" => "Superficie y extensión.",
+        _ => "Unidades disponibles para esta categoría."
+    };
+}
