@@ -1,0 +1,134 @@
+@using SistemaConversorREST.UI.Shared.Interfaces
+@using SistemaConversorREST.UI.Shared.Modelos
+@inject IAutenticacionRest Autenticacion
+
+@if (sesion is not null)
+{
+    @if (mostrarConversion)
+    {
+        <Conversion Sesion="sesion" OnVolver="VolverAlMenu" />
+    }
+    else if (mostrarCatalogo)
+    {
+        <Catalogo Sesion="sesion" OnVolver="VolverAlMenu" />
+    }
+    else
+    {
+        <Menu Sesion="sesion" OnCerrarSesion="CerrarSesion" OnAbrirConversion="AbrirConversion" OnAbrirCatalogo="AbrirCatalogo" />
+    }
+}
+else
+{
+<main class="login-page">
+    <section class="login-card" aria-label="Inicio de sesión del conversor de unidades">
+        <aside class="brand-panel">
+            <div class="brand-name">MONSTER</div>
+
+            <div class="visual-art" aria-hidden="true">
+                <div class="visual-orbit orbit-one"></div>
+                <div class="visual-orbit orbit-two"></div>
+                <div class="conversion-illustration">
+                    <span class="unit-label">LONGITUD</span>
+                    <div class="unit-equation"><span>m</span><b>↔</b><span>km</span></div>
+                    <div class="unit-line"></div>
+                    <div class="unit-caption">Conversión precisa</div>
+                </div>
+                <div class="visual-dot dot-one"></div>
+                <div class="visual-dot dot-two"></div>
+            </div>
+
+            <div class="brand-copy">
+                <h2>Convierte unidades</h2>
+                <p>de forma sencilla y segura</p>
+            </div>
+        </aside>
+
+        <section class="form-panel">
+            <div class="form-content">
+                <p class="eyebrow">ACCESO SEGURO</p>
+                <h1>Sistema de conversión<br />de unidades</h1>
+                <p class="group-label">GRUPO #3</p>
+                <p class="protocol-label"><span class="protocol-dot"></span>Conexión mediante REST</p>
+
+                <div class="welcome-note">
+                    <strong>¡Bienvenido!</strong>
+                    <span>Inicia sesión para convertir tus unidades</span>
+                </div>
+
+                <form @onsubmit="IniciarSesionAsync" @onsubmit:preventDefault="true">
+                    <div class="field-group">
+                        <label for="usuario">Usuario</label>
+                        <input id="usuario" @bind="usuario" autocomplete="username" placeholder="Ingresa tu usuario" disabled="@ocupado" />
+                    </div>
+
+                    <div class="field-group">
+                        <label for="clave">Contraseña</label>
+                        <input id="clave" type="password" @bind="clave" autocomplete="current-password" placeholder="Ingresa tu contraseña" disabled="@ocupado" />
+                    </div>
+
+                    <button class="submit-button" type="submit" disabled="@(ocupado || string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(clave))">
+                        @(ocupado ? "Conectando…" : "Iniciar sesión")
+                    </button>
+                </form>
+
+                @if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <p class="login-message message-error" role="alert">@mensaje</p>
+                }
+
+                <p class="form-footnote">Cliente REST listo para conversión.</p>
+            </div>
+        </section>
+    </section>
+</main>
+}
+
+@code {
+    private string usuario = string.Empty;
+    private string clave = string.Empty;
+    private string? mensaje;
+    private bool ocupado;
+    private bool mostrarConversion;
+    private bool mostrarCatalogo;
+    private SesionCliente? sesion;
+
+    private async Task IniciarSesionAsync()
+    {
+        ocupado = true;
+        mensaje = null;
+        sesion = null;
+
+        try
+        {
+            sesion = await Autenticacion.IniciarSesionAsync(usuario.Trim(), clave);
+            mensaje = null;
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"No se pudo iniciar sesión: {ex.Message}";
+        }
+        finally
+        {
+            ocupado = false;
+        }
+    }
+
+    private void CerrarSesion()
+    {
+        sesion = null;
+        mostrarConversion = false;
+        mostrarCatalogo = false;
+        clave = string.Empty;
+        mensaje = null;
+    }
+
+    private void AbrirConversion() => mostrarConversion = true;
+
+    private void AbrirCatalogo() => mostrarCatalogo = true;
+
+    private void VolverAlMenu()
+    {
+        mostrarConversion = false;
+        mostrarCatalogo = false;
+    }
+}

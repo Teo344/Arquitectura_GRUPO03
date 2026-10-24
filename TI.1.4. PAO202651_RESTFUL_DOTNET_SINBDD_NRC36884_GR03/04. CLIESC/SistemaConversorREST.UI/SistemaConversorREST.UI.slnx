@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../SistemaConversorREST.UI.Desktop/SistemaConversorREST.UI.Desktop.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="../SistemaConversorREST.UI.Shared/SistemaConversorREST.UI.Shared.csproj" />
+</Solution>

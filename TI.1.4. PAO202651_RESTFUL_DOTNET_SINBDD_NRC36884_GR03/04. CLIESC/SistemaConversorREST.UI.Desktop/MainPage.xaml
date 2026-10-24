@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:SistemaConversorREST.UI.Desktop"
+             xmlns:shared="clr-namespace:SistemaConversorREST.UI.Shared.Vistas;assembly=SistemaConversorREST.UI.Shared"
+             x:Class="SistemaConversorREST.UI.Desktop.MainPage">
+
+    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
+        <BlazorWebView.RootComponents>
+            <RootComponent Selector="#app" ComponentType="{x:Type shared:Login}" />
+        </BlazorWebView.RootComponents>
+    </BlazorWebView>
+
+</ContentPage>
