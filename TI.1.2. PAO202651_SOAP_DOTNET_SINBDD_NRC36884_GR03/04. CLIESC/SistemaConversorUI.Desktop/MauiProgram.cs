@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SistemaConversorUI.Shared.Adaptadores;
 using SistemaConversorUI.Shared.Interfaces;
+using SistemaConversorUI.Shared.Modelos;
 
 namespace SistemaConversorUI.Desktop
 {
@@ -9,6 +10,11 @@ namespace SistemaConversorUI.Desktop
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+            builder.Services.AddSingleton(new OpcionesCliente
+            {
+                UrlServidor = "http://localhost:8095/",
+                NombreCliente = "Cliente de escritorio"
+            });
             builder.Services.AddSingleton<HttpClient>();
             builder.Services.AddSingleton<IAutenticacionSoap, AdaptadorAutenticacionSoap>();
             builder.Services.AddSingleton<IConversionSoap, AdaptadorConversionSoap>();

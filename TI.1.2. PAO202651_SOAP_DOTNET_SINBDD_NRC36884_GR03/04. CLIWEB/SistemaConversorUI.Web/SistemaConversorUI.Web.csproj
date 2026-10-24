@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SistemaConversorUI.Web</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Vistas, adaptadores SOAP y modelos compartidos con el cliente de escritorio -->
+    <ProjectReference Include="..\..\04. CLIESC\SistemaConversorUI.Shared\SistemaConversorUI.Shared\SistemaConversorUI.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

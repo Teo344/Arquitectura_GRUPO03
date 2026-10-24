@@ -11,11 +11,14 @@ public sealed class AdaptadorConversionSoap : IConversionSoap
 {
     private static readonly XNamespace Soap = "http://schemas.xmlsoap.org/soap/envelope/";
     private static readonly XNamespace Servicio = "http://wservicios.controladores.monster.edu.ec/";
-    private const string UrlServicio = "http://localhost:8095/ConversionUnidadesWS.svc";
-
     private readonly HttpClient _http;
+    private readonly Uri _urlServicio;
 
-    public AdaptadorConversionSoap(HttpClient http) => _http = http;
+    public AdaptadorConversionSoap(HttpClient http, OpcionesCliente opciones)
+    {
+        _http = http;
+        _urlServicio = new Uri(new Uri(opciones.UrlServidor), "ConversionUnidadesWS.svc");
+    }
 
     public async Task<IReadOnlyList<CategoriaCliente>> ConsultarCatalogoAsync(string token)
     {
@@ -78,7 +81,7 @@ public sealed class AdaptadorConversionSoap : IConversionSoap
                 new XElement(Soap + "Header", new XElement(Servicio + "token", token)),
                 new XElement(Soap + "Body", new XElement(Servicio + operacion, parametros))));
 
-        using var solicitud = new HttpRequestMessage(HttpMethod.Post, UrlServicio);
+        using var solicitud = new HttpRequestMessage(HttpMethod.Post, _urlServicio);
         solicitud.Headers.Add("SOAPAction", $"\"{Servicio}ConversionUnidadesWS/{operacion}\"");
         solicitud.Content = new StringContent(
             sobre.ToString(SaveOptions.DisableFormatting), Encoding.UTF8, "text/xml");

@@ -16,10 +16,12 @@ namespace SistemaConversorUI.Shared.Adaptadores
             "http://wservicios.controladores.monster.edu.ec/";
 
         private readonly HttpClient _http;
+        private readonly Uri _urlServicio;
 
-        public AdaptadorAutenticacionSoap(HttpClient http)
+        public AdaptadorAutenticacionSoap(HttpClient http, OpcionesCliente opciones)
         {
             _http = http;
+            _urlServicio = new Uri(new Uri(opciones.UrlServidor), "AutenticacionWS.svc");
         }
 
         public async Task<SesionCliente> IniciarSesionAsync(
@@ -90,7 +92,7 @@ namespace SistemaConversorUI.Shared.Adaptadores
 
             using var solicitud = new HttpRequestMessage(
                 HttpMethod.Post,
-                $"http://localhost:8095/AutenticacionWS.svc");
+                _urlServicio);
 
             solicitud.Headers.Add(
                 "SOAPAction",

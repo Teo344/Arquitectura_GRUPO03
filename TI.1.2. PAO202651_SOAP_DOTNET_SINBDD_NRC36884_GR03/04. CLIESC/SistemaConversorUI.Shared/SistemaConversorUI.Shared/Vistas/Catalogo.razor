@@ -39,7 +39,7 @@
                                 aria-pressed="@seleccionada"
                                 @onclick="() => SeleccionarCategoriaAsync(categoria)">
                             <span class="category-status">
-                                <span>@(i + 1).ToString("00")</span>
+                                <span>@((i + 1).ToString("00"))</span>
                                 @(categoria.Convertible ? "CONVERSIÓN DISPONIBLE" : "SOLO CONSULTA")
                             </span>
                             <strong class="category-name">@categoria.Nombre</strong>
