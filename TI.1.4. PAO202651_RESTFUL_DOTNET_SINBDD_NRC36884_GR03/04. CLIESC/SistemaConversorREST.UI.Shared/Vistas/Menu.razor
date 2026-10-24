@@ -1,0 +1,83 @@
+@using SistemaConversorREST.UI.Shared.Modelos
+
+<main class="menu-page">
+    <header class="menu-bar">
+        <span class="menu-brand">MONSTER</span>
+        <div class="menu-account">
+            <span class="client-label">Cliente de escritorio</span>
+            <span class="account-name">@Sesion.Usuario</span>
+            <button class="logout-button" type="button" @onclick="CerrarSesionAsync">Cerrar sesión</button>
+        </div>
+    </header>
+
+    <section class="menu-content" aria-labelledby="menu-title">
+        <div class="menu-heading">
+            <p class="menu-eyebrow">MONSTER</p>
+            <h1 id="menu-title">¿Qué deseas hacer?</h1>
+            <p>Elige una opción para continuar</p>
+        </div>
+
+        <div class="option-grid">
+            <article class="option-card">
+                <div class="card-topline">
+                    <div class="option-icon" aria-hidden="true">
+                        <svg viewBox="0 0 64 64" role="presentation">
+                            <path d="M14 23h34m-8-8 8 8-8 8M50 41H16m8-8-8 8 8 8" />
+                        </svg>
+                    </div>
+                    <span class="option-number">01</span>
+                </div>
+                <div class="option-copy">
+                    <h2>Convertir unidades</h2>
+                    <p>Realiza conversiones de longitud, masa y temperatura.</p>
+                </div>
+                <button class="option-button primary-option" type="button" @onclick="AbrirConversionAsync">
+                    Abrir conversor
+                </button>
+            </article>
+
+            <article class="option-card">
+                <div class="card-topline">
+                    <div class="option-icon" aria-hidden="true">
+                        <svg viewBox="0 0 64 64" role="presentation">
+                            <path d="M22 18h29M22 32h29M22 46h29" />
+                            <circle cx="14" cy="18" r="2" />
+                            <circle cx="14" cy="32" r="2" />
+                            <circle cx="14" cy="46" r="2" />
+                        </svg>
+                    </div>
+                    <span class="option-number">02</span>
+                </div>
+                <div class="option-copy">
+                    <h2>Consultar catálogo</h2>
+                    <p>Explora las categorías y unidades disponibles en el sistema.</p>
+                </div>
+                <button class="option-button secondary-option" type="button" @onclick="AbrirCatalogoAsync">
+                    Ver catálogo
+                </button>
+            </article>
+        </div>
+
+        <footer class="menu-footer">Conversión de Unidades Monster</footer>
+    </section>
+</main>
+
+@code {
+    [Parameter, EditorRequired]
+    public SesionCliente Sesion { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnCerrarSesion { get; set; }
+
+    [Parameter]
+    public EventCallback OnAbrirConversion { get; set; }
+
+    [Parameter]
+    public EventCallback OnAbrirCatalogo { get; set; }
+
+    private Task AbrirConversionAsync() => OnAbrirConversion.InvokeAsync();
+
+    private Task AbrirCatalogoAsync() => OnAbrirCatalogo.InvokeAsync();
+
+    private Task CerrarSesionAsync() => OnCerrarSesion.InvokeAsync();
+}

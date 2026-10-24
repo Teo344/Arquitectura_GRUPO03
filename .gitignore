@@ -28,3 +28,14 @@
 *.user
 *.csproj.user
 *.sln.docstates
+
+# Resultados de compilación de Maven, Gradle y otros proyectos
+**/target/
+**/build/
+**/.gradle/
+**/.kotlin/
+
+# IDE y archivos temporales locales
+**/.idea/
+*.iml
+*.log
