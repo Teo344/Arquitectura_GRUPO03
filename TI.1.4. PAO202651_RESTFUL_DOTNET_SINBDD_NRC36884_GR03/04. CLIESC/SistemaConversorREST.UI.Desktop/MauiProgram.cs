@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SistemaConversorREST.UI.Shared.Adaptadores;
 using SistemaConversorREST.UI.Shared.Interfaces;
+using SistemaConversorREST.UI.Shared.Modelos;
 
 namespace SistemaConversorREST.UI.Desktop
 {
@@ -17,9 +18,15 @@ namespace SistemaConversorREST.UI.Desktop
             const string apiBaseAddress = "http://localhost:8096/";
 #endif
 
+            var opciones = new OpcionesCliente
+            {
+                UrlServidor = apiBaseAddress,
+                NombreCliente = "Cliente de escritorio"
+            };
+            builder.Services.AddSingleton(opciones);
             builder.Services.AddSingleton(new HttpClient
             {
-                BaseAddress = new Uri(apiBaseAddress),
+                BaseAddress = new Uri(opciones.UrlServidor),
                 Timeout = TimeSpan.FromSeconds(20)
             });
             builder.Services.AddSingleton<IAutenticacionRest, AdaptadorAutenticacionRest>();

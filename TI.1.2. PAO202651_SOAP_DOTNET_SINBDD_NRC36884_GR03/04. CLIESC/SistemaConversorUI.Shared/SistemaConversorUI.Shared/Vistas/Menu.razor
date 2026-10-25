@@ -1,10 +1,11 @@
 @using SistemaConversorUI.Shared.Modelos
+@inject OpcionesCliente Opciones
 
 <main class="menu-page">
     <header class="menu-bar">
         <span class="menu-brand">MONSTER</span>
         <div class="menu-account">
-            <span class="client-label">Cliente de escritorio</span>
+            <span class="client-label">@Opciones.NombreCliente</span>
             <span class="account-name">@Sesion.Usuario</span>
             <button class="logout-button" type="button" @onclick="CerrarSesionAsync">Cerrar sesión</button>
         </div>

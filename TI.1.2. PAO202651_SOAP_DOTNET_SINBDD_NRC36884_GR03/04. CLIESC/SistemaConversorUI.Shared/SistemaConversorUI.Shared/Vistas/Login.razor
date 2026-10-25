@@ -1,6 +1,7 @@
 @using SistemaConversorUI.Shared.Interfaces
 @using SistemaConversorUI.Shared.Modelos
 @inject IAutenticacionSoap Autenticacion
+@inject OpcionesCliente Opciones
 
 @if (sesion is not null)
 {
@@ -76,7 +77,7 @@ else
                     <p class="login-message message-error" role="alert">@mensaje</p>
                 }
 
-                <p class="form-footnote">Cliente de escritorio listo para conversión.</p>
+                <p class="form-footnote">@Opciones.NombreCliente listo para conversión.</p>
             </div>
         </section>
     </section>

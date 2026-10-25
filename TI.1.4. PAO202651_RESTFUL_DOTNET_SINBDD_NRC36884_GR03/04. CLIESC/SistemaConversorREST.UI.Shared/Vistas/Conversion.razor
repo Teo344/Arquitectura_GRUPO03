@@ -68,7 +68,7 @@
                     <button class="convert-button" type="button" @onclick="ConvertirAsync" disabled="@(cargando || unidades.Count == 0)">
                         @(cargando ? "Consultando servidor…" : "Convertir")
                     </button>
-                    <button class="clear-button" type="button" @onclick="Limpiar" disabled="cargando">Limpiar</button>
+                    <button class="clear-button" type="button" @onclick="Limpiar" disabled="@cargando">Limpiar</button>
                 </div>
             </div>
 
