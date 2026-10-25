@@ -4,4 +4,7 @@
   </Project>
   <Project Path="SistemaConversorUI.Shared/SistemaConversorUI.Shared.csproj" />
   <Project Path="../../04. CLIWEB/SistemaConversorUI.Web/SistemaConversorUI.Web.csproj" />
+  <Project Path="../../04. CLIMOV/SistemaConversorUI.Mobile/SistemaConversorUI.Mobile.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

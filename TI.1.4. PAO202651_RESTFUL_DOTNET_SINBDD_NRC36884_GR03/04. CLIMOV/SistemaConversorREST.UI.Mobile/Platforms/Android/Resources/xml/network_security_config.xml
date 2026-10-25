@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El servidor REST se publica por HTTP: se permite solo hacia estas direcciones locales -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- localhost del PC visto desde el emulador de Android Studio -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <!-- Para un celular fisico agregue aqui la IP del PC en la red, por ejemplo:
+        <domain includeSubdomains="false">192.168.1.10</domain> -->
+    </domain-config>
+</network-security-config>
