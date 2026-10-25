@@ -1,7 +1,8 @@
 <Solution>
-  <Project Path="../SistemaConversorREST.UI.Desktop/SistemaConversorREST.UI.Desktop.csproj">
+  <Project Path="../../../../../../Documents/8vo Semestre/Arquitectura_GRUPO03/TI.1.4. PAO202651_RESTFUL_DOTNET_SINBDD_NRC36884_GR03/04. CLIESC/SistemaConversorREST.UI.Desktop/SistemaConversorREST.UI.Desktop.csproj">
     <Deploy Solution="Debug|*" />
   </Project>
-  <Project Path="../SistemaConversorREST.UI.Shared/SistemaConversorREST.UI.Shared.csproj" />
-  <Project Path="../../04. CLIWEB/SistemaConversorREST.UI.Web/SistemaConversorREST.UI.Web.csproj" />
+  <Project Path="../../../../../../Documents/8vo Semestre/Arquitectura_GRUPO03/TI.1.4. PAO202651_RESTFUL_DOTNET_SINBDD_NRC36884_GR03/04. CLIESC/SistemaConversorREST.UI.Shared/SistemaConversorREST.UI.Shared.csproj" />
+  <Project Path="../../../../../../Documents/8vo Semestre/Arquitectura_GRUPO03/TI.1.4. PAO202651_RESTFUL_DOTNET_SINBDD_NRC36884_GR03/04. CLIMOV/SistemaConversorREST.UI.Mobile/SistemaConversorREST.UI.Mobile.csproj" Id="18bf53e3-0d1a-4f0e-a1be-9195e3ae2d5f" />
+  <Project Path="../../../../../../Documents/8vo Semestre/Arquitectura_GRUPO03/TI.1.4. PAO202651_RESTFUL_DOTNET_SINBDD_NRC36884_GR03/04. CLIWEB/SistemaConversorREST.UI.Web/SistemaConversorREST.UI.Web.csproj" />
 </Solution>
