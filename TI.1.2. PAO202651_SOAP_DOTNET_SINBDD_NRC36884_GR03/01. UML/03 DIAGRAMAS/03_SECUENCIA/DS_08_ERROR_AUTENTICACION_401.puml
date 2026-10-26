@@ -1,0 +1,29 @@
+@startuml
+title "DS_08_ERROR_AUTENTICACION_401"
+autonumber
+
+actor "APLICACION" as APLICACION
+participant "CONVERSION_VISTA" as CONVERSION_VISTA
+participant "CONVERSION_CONTROLADOR" as CONVERSION_CONTROLADOR
+participant "CLIENTE_SOAP_CONVERSOR" as CLIENTE_SOAP_CONVERSOR
+participant "MANEJADOR_AUTENTICACION" as MANEJADOR_AUTENTICACION
+participant "GESTOR_TOKEN" as GESTOR_TOKEN
+
+APLICACION -> CONVERSION_VISTA: solicita una conversion protegida (ej. Convertir Longitud)
+CONVERSION_VISTA -> CONVERSION_CONTROLADOR: Convertir(ConversionModelo)
+CONVERSION_CONTROLADOR -> CLIENTE_SOAP_CONVERSOR: ConvertirLongitud(valor, origen, destino)
+CLIENTE_SOAP_CONVERSOR -> CLIENTE_SOAP_CONVERSOR: ManejadorTokenSOAP agrega header "token" (invalido o expirado)
+CLIENTE_SOAP_CONVERSOR -> MANEJADOR_AUTENTICACION: SOAP convertirLongitud(solicitud) + header token
+MANEJADOR_AUTENTICACION -> MANEJADOR_AUTENTICACION: LeerToken(request)
+MANEJADOR_AUTENTICACION -> GESTOR_TOKEN: Validar(token)
+GESTOR_TOKEN -> GESTOR_TOKEN: token inexistente: AUTH-001 / expirado: AUTH-002 y elimina la sesion
+GESTOR_TOKEN --> MANEJADOR_AUTENTICACION: throw ExcepcionServicio(AUTH-001 o AUTH-002)
+MANEJADOR_AUTENTICACION --> CLIENTE_SOAP_CONVERSOR: SOAP Fault ErrorServicio (ConversionUnidadesWS no se ejecuta)
+CLIENTE_SOAP_CONVERSOR -> CLIENTE_SOAP_CONVERSOR: catch FaultException: lee el detalle ErrorServicio
+CLIENTE_SOAP_CONVERSOR -> CLIENTE_SOAP_CONVERSOR: RequiereNuevoLogin: CerrarSesion() deja token = null
+CLIENTE_SOAP_CONVERSOR --> CONVERSION_CONTROLADOR: throw ErrorSOAPModelo(AUTH-00x)
+CONVERSION_CONTROLADOR --> CONVERSION_VISTA: ErrorSOAPModelo
+CONVERSION_VISTA -> CONVERSION_VISTA: MostrarError(ex) y retorna true por RequiereNuevoLogin
+CONVERSION_VISTA --> APLICACION: vuelve al login y solicita nuevas credenciales
+
+@enduml

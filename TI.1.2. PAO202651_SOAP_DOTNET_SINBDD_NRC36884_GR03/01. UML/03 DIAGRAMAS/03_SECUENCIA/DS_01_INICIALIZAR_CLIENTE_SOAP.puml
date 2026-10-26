@@ -1,0 +1,29 @@
+@startuml
+title "DS_01_INICIALIZAR_CLIENTE_SOAP"
+autonumber
+
+participant "APLICACION" as APLICACION
+participant "LOGIN_VISTA" as LOGIN_VISTA
+participant "LOGIN_CONTROLADOR" as LOGIN_CONTROLADOR
+participant "CLIENTE_SOAP_CONVERSOR" as CLIENTE_SOAP_CONVERSOR
+participant "CHANNEL_FACTORY_WCF" as CHANNEL_FACTORY_WCF
+participant "MANEJADOR_TOKEN_SOAP" as MANEJADOR_TOKEN_SOAP
+
+APLICACION -> LOGIN_VISTA: Program.Main crea LoginVista e invoca Iniciar()
+LOGIN_VISTA -> LOGIN_VISTA: MensajeBienvenida() muestra banner del sistema
+LOGIN_VISTA -> LOGIN_CONTROLADOR: new LoginControlador()
+LOGIN_CONTROLADOR -> CLIENTE_SOAP_CONVERSOR: new ClienteSOAPConversor()
+CLIENTE_SOAP_CONVERSOR -> CLIENTE_SOAP_CONVERSOR: lee ws.base.url desde App.config
+CLIENTE_SOAP_CONVERSOR -> CLIENTE_SOAP_CONVERSOR: valida URL absoluta HTTP/HTTPS (si falla: ArgumentException)
+CLIENTE_SOAP_CONVERSOR -> CHANNEL_FACTORY_WCF: CrearFabrica<IAutenticacionWS>(BasicHttpBinding, AutenticacionWS.svc)
+CLIENTE_SOAP_CONVERSOR -> CHANNEL_FACTORY_WCF: CrearFabrica<IConversionUnidadesWS>(BasicHttpBinding, ConversionUnidadesWS.svc)
+CLIENTE_SOAP_CONVERSOR -> MANEJADOR_TOKEN_SOAP: new ManejadorTokenSOAP(() => token)
+CLIENTE_SOAP_CONVERSOR -> CHANNEL_FACTORY_WCF: EndpointBehaviors.Add(ManejadorTokenSOAP) en la fabrica de conversion
+CLIENTE_SOAP_CONVERSOR --> LOGIN_CONTROLADOR: cliente SOAP inicializado
+LOGIN_CONTROLADOR --> LOGIN_VISTA: controlador listo
+LOGIN_VISTA -> LOGIN_CONTROLADOR: consulta EndpointActivo
+LOGIN_CONTROLADOR --> LOGIN_VISTA: URL base del servidor SOAP
+LOGIN_VISTA -> LOGIN_VISTA: muestra "Servidor SOAP configurado: url"
+LOGIN_VISTA --> APLICACION: solicita Usuario y Contrasenia
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+title "DS_07_CAMBIAR_CONTRASENIA"
+autonumber
+
+actor "APLICACION" as APLICACION
+participant "ADAPTADOR_AUTENTICACION_SOAP" as ADAPTADOR_AUTENTICACION_SOAP
+participant "AUTENTICACION_WS" as AUTENTICACION_WS
+participant "SERVICIO_AUTENTICACION" as SERVICIO_AUTENTICACION
+participant "GESTOR_TOKEN" as GESTOR_TOKEN
+
+APLICACION -> ADAPTADOR_AUTENTICACION_SOAP: CambiarClaveAsync(usuario, claveActual, claveNueva)
+ADAPTADOR_AUTENTICACION_SOAP -> ADAPTADOR_AUTENTICACION_SOAP: arma sobre SOAP cambiarClave (SOAPAction AutenticacionWS/cambiarClave)
+ADAPTADOR_AUTENTICACION_SOAP -> AUTENTICACION_WS: HTTP POST AutenticacionWS.svc: cambiarClave(usuario, claveActual, claveNueva)
+AUTENTICACION_WS -> SERVICIO_AUTENTICACION: CambiarClave(usuario, claveActual, claveNueva)
+SERVICIO_AUTENTICACION -> SERVICIO_AUTENTICACION: lock(Candado) compartido con Login
+SERVICIO_AUTENTICACION -> GESTOR_TOKEN: CredencialesValidas(usuario, claveActual)
+GESTOR_TOKEN --> SERVICIO_AUTENTICACION: true (si es false: ExcepcionServicio AUTH-003)
+SERVICIO_AUTENTICACION -> SERVICIO_AUTENTICACION: valida claveNueva no vacia (si esta vacia: DATA-001)
+SERVICIO_AUTENTICACION -> GESTOR_TOKEN: CambiarClave(claveNueva)
+GESTOR_TOKEN -> GESTOR_TOKEN: actualiza la clave y sesiones.Clear() invalida todos los tokens
+GESTOR_TOKEN --> SERVICIO_AUTENTICACION: clave actualizada
+SERVICIO_AUTENTICACION --> AUTENTICACION_WS: cambio aplicado
+AUTENTICACION_WS -> AUTENTICACION_WS: RespuestaMapeador.DeCambioClave()
+AUTENTICACION_WS --> ADAPTADOR_AUTENTICACION_SOAP: RespuestaDto(OK, "Clave actualizada; inicie sesion nuevamente")
+ADAPTADOR_AUTENTICACION_SOAP -> ADAPTADOR_AUTENTICACION_SOAP: verifica que el estado no sea ERROR
+ADAPTADOR_AUTENTICACION_SOAP --> APLICACION: cambio confirmado: debe iniciar sesion nuevamente
+
+@enduml
