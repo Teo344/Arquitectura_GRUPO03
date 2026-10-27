@@ -10,4 +10,9 @@
     <AssemblyName>WS_CON_UNI_DOTNET_REST</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Las pruebas son archivos sueltos que se ejecutan con: dotnet run Pruebas/PruebaX.cs -->
+    <Compile Remove="Pruebas\**" />
+  </ItemGroup>
+
 </Project>
