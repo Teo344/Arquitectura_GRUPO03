@@ -4,7 +4,7 @@ import ec.edu.monster.modelo.Sesion;
 import java.awt.*;
 import javax.swing.*;
 
-/** Menú principal REST con la misma distribución visual del cliente SOAP. */
+/** Menú principal del cliente RESTful con la identidad visual Azul. */
 public final class MenuView extends JFrame {
     private final Sesion sesion;
     private final JButton convertir = new JButton("Abrir conversor");

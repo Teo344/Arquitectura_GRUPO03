@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marca los recursos que requieren token. Es el equivalente REST de
- * {@code @HandlerChain}: ManejadorAutenticacion solo se ejecuta en lo que
+ * Marca los recursos que requieren token (@NameBinding de JAX-RS):
+ * ManejadorAutenticacion solo se ejecuta en lo que
  * lleva esta anotación.
  *
  * @author carlo

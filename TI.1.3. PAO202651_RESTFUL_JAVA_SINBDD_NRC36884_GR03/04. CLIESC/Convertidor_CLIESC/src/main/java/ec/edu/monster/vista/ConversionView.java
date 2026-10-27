@@ -5,7 +5,7 @@ import java.awt.*;
 import java.util.List;
 import javax.swing.*;
 
-/** Conversor y su historial en dos tarjetas, siguiendo la pantalla SOAP. */
+/** Conversor y su historial en dos tarjetas. */
 public final class ConversionView extends JFrame {
     private final JComboBox<Categoria> categoria=new JComboBox<>();private final JComboBox<Unidad> origen=new JComboBox<>(),destino=new JComboBox<>();
     private final JTextField valor=new JTextField("0");private final JButton convertir=new JButton("Convertir"),limpiar=new JButton("Limpiar"),volver=new JButton("Volver al inicio");

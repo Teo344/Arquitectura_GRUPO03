@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.*;
 
-/** Catálogo REST presentado en dos paneles como en el cliente SOAP. */
+/** Catálogo RESTful presentado en dos paneles. */
 public final class CatalogoView extends JFrame {
     private final Sesion sesion; private final JPanel categoriasPanel=new JPanel(new GridLayout(0,2,14,14));
     private final JPanel unidadesPanel=new JPanel(new GridLayout(0,1,0,9)); private final JLabel tituloDetalle=new JLabel("Selecciona una categoría");

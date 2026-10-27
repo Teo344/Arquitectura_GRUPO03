@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- El servidor SOAP se publica por HTTP: se permite solo hacia estas direcciones locales -->
+<!-- El servidor RESTful se publica por HTTP: se permite solo hacia estas direcciones locales -->
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <!-- localhost del PC visto desde el emulador de Android Studio -->

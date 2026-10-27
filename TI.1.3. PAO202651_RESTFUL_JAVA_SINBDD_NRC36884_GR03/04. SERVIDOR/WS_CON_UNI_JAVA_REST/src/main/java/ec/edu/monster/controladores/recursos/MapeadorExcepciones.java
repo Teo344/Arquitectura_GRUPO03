@@ -11,8 +11,8 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
 /**
- * Convierte toda falla en una respuesta JSON con ErrorServicio (RQF-010). Es
- * el equivalente REST del SOAPFault: errores de token y de credenciales salen
+ * Convierte toda falla en una respuesta JSON con ErrorServicio (RQF-010):
+ * errores de token y de credenciales salen
  * con 401, errores de datos con 400.
  *
  * @author carlo

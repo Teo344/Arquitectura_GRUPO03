@@ -3,7 +3,7 @@ package ec.edu.monster.vista;
 import java.awt.*;
 import javax.swing.*;
 
-/** Acceso REST con la misma composición visual del cliente SOAP. */
+/** Acceso al cliente RESTful con la identidad visual Azul. */
 public final class LoginView extends JFrame {
     private final JTextField usuario = new JTextField();
     private final JPasswordField clave = new JPasswordField();
@@ -66,7 +66,7 @@ public final class LoginView extends JFrame {
     }
     private JLabel centered(String text,int size,boolean bold,Color color){ JLabel l=new JLabel(text,SwingConstants.CENTER); l.setAlignmentX(Component.CENTER_ALIGNMENT); l.setFont(Estilo.font(size,bold)); l.setForeground(color); return l; }
 
-    /** Mantiene el mismo panel ilustrado del acceso SOAP y usa un fondo azul si la imagen no está disponible. */
+    /** Panel ilustrado del acceso; usa un fondo azul si la imagen no está disponible. */
     private static final class PanelVisual extends JPanel {
         private static final String IMAGE_PATH = "C:/Users/MSI/Pictures/MaterialVideos/estrella.gif";
         private final Image image;
