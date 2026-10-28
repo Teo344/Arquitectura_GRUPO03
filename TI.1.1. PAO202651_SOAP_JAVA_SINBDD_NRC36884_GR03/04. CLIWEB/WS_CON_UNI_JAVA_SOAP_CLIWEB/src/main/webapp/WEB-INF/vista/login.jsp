@@ -12,9 +12,7 @@
 <main class="login">
     <div class="login-tarjeta">
         <section class="login-visual">
-            <div class="figura figura-tarjeta"></div>
-            <div class="figura figura-circulo-grande"></div>
-            <div class="figura figura-circulo-pequeno"></div>
+            <img class="login-visual-foto" src="${pageContext.request.contextPath}/img/fotoLogin.jpeg" alt="">
             <div class="login-visual-marca">MONSTER</div>
             <div class="login-visual-pie">
                 <h2>Convierte unidades</h2>

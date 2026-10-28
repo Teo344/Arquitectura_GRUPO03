@@ -68,12 +68,13 @@ public final class LoginView extends JFrame {
 
     /** Panel ilustrado del acceso; usa un fondo azul si la imagen no está disponible. */
     private static final class PanelVisual extends JPanel {
-        private static final String IMAGE_PATH = "C:/Users/MSI/Pictures/MaterialVideos/estrella.gif";
+        /** Foto empaquetada en src/main/resources/imagenes. */
+        private static final String IMAGE_PATH = "/imagenes/fotoLogin.jpeg";
         private final Image image;
         PanelVisual(LayoutManager layout) {
             super(layout);
-            java.io.File file = new java.io.File(IMAGE_PATH);
-            image = file.isFile() ? new ImageIcon(IMAGE_PATH).getImage() : null;
+            java.net.URL resource = LoginView.class.getResource(IMAGE_PATH);
+            image = resource == null ? null : new ImageIcon(resource).getImage();
             setOpaque(true);
         }
         @Override protected void paintComponent(Graphics graphics) {
@@ -81,7 +82,17 @@ public final class LoginView extends JFrame {
             Graphics2D g = (Graphics2D) graphics.create();
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             if (image != null && image.getWidth(this) > 0) {
-                g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
+                // Escala tipo "cover": llena el panel sin deformar la foto
+                int w = getWidth(), h = getHeight();
+                double scale = Math.max((double) w / image.getWidth(this), (double) h / image.getHeight(this));
+                int dw = (int) Math.ceil(image.getWidth(this) * scale), dh = (int) Math.ceil(image.getHeight(this) * scale);
+                g.drawImage(image, (w - dw) / 2, (h - dh) / 2, dw, dh, this);
+                // Degradado oscuro arriba y abajo para que se lean los textos blancos
+                g.setPaint(new GradientPaint(0, 0, new Color(11, 29, 68, 150), 0, h / 4f, new Color(11, 29, 68, 0)));
+                g.fillRect(0, 0, w, h / 4);
+                int footTop = h * 11 / 20;
+                g.setPaint(new GradientPaint(0, footTop, new Color(11, 29, 68, 0), 0, h, new Color(11, 29, 68, 230)));
+                g.fillRect(0, footTop, w, h - footTop);
             } else {
                 g.setPaint(new GradientPaint(0, 0, Estilo.OSCURO, 0, getHeight(), new Color(0x123A70)));
                 g.fillRect(0, 0, getWidth(), getHeight());
