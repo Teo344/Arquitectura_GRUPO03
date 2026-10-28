@@ -1,0 +1,12 @@
+<Project>
+  <!-- La ruta de esta carpeta es tan larga que obj\...\win-x64\ supera los 260 caracteres y MakePri (MAUI Windows)
+       falla con "no se encuentra la ruta". Además OneDrive no debe sincronizar bin/obj.
+       Por eso bin y obj se generan en %LOCALAPPDATA%\MonsterBuild. -->
+  <PropertyGroup>
+    <CarpetaCompilacion>$(LOCALAPPDATA)\MonsterBuild\TI.1.2\$(MSBuildProjectName)\</CarpetaCompilacion>
+    <BaseIntermediateOutputPath>$(CarpetaCompilacion)obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(CarpetaCompilacion)bin\</BaseOutputPath>
+    <!-- Ignora las carpetas bin/obj viejas que hayan quedado dentro del proyecto -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>
