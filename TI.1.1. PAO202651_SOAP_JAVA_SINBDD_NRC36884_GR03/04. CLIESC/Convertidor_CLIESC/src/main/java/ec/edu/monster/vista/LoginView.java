@@ -48,8 +48,8 @@ public class LoginView extends JFrame {
     private static final Color INFO_TEXTO = new Color(0x1744A3);
     private static final Color INFO_FONDO = new Color(0xEDF4FF);
 
-    /* Ruta opcional. Ejemplo: C:/Users/Nombre/Imagenes/login.jpg */
-    private static final String RUTA_IMAGEN = "C:/Users/MSI/Pictures/MaterialVideos/estrella.gif";
+    /* Foto del panel izquierdo, empaquetada en src/main/resources/imagenes */
+    private static final String RUTA_IMAGEN = "/imagenes/fotoLogin.jpeg";
 
     private final JTextField campoUsuario = new JTextField();
     private final JPasswordField campoClave = new JPasswordField();
@@ -272,12 +272,8 @@ public class LoginView extends JFrame {
 
         private PanelVisual(String ruta) {
             this.ruta = ruta;
-            java.awt.Image cargada = null;
-            if (ruta != null && !ruta.isBlank()) {
-                java.io.File archivo = new java.io.File(ruta);
-                if (archivo.isFile()) cargada = new javax.swing.ImageIcon(ruta).getImage();
-            }
-            imagen = cargada;
+            java.net.URL recurso = ruta == null ? null : LoginView.class.getResource(ruta);
+            imagen = recurso == null ? null : new javax.swing.ImageIcon(recurso).getImage();
             setOpaque(true);
             setBackground(AZUL_OSCURO);
         }
@@ -289,7 +285,20 @@ public class LoginView extends JFrame {
             int w = getWidth();
             int h = getHeight();
             if (imagen != null && imagen.getWidth(this) > 0) {
-                g.drawImage(imagen, 0, 0, w, h, this);
+                // Escala tipo "cover": llena el panel sin deformar la foto
+                int iw = imagen.getWidth(this);
+                int ih = imagen.getHeight(this);
+                double escala = Math.max((double) w / iw, (double) h / ih);
+                int dw = (int) Math.ceil(iw * escala);
+                int dh = (int) Math.ceil(ih * escala);
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g.drawImage(imagen, (w - dw) / 2, (h - dh) / 2, dw, dh, this);
+                // Degradado oscuro arriba y abajo para que se lean los textos blancos
+                g.setPaint(new java.awt.GradientPaint(0, 0, new Color(11, 29, 68, 150), 0, h / 4f, new Color(11, 29, 68, 0)));
+                g.fillRect(0, 0, w, h / 4);
+                int inicioPie = h * 11 / 20;
+                g.setPaint(new java.awt.GradientPaint(0, inicioPie, new Color(11, 29, 68, 0), 0, h, new Color(11, 29, 68, 230)));
+                g.fillRect(0, inicioPie, w, h - inicioPie);
             } else {
                 g.setColor(AZUL_OSCURO);
                 g.fillRect(0, 0, w, h);

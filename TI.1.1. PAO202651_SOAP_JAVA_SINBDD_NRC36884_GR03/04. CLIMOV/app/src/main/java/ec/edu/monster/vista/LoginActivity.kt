@@ -10,7 +10,10 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,10 +32,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ec.edu.monster.R
 import ec.edu.monster.controlador.LoginControlador
 import ec.edu.monster.modelo.SesionUsuario
 import ec.edu.monster.servicio.AutenticacionSoapService
@@ -117,17 +126,45 @@ class LoginActivity : ComponentActivity() {
                 .imePadding()
                 .navigationBarsPadding()
         ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(300.dp)
                     .background(AzulOscuro)
-                    .statusBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 32.dp)
             ) {
-                Text("MONSTER", color = BordeSuave, style = MaterialTheme.typography.labelMedium)
-                Spacer(Modifier.height(8.dp))
-                Text("Convierte unidades", color = Blanco, style = MaterialTheme.typography.headlineSmall)
-                Text("de forma sencilla y segura", color = BordeSuave, style = MaterialTheme.typography.bodyMedium)
+                Image(
+                    painter = painterResource(R.drawable.foto_login),
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop,
+                    alignment = BiasAlignment(0f, -0.3f)
+                )
+                // Degradado oscuro arriba y abajo para que se lean los textos blancos
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                0f to AzulOscuro.copy(alpha = 0.6f),
+                                0.3f to Color.Transparent,
+                                0.55f to Color.Transparent,
+                                1f to AzulOscuro.copy(alpha = 0.9f)
+                            )
+                        )
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .padding(horizontal = 24.dp, vertical = 24.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("MONSTER", color = Blanco, style = MaterialTheme.typography.labelMedium)
+                    Column {
+                        Text("Convierte unidades", color = Blanco, style = MaterialTheme.typography.headlineSmall)
+                        Text("de forma sencilla y segura", color = BordeSuave, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
             }
 
             Tarjeta(Modifier.padding(16.dp)) {

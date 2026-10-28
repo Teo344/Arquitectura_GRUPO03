@@ -110,41 +110,32 @@ a { text-decoration: none; }
     overflow: hidden;
     background: var(--azul-oscuro);
 }
-/* Figuras que LoginView dibuja cuando no hay imagen */
-.figura { position: absolute; }
-.figura-tarjeta {
-    left: 11.111%;
-    top: 33.333%;
-    width: 77.778%;
-    height: 33.333%;
-    background: var(--azul-accion);
-    border: 1px solid var(--borde-suave);
-    border-radius: 12px;
+/* Foto del panel (igual que PanelVisual de LoginView): llena el panel sin deformarse */
+.login-visual-foto {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 35%;
 }
-.figura-circulo-grande {
-    left: 25%;
-    top: calc(33.333% + 28px);
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: var(--azul-marca);
-}
-.figura-circulo-pequeno {
-    left: 66.667%;
-    top: 50%;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: var(--cian);
+/* Degradado oscuro arriba y abajo para que se lean los textos blancos */
+.login-visual::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(11, 29, 68, .6), rgba(11, 29, 68, 0) 25%,
+                                rgba(11, 29, 68, 0) 55%, rgba(11, 29, 68, .9));
 }
 .login-visual-marca {
     position: relative;
+    z-index: 1;
     padding: 28px 30px 0;
     color: #fff;
     font-size: 14px;
     font-weight: 700;
 }
-.login-visual-pie { position: relative; padding: 0 30px 24px 38px; }
+.login-visual-pie { position: relative; z-index: 1; padding: 0 30px 24px 38px; }
 .login-visual-pie h2 { color: #fff; font-size: 27px; font-weight: 700; }
 .login-visual-pie p { margin-top: 8px; color: var(--borde-suave); font-size: 16px; }
 
