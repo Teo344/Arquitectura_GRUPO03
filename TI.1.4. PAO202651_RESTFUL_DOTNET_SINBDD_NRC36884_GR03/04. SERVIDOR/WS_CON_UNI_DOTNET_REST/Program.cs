@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using WS_CON_UNI_DOTNET_REST.Controladores;
-using WS_CON_UNI_DOTNET_REST.Modelo;
-using WS_CON_UNI_DOTNET_REST.Seguridad;
-using WS_CON_UNI_DOTNET_REST.Servicios;
+using ec.edu.monster.controladores.recursos;
+using ec.edu.monster.modelo;
+using ec.edu.monster.seguridad;
+using ec.edu.monster.servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 

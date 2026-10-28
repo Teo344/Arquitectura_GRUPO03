@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -57,31 +57,31 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controladores\AutenticacionWS.cs" />
-    <Compile Include="Controladores\ConversionUnidadesWS.cs" />
-    <Compile Include="Controladores\IAutenticacionWS.cs" />
-    <Compile Include="Controladores\IConversionUnidadesWS.cs" />
-    <Compile Include="Modelo\Categoria.cs" />
-    <Compile Include="Modelo\CodigoError.cs" />
-    <Compile Include="Modelo\Unidad.cs" />
+    <Compile Include="ec\edu\monster\controladores\wservicios\AutenticacionWS.cs" />
+    <Compile Include="ec\edu\monster\controladores\wservicios\ConversionUnidadesWS.cs" />
+    <Compile Include="ec\edu\monster\controladores\wservicios\IAutenticacionWS.cs" />
+    <Compile Include="ec\edu\monster\controladores\wservicios\IConversionUnidadesWS.cs" />
+    <Compile Include="ec\edu\monster\modelo\Categoria.cs" />
+    <Compile Include="ec\edu\monster\modelo\CodigoError.cs" />
+    <Compile Include="ec\edu\monster\modelo\Unidad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Seguridad\GestorToken.cs" />
-    <Compile Include="Seguridad\ManejadorAutenticacion.cs" />
-    <Compile Include="Seguridad\ProtegidoAttribute.cs" />
-    <Compile Include="Servicios\Conversores\ConversorLineal.cs" />
-    <Compile Include="Servicios\Conversores\ConversorTemperatura.cs" />
-    <Compile Include="Servicios\Conversores\IConversor.cs" />
-    <Compile Include="Servicios\ExcepcionServicio.cs" />
-    <Compile Include="Servicios\ServicioAutenticacion.cs" />
-    <Compile Include="Servicios\ServicioCatalogo.cs" />
-    <Compile Include="Servicios\ServicioConversion.cs" />
-    <Compile Include="Servicios\ServicioValidacion.cs" />
-    <Compile Include="Vista\CategoriaDto.cs" />
-    <Compile Include="Vista\Contrato.cs" />
-    <Compile Include="Vista\RespuestaDto.cs" />
-    <Compile Include="Vista\RespuestaMapeador.cs" />
-    <Compile Include="Vista\SolicitudConversionDto.cs" />
-    <Compile Include="Vista\UnidadDto.cs" />
+    <Compile Include="ec\edu\monster\seguridad\GestorToken.cs" />
+    <Compile Include="ec\edu\monster\seguridad\ManejadorAutenticacion.cs" />
+    <Compile Include="ec\edu\monster\seguridad\ProtegidoAttribute.cs" />
+    <Compile Include="ec\edu\monster\servicios\conversores\ConversorLineal.cs" />
+    <Compile Include="ec\edu\monster\servicios\conversores\ConversorTemperatura.cs" />
+    <Compile Include="ec\edu\monster\servicios\conversores\IConversor.cs" />
+    <Compile Include="ec\edu\monster\servicios\ExcepcionServicio.cs" />
+    <Compile Include="ec\edu\monster\servicios\ServicioAutenticacion.cs" />
+    <Compile Include="ec\edu\monster\servicios\ServicioCatalogo.cs" />
+    <Compile Include="ec\edu\monster\servicios\ServicioConversion.cs" />
+    <Compile Include="ec\edu\monster\servicios\ServicioValidacion.cs" />
+    <Compile Include="ec\edu\monster\vista\CategoriaDto.cs" />
+    <Compile Include="ec\edu\monster\vista\Contrato.cs" />
+    <Compile Include="ec\edu\monster\vista\RespuestaDto.cs" />
+    <Compile Include="ec\edu\monster\vista\RespuestaMapeador.cs" />
+    <Compile Include="ec\edu\monster\vista\SolicitudConversionDto.cs" />
+    <Compile Include="ec\edu\monster\vista\UnidadDto.cs" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

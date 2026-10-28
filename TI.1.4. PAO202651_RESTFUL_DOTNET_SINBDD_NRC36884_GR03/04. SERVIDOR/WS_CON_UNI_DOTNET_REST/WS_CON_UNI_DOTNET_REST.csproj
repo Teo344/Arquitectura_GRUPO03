@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Las pruebas son archivos sueltos que se ejecutan con: dotnet run Pruebas/PruebaX.cs -->
-    <Compile Remove="Pruebas\**" />
+    <!-- Las pruebas son archivos sueltos que se ejecutan con: dotnet run ec/edu/monster/pruebas/PruebaX.cs -->
+    <Compile Remove="ec\edu\monster\pruebas\**" />
   </ItemGroup>
 
 </Project>
