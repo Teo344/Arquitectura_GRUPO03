@@ -1,41 +1,35 @@
 @startuml
 title "DS_01_INICIALIZAR_CLIENTE_SOAP"
+autonumber
 
-participant "APLICACION\n(Main)" as Main
-participant "CLIENTE_SOAP_CONVERSOR" as ClienteSoap
-participant "WSCONVERSORUNIDADES_CLIENT" as ProxySoap
-participant "WSCONVERSORUNIDADES" as Servicio
-participant "ADMINISTRADOR_TOKENS" as Tokens
+participant "APLICACION" as APLICACION
+participant "LOGIN_VISTA" as LOGIN_VISTA
+participant "LOGIN_CONTROLADOR" as LOGIN_CONTROLADOR
+participant "CLIENTE_WS_CONVERSOR" as CLIENTE_WS_CONVERSOR
+participant "SERVICE_JAXWS" as SERVICE_JAXWS
+participant "MANEJADOR_TOKEN_SOAP" as MANEJADOR_TOKEN_SOAP
+participant "SERVIDOR_PAYARA" as SERVIDOR_PAYARA
 
-Main -> ClienteSoap: 1. crear cliente SOAP
-activate ClienteSoap
-
-ClienteSoap -> ProxySoap: 2. inicializar endpoint binding SOAP (JAX-WS)
-activate ProxySoap
-
-ClienteSoap -> ProxySoap: 3. login(usuario, contrasenia)
-ProxySoap -> Servicio: 4. login(usuario, contrasenia)
-activate Servicio
-
-alt credenciales correctas
-	Servicio -> Tokens: 5. GenerarToken()
-	activate Tokens
-	Tokens --> Servicio: 6. token
-	deactivate Tokens
-
-	Servicio --> ProxySoap: 7. token
-	ProxySoap --> ClienteSoap: 8. token
-	ClienteSoap -> ClienteSoap: 9. guardar token para header SOAP "token"
-	ClienteSoap --> Main: 10. cliente inicializado y autenticado
-else credenciales incorrectas
-	Servicio --> ProxySoap: 7. RuntimeException("Credenciales incorrectas")
-	ProxySoap --> ClienteSoap: 8. error de autenticacion
-	ClienteSoap --> Main: 9. mostrar error de login
-end
-
-deactivate Servicio
-deactivate ProxySoap
-deactivate ClienteSoap
+APLICACION -> LOGIN_VISTA: main() crea LoginVista e invoca iniciar()
+LOGIN_VISTA -> LOGIN_VISTA: mensajeBienvenida() muestra banner del sistema
+LOGIN_VISTA -> LOGIN_CONTROLADOR: new LoginControlador()
+LOGIN_CONTROLADOR -> CLIENTE_WS_CONVERSOR: new ClienteWSConversor()
+CLIENTE_WS_CONVERSOR -> CLIENTE_WS_CONVERSOR: inicializarPuerto() llama construirBasesUrl()
+CLIENTE_WS_CONVERSOR -> CLIENTE_WS_CONVERSOR: construirBasesUrl: propiedad ws.base.url, variable WS_BASE_URL o localhost:8080
+CLIENTE_WS_CONVERSOR -> SERVICE_JAXWS: Service.create(URL ConversionUnidadesWS?WSDL, QName servicio)
+SERVICE_JAXWS -> SERVIDOR_PAYARA: HTTP GET del WSDL
+SERVIDOR_PAYARA --> SERVICE_JAXWS: WSDL de ConversionUnidadesWS
+SERVICE_JAXWS --> CLIENTE_WS_CONVERSOR: Service (si falla prueba la siguiente URL candidata)
+CLIENTE_WS_CONVERSOR -> SERVICE_JAXWS: getPort(ConversionUnidadesWSPort, ContratoWSConversor)
+CLIENTE_WS_CONVERSOR -> CLIENTE_WS_CONVERSOR: fija ENDPOINT_ADDRESS_PROPERTY con el endpoint
+CLIENTE_WS_CONVERSOR -> MANEJADOR_TOKEN_SOAP: configurarManejadorToken: new ManejadorTokenSOAP(() -> tokenSesion)
+CLIENTE_WS_CONVERSOR -> SERVICE_JAXWS: Service.create(AutenticacionWS?wsdl) y getPort(AutenticacionWSPort)
+CLIENTE_WS_CONVERSOR -> CLIENTE_WS_CONVERSOR: guarda endpointActivo (sin WSDL: IllegalStateException "verifique Payara")
+CLIENTE_WS_CONVERSOR --> LOGIN_CONTROLADOR: cliente SOAP inicializado
+LOGIN_CONTROLADOR --> LOGIN_VISTA: controlador listo
+LOGIN_VISTA -> LOGIN_CONTROLADOR: getEndpointActivo()
+LOGIN_CONTROLADOR --> LOGIN_VISTA: URL del endpoint activo
+LOGIN_VISTA -> LOGIN_VISTA: muestra "Servidor SOAP detectado: endpoint"
+LOGIN_VISTA --> APLICACION: solicita Usuario y Contrasenia
 
 @enduml
-

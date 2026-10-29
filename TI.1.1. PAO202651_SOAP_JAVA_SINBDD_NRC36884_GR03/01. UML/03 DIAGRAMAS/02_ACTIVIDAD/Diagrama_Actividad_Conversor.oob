@@ -1040,7 +1040,7 @@ ColnFKNameUse=No</a:ModelOptionsText>
 <a:Creator>ariel</a:Creator>
 <a:ModificationDate>1776579796</a:ModificationDate>
 <a:Modifier>ariel</a:Modifier>
-<a:ConditionExpression>Inválidas</a:ConditionExpression>
+<a:ConditionExpression>No válido</a:ConditionExpression>
 <c:Object1>
 <o:Activity Ref="o16"/>
 </c:Object1>
@@ -1067,8 +1067,8 @@ ColnFKNameUse=No</a:ModelOptionsText>
 <a:Creator>ariel</a:Creator>
 <a:ModificationDate>1776579920</a:ModificationDate>
 <a:Modifier>ariel</a:Modifier>
-<a:ConditionAlias>Válidas</a:ConditionAlias>
-<a:ConditionExpression>Válidas</a:ConditionExpression>
+<a:ConditionAlias>Válido</a:ConditionAlias>
+<a:ConditionExpression>Válido</a:ConditionExpression>
 <c:Object1>
 <o:Activity Ref="o20"/>
 </c:Object1>
@@ -1821,8 +1821,8 @@ DESTINATION 0 Arial,8,N</a:FontList>
 <o:FlowSymbol Id="o37">
 <a:CreationDate>1776578847</a:CreationDate>
 <a:ModificationDate>1776580510</a:ModificationDate>
-<a:Rect>((17714,-12340), (18965,-7740))</a:Rect>
-<a:ListOfPoints>((18336,-8140),(18342,-11940))</a:ListOfPoints>
+<a:Rect>((17715,-12340), (18965,-7740))</a:Rect>
+<a:ListOfPoints>((18340,-8140),(18342,-11940))</a:ListOfPoints>
 <a:CornerStyle>1</a:CornerStyle>
 <a:ArrowStyle>1</a:ArrowStyle>
 <a:LineColor>16744448</a:LineColor>
@@ -1886,8 +1886,8 @@ DISPNAME 0 Arial,8,N</a:FontList>
 <o:FlowSymbol Id="o44">
 <a:CreationDate>1776579522</a:CreationDate>
 <a:ModificationDate>1776579522</a:ModificationDate>
-<a:Rect>((-15646,-26020), (-14396,-20885))</a:Rect>
-<a:ListOfPoints>((-15021,-21285),(-15019,-25620))</a:ListOfPoints>
+<a:Rect>((-15644,-26020), (-14394,-20885))</a:Rect>
+<a:ListOfPoints>((-15019,-21285),(-15019,-25620))</a:ListOfPoints>
 <a:CornerStyle>1</a:CornerStyle>
 <a:ArrowStyle>1</a:ArrowStyle>
 <a:LineColor>16744448</a:LineColor>
@@ -2107,7 +2107,7 @@ DESTINATION 0 Arial,8,N</a:FontList>
 <o:FlowSymbol Id="o55">
 <a:CreationDate>1776579505</a:CreationDate>
 <a:ModificationDate>1776580510</a:ModificationDate>
-<a:Rect>((1147,-12582), (4821,-8138))</a:Rect>
+<a:Rect>((1109,-12582), (4859,-8138))</a:Rect>
 <a:ListOfPoints>((2984,-8538),(2984,-9566),(2084,-9566),(2084,-12182))</a:ListOfPoints>
 <a:CornerStyle>1</a:CornerStyle>
 <a:ArrowStyle>1</a:ArrowStyle>

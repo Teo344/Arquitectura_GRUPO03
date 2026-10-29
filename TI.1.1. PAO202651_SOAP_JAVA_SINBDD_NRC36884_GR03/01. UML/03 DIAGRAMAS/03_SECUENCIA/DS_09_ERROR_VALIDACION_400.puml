@@ -2,27 +2,32 @@
 title "DS_09_ERROR_VALIDACION_400"
 autonumber
 
-actor "APLICACION" as Aplicacion
-participant "CONVERSION_VISTA" as ConversionVista
-participant "CONVERSION_CONTROLADOR" as ConversionControlador
-participant "CLIENTE_SOAP_CONVERSOR" as ClienteSoap
-participant "MANEJADOR_AUTENTICACION" as ManejadorAutenticacion
-participant "WSCONVERSORUNIDADES" as WSConversorUnidades
-participant "UNIDAD_MAPPER" as UnidadMapper
+actor "APLICACION" as APLICACION
+participant "CONVERSION_VISTA" as CONVERSION_VISTA
+participant "CONVERSION_CONTROLADOR" as CONVERSION_CONTROLADOR
+participant "CLIENTE_WS_CONVERSOR" as CLIENTE_WS_CONVERSOR
+participant "MANEJADOR_AUTENTICACION" as MANEJADOR_AUTENTICACION
+participant "CONVERSION_UNIDADES_WS" as CONVERSION_UNIDADES_WS
+participant "SERVICIO_CONVERSION" as SERVICIO_CONVERSION
+participant "SERVICIO_VALIDACION" as SERVICIO_VALIDACION
 
-Aplicacion -> ConversionVista: Ingresa unidad no soportada
-ConversionVista -> ConversionControlador: solicitarConversionMasa(valor, unidadOrigenInvalida, unidadDestino)
-ConversionControlador -> ClienteSoap: convertirMasa(token, valor, unidadOrigenInvalida, unidadDestino)
-
-ClienteSoap -> ManejadorAutenticacion: SOAP convertirMasa(...)\nSOAP Header token
-ManejadorAutenticacion --> WSConversorUnidades: solicitud autorizada
-
-WSConversorUnidades -> UnidadMapper: toMasa(unidadOrigenInvalida)
-UnidadMapper --> WSConversorUnidades: RuntimeException("Unidad de masa invalida: ...")
-WSConversorUnidades --> ClienteSoap: Fault de validacion (equivalente logico a 400)
-
-ClienteSoap --> ConversionControlador: error de validacion
-ConversionControlador --> ConversionVista: mostrar mensaje de validacion
-ConversionVista --> Aplicacion: solicitar correccion de datos
+APLICACION -> CONVERSION_VISTA: opcion 2 Convertir Masa con valor negativo (ej. -5 KG a LB)
+CONVERSION_VISTA -> CONVERSION_CONTROLADOR: convertir(ConversionModelo MASA, -5, KG, LB)
+CONVERSION_CONTROLADOR -> CONVERSION_CONTROLADOR: validarSolicitud: tipo y unidades presentes, pasa al servidor
+CONVERSION_CONTROLADOR -> CLIENTE_WS_CONVERSOR: convertirMasa(-5, KG, LB)
+CLIENTE_WS_CONVERSOR -> MANEJADOR_AUTENTICACION: SOAP convertirMasa(solicitud) + header token
+MANEJADOR_AUTENTICACION -> MANEJADOR_AUTENTICACION: gestorToken.validar(token) correcto
+MANEJADOR_AUTENTICACION -> CONVERSION_UNIDADES_WS: despacha convertirMasa(token, solicitud)
+CONVERSION_UNIDADES_WS -> SERVICIO_CONVERSION: convertir(Categoria.MASA, -5, KG, LB)
+SERVICIO_CONVERSION -> SERVICIO_VALIDACION: validarConversion(categoria, valor, origen, destino)
+SERVICIO_VALIDACION -> SERVICIO_VALIDACION: validarUnidad origen y destino (desconocida o de otra categoria: UNIT-001)
+SERVICIO_VALIDACION -> SERVICIO_VALIDACION: MASA no admite valores negativos: DATA-001
+SERVICIO_VALIDACION --> SERVICIO_CONVERSION: throw ExcepcionServicio(DATA-001)
+SERVICIO_CONVERSION --> CONVERSION_UNIDADES_WS: ExcepcionServicio propagada
+CONVERSION_UNIDADES_WS --> CLIENTE_WS_CONVERSOR: SOAP Fault @WebFault ErrorServicio {DATA-001, Datos inconsistentes}
+CLIENTE_WS_CONVERSOR --> CONVERSION_CONTROLADOR: SOAPFaultException
+CONVERSION_CONTROLADOR --> CONVERSION_VISTA: SOAPFaultException
+CONVERSION_VISTA -> CONVERSION_VISTA: catch SOAPFaultException: mostrarError(faultString)
+CONVERSION_VISTA --> APLICACION: muestra "Datos inconsistentes" y permanece en el menu
 
 @enduml
