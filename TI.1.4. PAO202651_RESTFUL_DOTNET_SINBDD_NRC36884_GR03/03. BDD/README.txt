@@ -1,0 +1,1 @@
+Esta carpeta se encuentra vacía debido a que el proyecto no manejó lo que fue base de datos. Gracias por la aclaración
