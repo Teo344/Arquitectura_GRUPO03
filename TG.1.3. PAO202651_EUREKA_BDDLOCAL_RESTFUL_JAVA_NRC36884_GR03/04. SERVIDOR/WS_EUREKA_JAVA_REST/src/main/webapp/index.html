@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <title>EurekaBank - Servicios REST</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>EurekaBank - Servicios REST (Grupo 03)</h1>
+        <p>Base: <code>/api</code>. Los recursos protegidos exigen la cabecera
+            <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+        <ul>
+            <li><code>POST api/autenticacion/login</code> (público) {usuario, clave, equipo}</li>
+            <li><code>POST api/autenticacion/cerrar-sesion</code> (token)</li>
+            <li><code>GET api/cuentas/{cuenta}</code> (token)</li>
+            <li><code>GET api/cuentas/{cuenta}/movimientos</code> (token)</li>
+            <li><code>POST api/transacciones/depositos</code> (token) {cuenta, importe}</li>
+            <li><code>POST api/transacciones/retiros</code> (token) {cuenta, importe}</li>
+            <li><code>POST api/transacciones/transferencias</code> (token) {cuentaOrigen, cuentaDestino, importe}</li>
+        </ul>
+    </body>
+</html>
