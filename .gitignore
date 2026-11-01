@@ -41,5 +41,8 @@
 *.iml
 *.log
 
+# Credenciales locales de la base de datos (se sube solo db.properties.example)
+**/db.properties
+
 # Proyectos de referencia de otros grupos (solo para consulta local)
 /temp/
