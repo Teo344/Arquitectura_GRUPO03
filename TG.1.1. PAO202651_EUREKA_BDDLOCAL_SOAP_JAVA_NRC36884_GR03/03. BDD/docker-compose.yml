@@ -1,0 +1,30 @@
+# EurekaBank - Grupo 03: base de datos MySQL 8.4 LTS
+# Uso:  docker compose up -d        (crea y carga la BD la primera vez)
+#       docker compose down -v      (borra la BD; el próximo "up" la recrea con los datos semilla)
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: eurekabank_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: eurekabank
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: America/Guayaquil
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - eurekabank_data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  eurekabank_data:
