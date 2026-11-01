@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Conexión a la base de datos (RNF-010).
+  Copiar este archivo como conexion.config (no se sube al repositorio) y poner la
+  clave del login creado con 03. BDD/00_usuario_local.sql.
+-->
+<connectionStrings>
+  <add name="eurekabank"
+       connectionString="Data Source=localhost\SQLEXPRESS;Initial Catalog=eurekabank;User ID=eureka;Password=cambiar_eureka"
+       providerName="System.Data.SqlClient" />
+</connectionStrings>
