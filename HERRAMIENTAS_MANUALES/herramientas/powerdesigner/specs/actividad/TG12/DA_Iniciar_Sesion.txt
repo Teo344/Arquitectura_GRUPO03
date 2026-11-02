@@ -1,0 +1,45 @@
+# DA1: Iniciar sesión
+AREA|15000|-48800
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Servidor (IIS / WCF SOAP · .NET Framework 4.8)|-12000|22000
+CALLE|BD|Base de datos (SQL Server Express)|22000|38000
+INI|INI|CLI|-21000|12000
+ACT|C1|CLI|-21000|6700|13000|3600|Ingresar usuario y contraseña
+ACT|C2|CLI|-21000|1400|13000|3600|Enviar SOAP Request iniciarSesion(usuario, clave, equipo)
+ACT|S1|SRV|10000|1400|15000|3600|Recibir la petición en AutenticacionWS y obtener la IP del cliente
+DEC|D1|SRV|10000|-3900|18000|4400|¿Usuario y clave completos?
+ACT|S2|SRV|10000|-9200|15000|3600|Calcular el hash SHA-256 de la clave (UtilHash) y buscar el usuario (UsuarioDao)
+ACT|B1|BD|30000|-9200|13000|3600|Consultar usuario, empleado y sucursal asignada
+DEC|D2|SRV|10000|-14500|18000|4400|¿Base de datos disponible?
+DEC|D3|SRV|10000|-19800|18000|4400|¿Credenciales correctas?
+DEC|D4|SRV|10000|-25100|18000|4400|¿Usuario ACTIVO con sucursal vigente?
+ACT|S3|SRV|10000|-30400|15000|3600|Registrar el ingreso (LogSesionDao.RegistrarIngreso)
+ACT|B2|BD|30000|-30400|13000|3600|Insertar el ingreso en logsession (fecha, IP, equipo)
+ACT|S4|SRV|10000|-35700|15000|3600|Generar el token con GestorToken (vence tras 30 min sin uso)
+ACT|S5|SRV|10000|-41000|15000|3600|Devolver SOAP Response OK-000 con token, empleado y sucursal
+ACT|C3|CLI|-21000|-41000|13000|3600|Guardar el token y mostrar el menú de operaciones
+FIN|FIN1|CLI|-21000|-46300
+ACT|F|SRV|-4500|-30400|12000|3600|WCF genera el SOAP Fault con ErrorServicio (código, mensaje)
+ACT|C4|CLI|-21000|-30400|13000|3600|Mostrar el mensaje de error
+FIN|FIN2|CLI|-21000|-35700
+FLU|INI|C1||
+FLU|C1|C2||
+FLU|C2|S1||
+FLU|S1|D1||
+FLU|D1|S2|Sí|
+FLU|D1|F|No: DATA-001|-4500,-3900
+FLU|S2|B1||
+FLU|B1|D2||30000,-14500
+FLU|D2|D3|Sí|
+FLU|D2|F|No: SYS-001|-4500,-14500
+FLU|D3|D4|Sí|
+FLU|D3|F|No: AUTH-001|-4500,-19800
+FLU|D4|S3|Sí|
+FLU|D4|F|No: AUTH-002|-4500,-25100
+FLU|S3|B2||
+FLU|B2|S4||30000,-35700
+FLU|S4|S5||
+FLU|S5|C3||
+FLU|C3|FIN1||
+FLU|F|C4||
+FLU|C4|FIN2||

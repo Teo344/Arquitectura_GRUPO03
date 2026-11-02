@@ -1,0 +1,35 @@
+# DA2: Cerrar sesión
+AREA|15000|-43500
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Servidor (Payara 7 / Jakarta REST · JSON)|-12000|22000
+CALLE|BD|Base de datos (MySQL)|22000|38000
+INI|INI|CLI|-21000|12000
+ACT|C1|CLI|-21000|6700|13000|3600|Seleccionar cerrar sesión
+ACT|C2|CLI|-21000|1400|13000|3600|Enviar POST /api/autenticacion/cerrar-sesion con Authorization: Bearer
+ACT|S1|SRV|10000|1400|15000|3600|AutenticacionRecurso.cerrarSesion lee el token Bearer
+DEC|D1|SRV|10000|-3900|18000|4400|¿Token activo? (GestorToken.invalidar)
+ACT|S2|SRV|10000|-9200|15000|3600|Eliminar el token de las sesiones activas
+ACT|S3|SRV|10000|-14500|15000|3600|Registrar la salida (LogSesionDao.registrarSalida)
+ACT|B1|BD|30000|-14500|13000|3600|Actualizar logsession con la fecha de salida
+DEC|D2|SRV|10000|-19800|18000|4400|¿Base de datos disponible?
+ACT|S4|SRV|10000|-30400|15000|3600|Devolver HTTP 200 con JSON OK-000 "Sesión cerrada"
+ACT|C3|CLI|-21000|-35700|13000|3600|Borrar el token y mostrar el inicio de sesión
+FIN|FIN1|CLI|-21000|-41000
+ACT|F|SRV|-4500|-25100|12000|3600|MapeadorExcepciones responde JSON ErrorServicio (código, mensaje)
+ACT|C4|CLI|-21000|-25100|13000|3600|Borrar el token local y volver al inicio de sesión
+FIN|FIN2|CLI|-21000|-30400
+FLU|INI|C1||
+FLU|C1|C2||
+FLU|C2|S1||
+FLU|S1|D1||
+FLU|D1|S2|Sí|
+FLU|D1|F|No: AUTH-003 · 401|-4500,-3900
+FLU|S2|S3||
+FLU|S3|B1||
+FLU|B1|D2||30000,-19800
+FLU|D2|S4|Sí|
+FLU|D2|F|No: SYS-001 · 500|-4500,-19800
+FLU|S4|C3||10000,-35700
+FLU|C3|FIN1||
+FLU|F|C4||
+FLU|C4|FIN2||

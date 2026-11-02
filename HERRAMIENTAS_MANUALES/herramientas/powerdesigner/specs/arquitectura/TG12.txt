@@ -1,0 +1,35 @@
+# Arquitectura TG.1.2 - SOAP .NET (WCF) con BD local
+TITULO|Arquitectura SOA – EurekaBank SOAP .NET|Patrón arquitectónico MVC · servidor por capas · SQL Server local
+AREA|CONS|Consumidores (clientes)|-|-62000|30000|-38000|-50000|15399421
+AREA|MVC1|MVC – Consola|CONS|-60000|26000|-40000|9000|16777088
+AREA|MVC2|MVC – Escritorio|CONS|-60000|6500|-40000|-10500|16777088
+AREA|MVC3|MVC – Web|CONS|-60000|-13000|-40000|-30000|16777088
+AREA|MVC4|MVC – Móvil|CONS|-60000|-32500|-40000|-49500|16777088
+APP|CLI1|Cliente Consola (C#, .NET Framework 4.8)|MVC1|-50000|16500|5500|5500
+APP|CLI2|Cliente Escritorio (.NET MAUI Blazor Hybrid, Windows)|MVC2|-50000|-3000|5500|5500
+APP|CLI3|Cliente Web (Blazor, ASP.NET Core)|MVC3|-50000|-22500|5500|5500
+APP|CLI4|Cliente Móvil (.NET MAUI Blazor Hybrid, Android)|MVC4|-50000|-42000|5500|5500
+AREA|SRV|Servidor IIS – WCF (.NET Framework 4.8 · C#)|-|-30000|30000|36000|-50000|15399421
+AREA|CTRL|Controlador · controladores.wservicios|SRV|-27000|26000|1000|6000|8454143
+AREA|SEG|Seguridad · seguridad|SRV|5000|26000|33000|6000|8454143
+AREA|MOD|Modelo · servicios / datos / modelo|SRV|-27000|1000|33000|-24000|8454143
+AREA|VIS|Vista · vista (DTO)|SRV|-27000|-29000|33000|-46000|8454143
+SRV|WS|Servicios web SOAP WCF .svc (AutenticacionWS, CuentaWS, TransaccionWS)|CTRL|-13000|15000|5000|5000
+COMP|MAN|ManejadorAutenticacion (IDispatchMessageInspector)|SEG|12000|15000|5500|5500
+COMP|TOK|GestorToken (sesiones de 30 min)|SEG|26000|15000|5500|5500
+COMP|SER|Servicios de negocio (ServicioAutenticacion, ServicioCuenta, ServicioTransaccion, ServicioValidacion)|MOD|-13000|-11500|5500|5500
+COMP|DAO|DAO ADO.NET (UsuarioDao, CuentaDao, MovimientoDao, LogSesionDao)|MOD|19000|-11500|5500|5500
+COMP|MAP|RespuestaMapeador y DataContract (RespuestaDto, CuentaDto, MovimientoDto)|VIS|3000|-37500|5500|5500
+AREA|BDA|Base de datos|-|44000|30000|64000|-50000|15399421
+BD|BD|SQL Server Express local – eurekabank (10 tablas)|BDA|54000|-11500|5500|5500
+ENLACE|CLI1|WS|SOAP/HTTP (token en la cabecera)|-34000,16500;-34000,15000
+ENLACE|CLI2|WS|SOAP/HTTP (token en la cabecera)|-34000,-3000;-34000,15000
+ENLACE|CLI3|WS|SOAP/HTTP (token en la cabecera)|-34000,-22500;-34000,15000
+ENLACE|CLI4|WS|SOAP/HTTP (token en la cabecera)|-34000,-42000;-34000,15000
+ENLACE|WS|MAN|intercepta ([Protegido])
+ENLACE|MAN|TOK|valida el token
+ENLACE|WS|SER|invoca
+ENLACE|SER|DAO|usa
+ENLACE|DAO|BD|ADO.NET (UPDLOCK, ROWLOCK, Commit/Rollback)
+ENLACE|SER|TOK|genera / invalida el token|-3000,-11500;-3000,3500;26000,3500
+ENLACE|WS|MAP|arma la respuesta|-25000,15000;-25000,-37500

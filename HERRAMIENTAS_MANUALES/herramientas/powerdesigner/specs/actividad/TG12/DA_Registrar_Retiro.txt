@@ -1,0 +1,51 @@
+# DA6: Registrar retiro
+AREA|15000|-59400
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Servidor (IIS / WCF SOAP · .NET Framework 4.8)|-12000|22000
+CALLE|BD|Base de datos (SQL Server Express)|22000|38000
+INI|INI|CLI|-21000|12000
+ACT|C1|CLI|-21000|6700|13000|3600|Ingresar la cuenta y el importe del retiro
+ACT|C2|CLI|-21000|1400|13000|3600|Enviar SOAP Request retirar(cuenta, importe) con el token en la cabecera
+ACT|S1|SRV|10000|1400|15000|3600|ManejadorAutenticacion (IDispatchMessageInspector) lee el token de la cabecera SOAP
+DEC|D1|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken)
+DEC|D2|SRV|10000|-9200|18000|4400|¿Cuenta de 8 dígitos? (ServicioValidacion)
+DEC|D3|SRV|10000|-14500|18000|4400|¿Importe mayor que cero y con 2 decimales como máximo?
+ACT|S2|SRV|10000|-19800|15000|3600|Iniciar la transacción (SqlTransaction) y bloquear la cuenta (CuentaDao.Bloquear)
+ACT|B1|BD|30000|-19800|13000|3600|SELECT … WITH (UPDLOCK, ROWLOCK) de la cuenta
+DEC|D4|SRV|10000|-25100|18000|4400|¿Base de datos disponible?
+DEC|D5|SRV|10000|-30400|18000|4400|¿La cuenta existe y está ACTIVA?
+DEC|D6|SRV|10000|-35700|18000|4400|¿Saldo suficiente para el retiro?
+ACT|S3|SRV|10000|-41000|15000|3600|Actualizar saldo y contador y registrar el movimiento RETIRO
+ACT|B2|BD|30000|-41000|13000|3600|UPDATE cuenta e INSERT en movimiento
+ACT|S4|SRV|10000|-46300|15000|3600|Confirmar la transacción (Commit)
+ACT|S5|SRV|10000|-51600|15000|3600|Devolver SOAP Response OK-000 con el nuevo saldo y el número de movimiento
+ACT|C3|CLI|-21000|-51600|13000|3600|Mostrar el comprobante con el nuevo saldo
+FIN|FIN1|CLI|-21000|-56900
+ACT|F|SRV|-4500|-41000|12000|3600|Rollback de la transacción; WCF genera el SOAP Fault con ErrorServicio
+ACT|C4|CLI|-21000|-41000|13000|3600|Mostrar el mensaje de error
+FIN|FIN2|CLI|-21000|-46300
+FLU|INI|C1||
+FLU|C1|C2||
+FLU|C2|S1||
+FLU|S1|D1||
+FLU|D1|F|No: AUTH-003|-4500,-3900
+FLU|D1|D2|Sí|
+FLU|D2|D3|Sí|
+FLU|D2|F|No: DATA-001|-4500,-9200
+FLU|D3|S2|Sí|
+FLU|D3|F|No: MOV-001|-4500,-14500
+FLU|S2|B1||
+FLU|B1|D4||30000,-25100
+FLU|D4|D5|Sí|
+FLU|D4|F|No: SYS-001|-4500,-25100
+FLU|D5|D6|Sí|
+FLU|D5|F|No: CTA-001 / CTA-002|-4500,-30400
+FLU|D6|S3|Sí|
+FLU|D6|F|No: MOV-002|-4500,-35700
+FLU|S3|B2||
+FLU|B2|S4||30000,-46300
+FLU|S4|S5||
+FLU|S5|C3||
+FLU|C3|FIN1||
+FLU|F|C4||
+FLU|C4|FIN2||

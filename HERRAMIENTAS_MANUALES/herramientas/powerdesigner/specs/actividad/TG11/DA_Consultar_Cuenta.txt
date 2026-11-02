@@ -1,0 +1,41 @@
+# DA3: Consultar cuenta
+AREA|15000|-48800
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Servidor (Payara 7 / JAX-WS SOAP)|-12000|22000
+CALLE|BD|Base de datos (MySQL)|22000|38000
+INI|INI|CLI|-21000|12000
+ACT|C1|CLI|-21000|6700|13000|3600|Ingresar el número de cuenta
+ACT|C2|CLI|-21000|1400|13000|3600|Enviar SOAP Request consultarCuenta(cuenta) con el token en la cabecera
+ACT|S1|SRV|10000|1400|15000|3600|ManejadorAutenticacion lee el token de la cabecera SOAP de CuentaWS
+DEC|D1|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken)
+DEC|D2|SRV|10000|-9200|18000|4400|¿Cuenta de 8 dígitos? (ServicioValidacion)
+ACT|S2|SRV|10000|-14500|15000|3600|Buscar la cuenta (ServicioCuenta → CuentaDao.buscar)
+ACT|B1|BD|30000|-14500|13000|3600|Consultar cuenta con cliente, moneda y sucursal
+DEC|D3|SRV|10000|-19800|18000|4400|¿Base de datos disponible?
+DEC|D4|SRV|10000|-25100|18000|4400|¿La cuenta existe?
+ACT|S3|SRV|10000|-30400|15000|3600|Convertir la cuenta en CuentaDto (RespuestaMapeador)
+ACT|S4|SRV|10000|-35700|15000|3600|Devolver SOAP Response OK-000 con los datos de la cuenta
+ACT|C3|CLI|-21000|-41000|13000|3600|Mostrar cliente, saldo, moneda y estado de la cuenta
+FIN|FIN1|CLI|-21000|-46300
+ACT|F|SRV|-4500|-30400|12000|3600|Generar SOAP Fault con ErrorServicio (código, mensaje)
+ACT|C4|CLI|-21000|-30400|13000|3600|Mostrar el mensaje de error
+FIN|FIN2|CLI|-21000|-35700
+FLU|INI|C1||
+FLU|C1|C2||
+FLU|C2|S1||
+FLU|S1|D1||
+FLU|D1|F|No: AUTH-003|-4500,-3900
+FLU|D1|D2|Sí|
+FLU|D2|S2|Sí|
+FLU|D2|F|No: DATA-001|-4500,-9200
+FLU|S2|B1||
+FLU|B1|D3||30000,-19800
+FLU|D3|D4|Sí|
+FLU|D3|F|No: SYS-001|-4500,-19800
+FLU|D4|S3|Sí|
+FLU|D4|F|No: CTA-001|-4500,-25100
+FLU|S3|S4||
+FLU|S4|C3||10000,-41000
+FLU|C3|FIN1||
+FLU|F|C4||
+FLU|C4|FIN2||

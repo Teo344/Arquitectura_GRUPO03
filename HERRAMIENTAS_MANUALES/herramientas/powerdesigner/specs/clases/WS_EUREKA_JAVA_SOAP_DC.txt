@@ -1,0 +1,300 @@
+PAQ|seguridad|ec.edu.monster.seguridad|0|0|1
+PAQ|controladores.wservicios|ec.edu.monster.controladores.wservicios|1|0|1
+PAQ|vista|ec.edu.monster.vista|1|1|2
+PAQ|servicios|ec.edu.monster.servicios|2|0|2
+PAQ|datos|ec.edu.monster.datos|3|0|1
+PAQ|modelo|ec.edu.monster.modelo|4|0|1
+CLASE|controladores.wservicios|AutenticacionWS|WebService|C
+ATR|AutenticacionWS|-|contexto|WebServiceContext|0|
+ATR|AutenticacionWS|-|servicioAutenticacion|ServicioAutenticacion|0|
+ATR|AutenticacionWS|-|mapeador|RespuestaMapeador|0|
+OP|AutenticacionWS|+|iniciarSesion|RespuestaDto|String usuario;String clave;String equipo||0
+OP|AutenticacionWS|+|cerrarSesion|RespuestaDto|String token||0
+OP|AutenticacionWS|-|ipCliente|String|||0
+CLASE|controladores.wservicios|CuentaWS|WebService|C
+ATR|CuentaWS|-|servicioCuenta|ServicioCuenta|0|
+ATR|CuentaWS|-|mapeador|RespuestaMapeador|0|
+OP|CuentaWS|+|consultarCuenta|RespuestaDto|String token;String cuenta||0
+OP|CuentaWS|+|consultarMovimientos|RespuestaDto|String token;String cuenta||0
+CLASE|controladores.wservicios|TransaccionWS|WebService|C
+ATR|TransaccionWS|-|contexto|WebServiceContext|0|
+ATR|TransaccionWS|-|servicioTransaccion|ServicioTransaccion|0|
+ATR|TransaccionWS|-|mapeador|RespuestaMapeador|0|
+OP|TransaccionWS|+|depositar|RespuestaDto|String token;String cuenta;BigDecimal importe||0
+OP|TransaccionWS|+|retirar|RespuestaDto|String token;String cuenta;BigDecimal importe||0
+OP|TransaccionWS|+|transferir|RespuestaDto|String token;String cuentaOrigen;String cuentaDestino;BigDecimal importe||0
+OP|TransaccionWS|-|sesion|Sesion|||0
+CLASE|datos|ConexionBD||C
+ATR|ConexionBD|-|ARCHIVO|String|1|
+ATR|ConexionBD|-|url|String|0|
+ATR|ConexionBD|-|usuario|String|0|
+ATR|ConexionBD|-|clave|String|0|
+OP|ConexionBD|-|ConexionBD|||Constructor|0
+OP|ConexionBD|+|getInstancia|ConexionBD|||1
+OP|ConexionBD|+|obtenerConexion|Connection|||0
+CLASE|datos|CuentaDao|ApplicationScoped|C
+ATR|CuentaDao|-|SQL_BUSCAR|String|1|
+ATR|CuentaDao|-|SQL_BLOQUEAR|String|1|
+ATR|CuentaDao|-|SQL_ACTUALIZAR|String|1|
+OP|CuentaDao|+|buscar|Optional<Cuenta>|Connection cn;String codigo||0
+OP|CuentaDao|+|bloquear|Optional<Cuenta>|Connection cn;String codigo||0
+OP|CuentaDao|+|actualizar|void|Connection cn;String codigo;BigDecimal saldo;int contador||0
+CLASE|datos|LogSesionDao|ApplicationScoped|C
+ATR|LogSesionDao|-|SQL_INGRESO|String|1|
+ATR|LogSesionDao|-|SQL_SALIDA|String|1|
+OP|LogSesionDao|+|registrarIngreso|int|Connection cn;String codigoEmpleado;String ip;String equipo||0
+OP|LogSesionDao|+|registrarSalida|void|Connection cn;int logId;Instant salida||0
+OP|LogSesionDao|-|recortar|String|String texto;int maximo||1
+CLASE|datos|MovimientoDao|ApplicationScoped|C
+ATR|MovimientoDao|-|SQL_LISTAR|String|1|
+ATR|MovimientoDao|-|SQL_INSERTAR|String|1|
+OP|MovimientoDao|+|listar|List<Movimiento>|Connection cn;String cuenta||0
+OP|MovimientoDao|+|insertar|void|Connection cn;String cuenta;int numero;String empleado;TipoMovimiento tipo;BigDecimal importe;String referencia||0
+CLASE|datos|UsuarioDao|ApplicationScoped|C
+ATR|UsuarioDao|-|SQL_BUSCAR|String|1|
+OP|UsuarioDao|+|buscar|Optional<Empleado>|Connection cn;String usuario;String hashClave||0
+CLASE|modelo|CodigoError|Enum|C
+ATR|CodigoError|+|AUTH_001||0|EnumConstant
+ATR|CodigoError|+|AUTH_002||0|EnumConstant
+ATR|CodigoError|+|AUTH_003||0|EnumConstant
+ATR|CodigoError|+|DATA_001||0|EnumConstant
+ATR|CodigoError|+|CTA_001||0|EnumConstant
+ATR|CodigoError|+|CTA_002||0|EnumConstant
+ATR|CodigoError|+|MOV_001||0|EnumConstant
+ATR|CodigoError|+|MOV_002||0|EnumConstant
+ATR|CodigoError|+|MOV_003||0|EnumConstant
+ATR|CodigoError|+|MOV_004||0|EnumConstant
+ATR|CodigoError|+|SYS_001||0|EnumConstant
+ATR|CodigoError|-|codigo|String|0|
+ATR|CodigoError|-|mensaje|String|0|
+OP|CodigoError|+|getCodigo|String|||0
+OP|CodigoError|+|getMensaje|String|||0
+CLASE|modelo|Cuenta|record|C
+ATR|Cuenta|+|codigo|String|0|
+ATR|Cuenta|+|titular|String|0|
+ATR|Cuenta|+|codigoMoneda|String|0|
+ATR|Cuenta|+|moneda|String|0|
+ATR|Cuenta|+|saldo|BigDecimal|0|
+ATR|Cuenta|+|estado|String|0|
+ATR|Cuenta|+|sucursal|String|0|
+ATR|Cuenta|+|fechaCreacion|LocalDate|0|
+ATR|Cuenta|+|contador|int|0|
+CLASE|modelo|Empleado|record|C
+ATR|Empleado|+|codigo|String|0|
+ATR|Empleado|+|usuario|String|0|
+ATR|Empleado|+|nombre|String|0|
+ATR|Empleado|+|estado|String|0|
+ATR|Empleado|+|codigoSucursal|String|0|
+ATR|Empleado|+|sucursal|String|0|
+CLASE|modelo|Estado|Enum|C
+ATR|Estado|+|ACTIVO||0|EnumConstant
+ATR|Estado|+|ANULADO||0|EnumConstant
+ATR|Estado|+|CANCELADO||0|EnumConstant
+OP|Estado|+|esActivo|boolean|String estado||1
+CLASE|modelo|Movimiento|record|C
+ATR|Movimiento|+|numero|int|0|
+ATR|Movimiento|+|fecha|LocalDate|0|
+ATR|Movimiento|+|tipo|String|0|
+ATR|Movimiento|+|accion|String|0|
+ATR|Movimiento|+|importe|BigDecimal|0|
+ATR|Movimiento|+|cuentaReferencia|String|0|
+CLASE|modelo|TipoMovimiento|Enum|C
+ATR|TipoMovimiento|+|DEPOSITO||0|EnumConstant
+ATR|TipoMovimiento|+|RETIRO||0|EnumConstant
+ATR|TipoMovimiento|+|TRANSFERENCIA_INGRESO||0|EnumConstant
+ATR|TipoMovimiento|+|TRANSFERENCIA_SALIDA||0|EnumConstant
+ATR|TipoMovimiento|-|codigo|String|0|
+OP|TipoMovimiento|+|getCodigo|String|||0
+CLASE|seguridad|FiltroCors|WebFilter|C
+ATR|FiltroCors|-|origenes|List<String>|0|
+OP|FiltroCors|+|init|void|FilterConfig configuracion||0
+OP|FiltroCors|+|doFilter|void|ServletRequest req;ServletResponse res;FilterChain cadena||0
+CLASE|seguridad|GestorToken|ApplicationScoped|C
+ATR|GestorToken|-|sesiones|Map<String,Entrada>|0|
+ATR|GestorToken|-|minutos|long|0|
+ATR|GestorToken|-|logSesionDao|LogSesionDao|0|
+OP|GestorToken|+|generar|TokenEmitido|Sesion sesion||0
+OP|GestorToken|+|validar|Sesion|String token||0
+OP|GestorToken|+|invalidar|Sesion|String token||0
+OP|GestorToken|-|vigente|Entrada|String token||0
+OP|GestorToken|-|purgarVencidas|void|Instant ahora||0
+OP|GestorToken|-|vencida|boolean|Entrada entrada;Instant ahora||0
+OP|GestorToken|-|registrarSalida|void|Entrada entrada||0
+OP|GestorToken|-|duracion|Duration|||0
+CLASE|seguridad|TokenEmitido|record|C
+ATR|TokenEmitido|+|token|String|0|
+ATR|TokenEmitido|+|expiraEn|Instant|0|
+CLASE|seguridad|ManejadorAutenticacion|SOAPHandler|C
+ATR|ManejadorAutenticacion|+|PROPIEDAD_SESION|String|1|
+ATR|ManejadorAutenticacion|-|ELEMENTO_TOKEN|String|1|
+ATR|ManejadorAutenticacion|-|gestorToken|GestorToken|0|
+OP|ManejadorAutenticacion|+|handleMessage|boolean|SOAPMessageContext contexto||0
+OP|ManejadorAutenticacion|-|leerToken|String|SOAPMessageContext contexto||1
+OP|ManejadorAutenticacion|-|crearFault|SOAPFault|ErrorServicio error||1
+OP|ManejadorAutenticacion|+|getHeaders|Set<QName>|||0
+OP|ManejadorAutenticacion|+|handleFault|boolean|SOAPMessageContext contexto||0
+OP|ManejadorAutenticacion|+|close|void|MessageContext contexto||0
+CLASE|seguridad|Sesion|record|C
+ATR|Sesion|+|codigoEmpleado|String|0|
+ATR|Sesion|+|usuario|String|0|
+ATR|Sesion|+|nombre|String|0|
+ATR|Sesion|+|codigoSucursal|String|0|
+ATR|Sesion|+|sucursal|String|0|
+ATR|Sesion|+|logId|int|0|
+CLASE|seguridad|UtilHash||C
+OP|UtilHash|-|UtilHash|||Constructor|0
+OP|UtilHash|+|sha256|String|String texto||1
+CLASE|servicios|ExcepcionServicio|WebFault|C
+ATR|ExcepcionServicio|+|NAMESPACE|String|1|
+ATR|ExcepcionServicio|-|faultInfo|ErrorServicio|0|
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError;Throwable causa|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||String mensaje;ErrorServicio faultInfo|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||String mensaje;ErrorServicio faultInfo;Throwable causa|Constructor|0
+OP|ExcepcionServicio|+|getFaultInfo|ErrorServicio|||0
+CLASE|servicios|ErrorServicio|XmlRootElement|C
+ATR|ErrorServicio|+|codigo|String|0|
+ATR|ErrorServicio|+|mensaje|String|0|
+OP|ErrorServicio|+|ErrorServicio|||Constructor|0
+OP|ErrorServicio|+|ErrorServicio||String codigo;String mensaje|Constructor|0
+CLASE|servicios|ServicioAutenticacion|ApplicationScoped|C
+ATR|ServicioAutenticacion|-|usuarioDao|UsuarioDao|0|
+ATR|ServicioAutenticacion|-|logSesionDao|LogSesionDao|0|
+ATR|ServicioAutenticacion|-|gestorToken|GestorToken|0|
+OP|ServicioAutenticacion|+|iniciarSesion|SesionIniciada|String usuario;String clave;String ip;String equipo||0
+OP|ServicioAutenticacion|+|cerrarSesion|void|String token||0
+CLASE|servicios|SesionIniciada|record|C
+ATR|SesionIniciada|+|token|TokenEmitido|0|
+ATR|SesionIniciada|+|sesion|Sesion|0|
+CLASE|servicios|ServicioCuenta|ApplicationScoped|C
+ATR|ServicioCuenta|-|validacion|ServicioValidacion|0|
+ATR|ServicioCuenta|-|cuentaDao|CuentaDao|0|
+ATR|ServicioCuenta|-|movimientoDao|MovimientoDao|0|
+OP|ServicioCuenta|+|consultarCuenta|Cuenta|String cuenta||0
+OP|ServicioCuenta|+|consultarMovimientos|List<Movimiento>|String cuenta||0
+OP|ServicioCuenta|-|buscar|Cuenta|Connection cn;String codigo||0
+CLASE|servicios|ServicioTransaccion|ApplicationScoped|C
+ATR|ServicioTransaccion|-|validacion|ServicioValidacion|0|
+ATR|ServicioTransaccion|-|cuentaDao|CuentaDao|0|
+ATR|ServicioTransaccion|-|movimientoDao|MovimientoDao|0|
+OP|ServicioTransaccion|+|depositar|ResultadoTransaccion|Sesion sesion;String cuenta;BigDecimal importe||0
+OP|ServicioTransaccion|+|retirar|ResultadoTransaccion|Sesion sesion;String cuenta;BigDecimal importe||0
+OP|ServicioTransaccion|+|transferir|ResultadoTransaccion|Sesion sesion;String cuentaOrigen;String cuentaDestino;BigDecimal importe||0
+OP|ServicioTransaccion|-|enTransaccion|T|OperacionTransaccional<T> operacion||0
+OP|ServicioTransaccion|-|revertir|void|Connection cn||1
+OP|ServicioTransaccion|-|bloquear|Cuenta|Connection cn;String codigo||0
+OP|ServicioTransaccion|-|bloquearActiva|Cuenta|Connection cn;String codigo||0
+OP|ServicioTransaccion|-|exigirActiva|void|Cuenta cuenta||1
+OP|ServicioTransaccion|-|restar|BigDecimal|BigDecimal saldo;BigDecimal importe||1
+OP|ServicioTransaccion|-|registrar|int|Connection cn;Cuenta cuenta;BigDecimal nuevoSaldo;Sesion sesion;TipoMovimiento tipo;BigDecimal importe;String referencia||0
+CLASE|servicios|ResultadoTransaccion|record|C
+ATR|ResultadoTransaccion|+|nuevoSaldo|BigDecimal|0|
+ATR|ResultadoTransaccion|+|numeroMovimiento|int|0|
+ATR|ResultadoTransaccion|+|numeroMovimientoDestino|Integer|0|
+CLASE|servicios|ServicioValidacion|ApplicationScoped|C
+ATR|ServicioValidacion|-|FORMATO_CUENTA|Pattern|1|
+ATR|ServicioValidacion|+|MAXIMO|BigDecimal|1|
+OP|ServicioValidacion|+|validarCuenta|String|String cuenta||0
+OP|ServicioValidacion|+|validarImporte|void|BigDecimal importe||0
+OP|ServicioValidacion|+|validarMaximo|void|BigDecimal valor||0
+CLASE|vista|CuentaDto||C
+ATR|CuentaDto|+|codigo|String|0|
+ATR|CuentaDto|+|titular|String|0|
+ATR|CuentaDto|+|moneda|String|0|
+ATR|CuentaDto|+|saldo|BigDecimal|0|
+ATR|CuentaDto|+|estado|String|0|
+ATR|CuentaDto|+|sucursal|String|0|
+ATR|CuentaDto|+|fechaCreacion|String|0|
+OP|CuentaDto|+|CuentaDto|||Constructor|0
+OP|CuentaDto|+|CuentaDto||String codigo;String titular;String moneda;BigDecimal saldo;String estado;String sucursal;String fechaCreacion|Constructor|0
+CLASE|vista|MovimientoDto||C
+ATR|MovimientoDto|+|numero|Integer|0|
+ATR|MovimientoDto|+|fecha|String|0|
+ATR|MovimientoDto|+|tipo|String|0|
+ATR|MovimientoDto|+|accion|String|0|
+ATR|MovimientoDto|+|importe|BigDecimal|0|
+ATR|MovimientoDto|+|cuentaReferencia|String|0|
+OP|MovimientoDto|+|MovimientoDto|||Constructor|0
+OP|MovimientoDto|+|MovimientoDto||Integer numero;String fecha;String tipo;String accion;BigDecimal importe;String cuentaReferencia|Constructor|0
+CLASE|vista|RespuestaDto||C
+ATR|RespuestaDto|+|estado|String|0|
+ATR|RespuestaDto|+|codigo|String|0|
+ATR|RespuestaDto|+|mensaje|String|0|
+ATR|RespuestaDto|+|token|String|0|
+ATR|RespuestaDto|+|expiraEn|String|0|
+ATR|RespuestaDto|+|codigoEmpleado|String|0|
+ATR|RespuestaDto|+|nombreEmpleado|String|0|
+ATR|RespuestaDto|+|codigoSucursal|String|0|
+ATR|RespuestaDto|+|sucursal|String|0|
+ATR|RespuestaDto|+|cuenta|CuentaDto|0|
+ATR|RespuestaDto|+|movimientos|List<MovimientoDto>|0|
+ATR|RespuestaDto|+|nuevoSaldo|BigDecimal|0|
+ATR|RespuestaDto|+|numeroMovimiento|Integer|0|
+ATR|RespuestaDto|+|numeroMovimientoDestino|Integer|0|
+CLASE|vista|RespuestaMapeador|ApplicationScoped|C
+ATR|RespuestaMapeador|+|ESTADO_OK|String|1|
+ATR|RespuestaMapeador|+|CODIGO_OK|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_INICIO_SESION|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_CIERRE_SESION|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_CUENTA|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_MOVIMIENTOS|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_SIN_MOVIMIENTOS|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_DEPOSITO|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_RETIRO|String|1|
+ATR|RespuestaMapeador|+|MENSAJE_TRANSFERENCIA|String|1|
+OP|RespuestaMapeador|+|deSesion|RespuestaDto|SesionIniciada iniciada||0
+OP|RespuestaMapeador|+|deCierreSesion|RespuestaDto|||0
+OP|RespuestaMapeador|+|deCuenta|RespuestaDto|Cuenta cuenta||0
+OP|RespuestaMapeador|+|deMovimientos|RespuestaDto|List<Movimiento> movimientos||0
+OP|RespuestaMapeador|+|deDeposito|RespuestaDto|ResultadoTransaccion resultado||0
+OP|RespuestaMapeador|+|deRetiro|RespuestaDto|ResultadoTransaccion resultado||0
+OP|RespuestaMapeador|+|deTransferencia|RespuestaDto|ResultadoTransaccion resultado||0
+OP|RespuestaMapeador|-|deTransaccion|RespuestaDto|String mensaje;ResultadoTransaccion resultado||0
+OP|RespuestaMapeador|-|exito|RespuestaDto|String mensaje||0
+ASOC|AutenticacionWS|ServicioAutenticacion|servicioAutenticacion|1
+ASOC|AutenticacionWS|RespuestaMapeador|mapeador|1
+ASOC|CuentaWS|ServicioCuenta|servicioCuenta|1
+ASOC|CuentaWS|RespuestaMapeador|mapeador|1
+ASOC|TransaccionWS|ServicioTransaccion|servicioTransaccion|1
+ASOC|TransaccionWS|RespuestaMapeador|mapeador|1
+ASOC|GestorToken|LogSesionDao|logSesionDao|1
+ASOC|ManejadorAutenticacion|GestorToken|gestorToken|1
+ASOC|ExcepcionServicio|ErrorServicio|faultInfo|1
+ASOC|ServicioAutenticacion|UsuarioDao|usuarioDao|1
+ASOC|ServicioAutenticacion|LogSesionDao|logSesionDao|1
+ASOC|ServicioAutenticacion|GestorToken|gestorToken|1
+ASOC|SesionIniciada|TokenEmitido|token|1
+ASOC|SesionIniciada|Sesion|sesion|1
+ASOC|ServicioCuenta|ServicioValidacion|validacion|1
+ASOC|ServicioCuenta|CuentaDao|cuentaDao|1
+ASOC|ServicioCuenta|MovimientoDao|movimientoDao|1
+ASOC|ServicioTransaccion|ServicioValidacion|validacion|1
+ASOC|ServicioTransaccion|CuentaDao|cuentaDao|1
+ASOC|ServicioTransaccion|MovimientoDao|movimientoDao|1
+ASOC|RespuestaDto|CuentaDto|cuenta|1
+ASOC|RespuestaDto|MovimientoDto|movimientos|0..*
+DEP|CuentaWS|ManejadorAutenticacion|HandlerChain
+DEP|TransaccionWS|ManejadorAutenticacion|HandlerChain
+DEP|ConexionBD|ExcepcionServicio|throw
+DEP|CuentaDao|Cuenta|create
+DEP|MovimientoDao|Movimiento|create
+DEP|UsuarioDao|Empleado|create
+DEP|GestorToken|TokenEmitido|create
+DEP|GestorToken|ExcepcionServicio|throw
+DEP|GestorToken|ConexionBD|use
+DEP|ServicioAutenticacion|ExcepcionServicio|throw
+DEP|ServicioAutenticacion|Sesion|create
+DEP|ServicioAutenticacion|SesionIniciada|create
+DEP|ServicioAutenticacion|ConexionBD|use
+DEP|ServicioAutenticacion|Estado|use
+DEP|ServicioAutenticacion|UtilHash|use
+DEP|ServicioCuenta|ExcepcionServicio|throw
+DEP|ServicioCuenta|ConexionBD|use
+DEP|ServicioTransaccion|ResultadoTransaccion|create
+DEP|ServicioTransaccion|ExcepcionServicio|throw
+DEP|ServicioTransaccion|ConexionBD|use
+DEP|ServicioTransaccion|Estado|use
+DEP|ServicioValidacion|ExcepcionServicio|throw
+DEP|RespuestaMapeador|CuentaDto|create
+DEP|RespuestaMapeador|MovimientoDto|create
+DEP|RespuestaMapeador|RespuestaDto|create
