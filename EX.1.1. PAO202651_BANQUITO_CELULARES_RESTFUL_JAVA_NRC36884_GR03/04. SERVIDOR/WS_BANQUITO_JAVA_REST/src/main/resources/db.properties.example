@@ -1,0 +1,11 @@
+# Configuracion local del Core BanQuito.
+# Copiar este archivo como db.properties (no se sube al repositorio).
+
+# Conexion a la base de datos: usuario creado con 03. BDD/banquito/00_usuario_local.sql
+db.url=jdbc:mysql://localhost:3306/banquito?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guayaquil
+db.usuario=banquito_app
+db.clave=cambiar_banquito
+
+# Clave de API que la comercializadora envia en la cabecera X-Api-Key.
+# Debe ser igual a core.claveApi del db.properties de la comercializadora.
+api.clave=MONSTER9

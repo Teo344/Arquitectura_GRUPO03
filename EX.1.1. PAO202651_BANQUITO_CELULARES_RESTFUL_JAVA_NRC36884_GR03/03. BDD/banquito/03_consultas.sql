@@ -80,7 +80,8 @@ ORDER BY c.COD_CLIENTE;
 
 -- -------------------------------------------------------------
 -- 4. Tabla de amortización de un crédito (cliente 5)
---    Esperado: la tabla de ejemplo del enunciado (450 a 6 cuotas).
+--    Esperado: el ejemplo del enunciado (450 a 6 cuotas de 78.65);
+--    la cuota 6 cierra el saldo en 0.00 con 1.06 de interés y 77.59 de capital.
 -- -------------------------------------------------------------
 SELECT cr.COD_CREDITO, cr.COD_CLIENTE, cr.MONTO, cr.NUM_CUOTAS, cr.TASA_ANUAL, cr.VALOR_CUOTA, cr.ESTADO,
        q.NUM_CUOTA, q.VALOR_CUOTA AS CUOTA, q.INTERES_PAGADO, q.CAPITAL_PAGADO, q.SALDO

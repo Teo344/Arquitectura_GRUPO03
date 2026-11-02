@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <title>BanQuito - Core de crédito</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>BanQuito - Servicios REST del módulo de crédito (Grupo 03)</h1>
+        <p>Base: <code>/api/v1</code>. Todas las peticiones exigen la cabecera
+            <code>X-Api-Key</code>. Los errores responden <code>application/problem+json</code>.</p>
+        <ul>
+            <li><code>GET api/v1/clientes?cedula={cedula}</code> buscar cliente</li>
+            <li><code>GET api/v1/clientes/sujeto-credito?cedula={cedula}</code> 1. ¿es sujeto de crédito?</li>
+            <li><code>GET api/v1/clientes/{codCliente}/monto-maximo</code> 2. monto máximo</li>
+            <li><code>POST api/v1/creditos</code> {codCliente, monto, numCuotas} 3. otorgar crédito (201 + Location)</li>
+            <li><code>GET api/v1/creditos/{codCredito}/cuotas</code> 4. tabla de amortización</li>
+            <li><code>GET api/v1/creditos/{codCredito}</code> crédito con su tabla</li>
+            <li><code>GET api/v1/clientes/{codCliente}/creditos</code> créditos de un cliente</li>
+            <li><code>GET api/v1/creditos/simulacion?monto={monto}&amp;cuotas={n}</code> tabla sin guardar</li>
+        </ul>
+    </body>
+</html>

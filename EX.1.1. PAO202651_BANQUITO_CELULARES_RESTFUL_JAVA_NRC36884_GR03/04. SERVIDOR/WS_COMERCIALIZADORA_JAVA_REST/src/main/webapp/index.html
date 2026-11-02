@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <title>Comercializadora de celulares</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>Comercializadora de teléfonos celulares - Servicios REST (Grupo 03)</h1>
+        <p>Base: <code>/api/v1</code>. Salvo el inicio de sesión, todo exige la cabecera
+            <code>Authorization: Bearer &lt;token&gt;</code>. Los errores responden
+            <code>application/problem+json</code>.</p>
+        <ul>
+            <li><code>POST api/v1/sesiones</code> {usuario, clave} iniciar sesión (público)</li>
+            <li><code>DELETE api/v1/sesiones/actual</code> cerrar sesión</li>
+            <li><code>GET api/v1/telefonos</code> catálogo · <code>GET api/v1/telefonos/{codTelefono}</code></li>
+            <li><code>POST api/v1/telefonos</code> {marca, modelo, precio} · <code>PUT api/v1/telefonos/{codTelefono}</code>
+                · <code>DELETE api/v1/telefonos/{codTelefono}</code></li>
+            <li><code>GET api/v1/clientes/sujeto-credito?cedula={cedula}</code> evaluación y monto máximo</li>
+            <li><code>GET api/v1/clientes/creditos?cedula={cedula}</code> créditos del comprador</li>
+            <li><code>GET api/v1/creditos/{codCredito}/cuotas</code> tabla de amortización</li>
+            <li><code>GET api/v1/creditos/simulacion?monto={monto}&amp;cuotas={n}</code> tabla sin guardar</li>
+            <li><code>POST api/v1/facturas</code> {cedula, formaPago, numCuotas, detalles:[{codTelefono, cantidad}]} vender</li>
+            <li><code>GET api/v1/facturas/{numFactura}</code> · <code>GET api/v1/facturas?cedula={cedula}</code></li>
+        </ul>
+    </body>
+</html>

@@ -149,7 +149,10 @@ SET c.SALDO = (SELECT COALESCE(SUM(CASE m.TIPO WHEN 'DEP' THEN m.VALOR ELSE -m.V
 -- -------------------------------------------------------------
 -- Crédito ACTIVO del cliente 5: el ejemplo del enunciado
 -- (450.00 a 6 cuotas, 16.5 % anual, cuota fija 78.65) con su tabla
--- de amortización tal como aparece en el enunciado.
+-- de amortización. La última cuota abona todo el saldo como capital
+-- (77.59) y el interés absorbe el centavo de redondeo (1.06), así
+-- la cuota se mantiene fija y el saldo cierra en 0.00; es el mismo
+-- cálculo que hace el servidor Core.
 -- -------------------------------------------------------------
 INSERT INTO CREDITO (COD_CREDITO, COD_CLIENTE, FECHA, MONTO, NUM_CUOTAS, TASA_ANUAL, VALOR_CUOTA, ESTADO) VALUES
 (1, 5, DATE_SUB(CURDATE(), INTERVAL 20 DAY), 450.00, 6, 16.50, 78.65, 'ACTIVO');
@@ -160,6 +163,6 @@ INSERT INTO CUOTA (COD_CREDITO, NUM_CUOTA, VALOR_CUOTA, INTERES_PAGADO, CAPITAL_
 (1, 3, 78.65, 4.18, 74.47, 229.61),
 (1, 4, 78.65, 3.16, 75.49, 154.12),
 (1, 5, 78.65, 2.12, 76.53,  77.59),
-(1, 6, 78.65, 1.07, 77.58,   0.00);
+(1, 6, 78.65, 1.06, 77.59,   0.00);
 
 COMMIT;

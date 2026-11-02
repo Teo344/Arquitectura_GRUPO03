@@ -1,0 +1,12 @@
+# Configuracion local de la Comercializadora.
+# Copiar este archivo como db.properties (no se sube al repositorio).
+
+# Conexion a la base de datos: usuario creado con 03. BDD/comercializadora/00_usuario_local.sql
+db.url=jdbc:mysql://localhost:3306/comercializadora?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guayaquil
+db.usuario=comercializadora_app
+db.clave=cambiar_comercializadora
+
+# Servicios del Core BanQuito (termina en /)
+core.url=http://localhost:8080/WS_BANQUITO_JAVA_REST/api/v1/
+# Debe ser igual a api.clave del db.properties del Core
+core.claveApi=MONSTER9

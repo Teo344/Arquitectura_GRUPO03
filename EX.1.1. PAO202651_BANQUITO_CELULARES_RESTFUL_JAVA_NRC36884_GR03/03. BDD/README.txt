@@ -41,7 +41,8 @@ Verificación
       tener depósitos en el último mes y el 5 por tener un crédito activo.
       La cédula 9999999999 no es cliente.
     - Monto máximo: cliente 1 = 2250.00, cliente 2 = 450.00, cliente 6 = 945.00.
-    - La tabla de amortización del cliente 5 es la del ejemplo del enunciado.
+    - La tabla de amortización del cliente 5 es la del ejemplo del enunciado
+      (cuota 78.65); la cuota 6 cierra el saldo con 1.06 de interés y 77.59 de capital.
     - ok_saldo = 1 en todas las cuentas.
   Esperado en comercializadora: 2 usuarios, 8 teléfonos y el login de MONSTER.
 
