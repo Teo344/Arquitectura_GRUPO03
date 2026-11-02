@@ -1,0 +1,97 @@
+TABLA|moneda|moneda|Moneda: Catálogo de monedas.|3|1
+COL|moneda|chr_monecodigo|chr_monecodigo|CHAR(2)|1||0|Código de moneda
+COL|moneda|vch_monedescripcion|vch_monedescripcion|VARCHAR(20)|1||0|Descripción de moneda
+PK|moneda|pk_moneda|chr_monecodigo
+TABLA|tipomovimiento|tipomovimiento|Tipo de movimiento: Catálogo de tipos de movimiento (INGRESO o SALIDA).|1|2
+COL|tipomovimiento|chr_tipocodigo|chr_tipocodigo|CHAR(3)|1||0|Código de tipo
+COL|tipomovimiento|vch_tipodescripcion|vch_tipodescripcion|VARCHAR(40)|1||0|Descripción de tipo
+COL|tipomovimiento|vch_tipoaccion|vch_tipoaccion|VARCHAR(10)|1||0|Acción
+COL|tipomovimiento|vch_tipoestado|vch_tipoestado|VARCHAR(15)|1|ACTIVO|0|Estado de tipo|df_tipomovimiento_estado
+PK|tipomovimiento|pk_tipomovimiento|chr_tipocodigo
+LOV|tipomovimiento|vch_tipoaccion|chk_tipomovimiento_accion|INGRESO;SALIDA
+LOV|tipomovimiento|vch_tipoestado|chk_tipomovimiento_estado|ACTIVO;ANULADO;CANCELADO
+TABLA|sucursal|sucursal|Sucursal: Sucursal del banco.|3|0
+COL|sucursal|chr_sucucodigo|chr_sucucodigo|CHAR(3)|1||0|Código de sucursal
+COL|sucursal|vch_sucunombre|vch_sucunombre|VARCHAR(50)|1||0|Nombre de sucursal
+COL|sucursal|vch_sucuciudad|vch_sucuciudad|VARCHAR(30)|1||0|Ciudad de sucursal
+COL|sucursal|vch_sucudireccion|vch_sucudireccion|VARCHAR(50)|0||0|Dirección de sucursal
+COL|sucursal|int_sucucontcuenta|int_sucucontcuenta|INT|1||0|Contador de cuentas
+PK|sucursal|pk_sucursal|chr_sucucodigo
+TABLA|empleado|empleado|Empleado: Empleado (cajero) que opera en ventanilla.|1|0
+COL|empleado|chr_emplcodigo|chr_emplcodigo|CHAR(4)|1||0|Código de empleado
+COL|empleado|vch_emplpaterno|vch_emplpaterno|VARCHAR(25)|1||0|Apellido paterno de empleado
+COL|empleado|vch_emplmaterno|vch_emplmaterno|VARCHAR(25)|1||0|Apellido materno de empleado
+COL|empleado|vch_emplnombre|vch_emplnombre|VARCHAR(30)|1||0|Nombre de empleado
+COL|empleado|vch_emplciudad|vch_emplciudad|VARCHAR(30)|1||0|Ciudad de empleado
+COL|empleado|vch_empldireccion|vch_empldireccion|VARCHAR(50)|0||0|Dirección de empleado
+PK|empleado|pk_empleado|chr_emplcodigo
+TABLA|usuario|usuario|Usuario: Credenciales de acceso del empleado (clave SHA-256).|0|0
+COL|usuario|chr_emplcodigo|chr_emplcodigo|CHAR(4)|1||0|Código de empleado
+COL|usuario|vch_emplusuario|vch_emplusuario|VARCHAR(20)|1||0|Usuario
+COL|usuario|vch_emplclave|vch_emplclave|CHAR(64)|1||0|Clave
+COL|usuario|vch_emplestado|vch_emplestado|VARCHAR(15)|1|ACTIVO|0|Estado de usuario|df_usuario_estado
+PK|usuario|pk_usuario|chr_emplcodigo
+UQ|usuario|uq_usuario_login|vch_emplusuario
+LOV|usuario|vch_emplestado|chk_usuario_estado|ACTIVO;ANULADO;CANCELADO
+TABLA|asignado|asignado|Asignado: Asignación vigente o histórica del empleado a una sucursal.|2|0
+COL|asignado|chr_asigcodigo|chr_asigcodigo|CHAR(6)|1||0|Código de asignación
+COL|asignado|chr_sucucodigo|chr_sucucodigo|CHAR(3)|1||0|Código de sucursal
+COL|asignado|chr_emplcodigo|chr_emplcodigo|CHAR(4)|1||0|Código de empleado
+COL|asignado|dtt_asigfechaalta|dtt_asigfechaalta|DATE|1||0|Fecha de alta
+COL|asignado|dtt_asigfechabaja|dtt_asigfechabaja|DATE|0||0|Fecha de baja
+PK|asignado|pk_asignado|chr_asigcodigo
+TABLA|logsession|logsession|Sesión: Registro de ingreso (RF-01) y salida (RF-02) de cada sesión.|0|1
+COL|logsession|int_logid|int_logid|INT|1||1|Id de sesión
+COL|logsession|chr_emplcodigo|chr_emplcodigo|CHAR(4)|1||0|Código de empleado
+COL|logsession|dtt_logingreso|dtt_logingreso|DATETIME|1||0|Fecha de ingreso
+COL|logsession|dtt_logsalida|dtt_logsalida|DATETIME|0||0|Fecha de salida
+COL|logsession|vch_logip|vch_logip|VARCHAR(45)|1|NONE|0|Dirección IP|df_logsession_ip
+COL|logsession|vch_loghostname|vch_loghostname|VARCHAR(100)|1|NONE|0|Nombre del equipo|df_logsession_hostname
+PK|logsession|pk_logsession|int_logid
+TABLA|cliente|cliente|Cliente: Titular de las cuentas.|2|2
+COL|cliente|chr_cliecodigo|chr_cliecodigo|CHAR(5)|1||0|Código de cliente
+COL|cliente|vch_cliepaterno|vch_cliepaterno|VARCHAR(25)|1||0|Apellido paterno de cliente
+COL|cliente|vch_cliematerno|vch_cliematerno|VARCHAR(25)|1||0|Apellido materno de cliente
+COL|cliente|vch_clienombre|vch_clienombre|VARCHAR(30)|1||0|Nombre de cliente
+COL|cliente|chr_cliedni|chr_cliedni|CHAR(8)|1||0|DNI
+COL|cliente|vch_clieciudad|vch_clieciudad|VARCHAR(30)|1||0|Ciudad de cliente
+COL|cliente|vch_cliedireccion|vch_cliedireccion|VARCHAR(50)|1||0|Dirección de cliente
+COL|cliente|vch_clietelefono|vch_clietelefono|VARCHAR(20)|0||0|Teléfono
+COL|cliente|vch_clieemail|vch_clieemail|VARCHAR(50)|0||0|Correo electrónico
+PK|cliente|pk_cliente|chr_cliecodigo
+TABLA|cuenta|cuenta|Cuenta: Cuenta bancaria del cliente.|2|1
+COL|cuenta|chr_cuencodigo|chr_cuencodigo|CHAR(8)|1||0|Número de cuenta
+COL|cuenta|chr_monecodigo|chr_monecodigo|CHAR(2)|1||0|Código de moneda
+COL|cuenta|chr_sucucodigo|chr_sucucodigo|CHAR(3)|1||0|Código de sucursal
+COL|cuenta|chr_emplcreacuenta|chr_emplcreacuenta|CHAR(4)|1||0|Empleado que crea la cuenta
+COL|cuenta|chr_cliecodigo|chr_cliecodigo|CHAR(5)|1||0|Código de cliente
+COL|cuenta|dec_cuensaldo|dec_cuensaldo|DECIMAL(12,2)|1||0|Saldo
+COL|cuenta|dtt_cuenfechacreacion|dtt_cuenfechacreacion|DATE|1||0|Fecha de creación
+COL|cuenta|vch_cuenestado|vch_cuenestado|VARCHAR(15)|1|ACTIVO|0|Estado de cuenta|df_cuenta_estado
+COL|cuenta|int_cuencontmov|int_cuencontmov|INT|1||0|Contador de movimientos
+COL|cuenta|chr_cuenclave|chr_cuenclave|CHAR(6)|1||0|Clave de cuenta
+PK|cuenta|pk_cuenta|chr_cuencodigo
+LOV|cuenta|vch_cuenestado|chk_cuenta_estado|ACTIVO;ANULADO;CANCELADO
+CHK|cuenta|dec_cuensaldo|chk_cuenta_saldo|dec_cuensaldo >= 0
+TABLA|movimiento|movimiento|Movimiento: Movimiento de una cuenta: depósito, retiro o transferencia.|1|1
+COL|movimiento|chr_cuencodigo|chr_cuencodigo|CHAR(8)|1||0|Número de cuenta
+COL|movimiento|int_movinumero|int_movinumero|INT|1||0|Número de movimiento
+COL|movimiento|dtt_movifecha|dtt_movifecha|DATE|1||0|Fecha de movimiento
+COL|movimiento|chr_emplcodigo|chr_emplcodigo|CHAR(4)|1||0|Código de empleado
+COL|movimiento|chr_tipocodigo|chr_tipocodigo|CHAR(3)|1||0|Código de tipo
+COL|movimiento|dec_moviimporte|dec_moviimporte|DECIMAL(12,2)|1||0|Importe
+COL|movimiento|chr_cuenreferencia|chr_cuenreferencia|CHAR(8)|0||0|Cuenta de referencia
+PK|movimiento|pk_movimiento|chr_cuencodigo,int_movinumero
+CHK|movimiento|dec_moviimporte|chk_movimiento_importe|dec_moviimporte > 0
+REF|fk_usuario_empleado|usuario|empleado|chr_emplcodigo|chr_emplcodigo|Tiene|0..1
+REF|fk_asignado_sucursal|asignado|sucursal|chr_sucucodigo|chr_sucucodigo|Recibe|0..*
+REF|fk_asignado_empleado|asignado|empleado|chr_emplcodigo|chr_emplcodigo|Es asignado|0..*
+REF|fk_logsession_empleado|logsession|empleado|chr_emplcodigo|chr_emplcodigo|Inicia|0..*
+REF|fk_cuenta_moneda|cuenta|moneda|chr_monecodigo|chr_monecodigo|Denomina|0..*
+REF|fk_cuenta_sucursal|cuenta|sucursal|chr_sucucodigo|chr_sucucodigo|Administra|0..*
+REF|fk_cuenta_empleado|cuenta|empleado|chr_emplcreacuenta|chr_emplcodigo|Crea|0..*
+REF|fk_cuenta_cliente|cuenta|cliente|chr_cliecodigo|chr_cliecodigo|Posee|0..*
+REF|fk_movimiento_cuenta|movimiento|cuenta|chr_cuencodigo|chr_cuencodigo|Registra|0..*
+REF|fk_movimiento_empleado|movimiento|empleado|chr_emplcodigo|chr_emplcodigo|Realiza|0..*
+REF|fk_movimiento_tipo|movimiento|tipomovimiento|chr_tipocodigo|chr_tipocodigo|Clasifica|0..*
+REF|fk_movimiento_referencia|movimiento|cuenta|chr_cuenreferencia|chr_cuencodigo|Es referencia de|0..*

@@ -189,6 +189,47 @@ bash gen_dc_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET "$T/04. SERVIDOR/WS_EUREKA_DOTNET
 bash gen_ea_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET TG14 Arquitectura_EurekaBank_REST_DotNet
 ```
 
+### MER: conceptual, lógico y físico (`02. MER`)
+
+Se generan desde `03. BDD/init/01_crea_bd.sql` de cada TG: `<TG>/02. MER/MER_Conceptual_EurekaBank_<Tec>.cdm`,
+`MER_Logico_…ldm`, `MER_Fisico_…pdm` y `MER.prj` (agregado al `.sws` como proyecto `MER`). Los PNG de revisión quedan
+en `tmp/revision`.
+
+| Archivo | Uso |
+|---|---|
+| `generar_specs_mer.py` | Lee el script (MySQL o T-SQL) y escribe `specs/mer/<clave>.txt`: tablas, columnas, PK/UQ, CHECK (los `IN (...)` como lista de valores) y FK. Ahí están los nombres legibles, la posición de cada tabla y el verbo de cada relación. |
+| `mer_detalle.vbs` | Construye el físico por COM (`app.CreateModel(KIND_PDM, "\|DBMS=…")`), genera el lógico y el conceptual con `m.GenerateModel(Nothing, kind, "", True)`, pone los verbos y acomoda los tres diagramas en la cuadrícula del spec. Al final el físico toma los códigos del script como nombres. |
+| `finalizar_mer.py` | Recalcula el rectángulo de cada enlace con sus puntos (si no, la imagen sale con espacio vacío arriba). |
+| `limpiar_sws.py` | Quita de todos los `.sws` los modelos MER sueltos que PowerDesigner agrega al cerrarse. |
+| `gen_mer_tg.sh` | Hace todo para un TG. `crear_prj.py` ya reconoce `.cdm`, `.ldm` y `.pdm`. |
+
+Los tres modelos usan los nombres del script (tablas y columnas); la descripción legible va como comentario.
+
+```bash
+bash gen_mer_tg.sh "TG.1.1. PAO202651_EUREKA_BDDLOCAL_SOAP_JAVA_NRC36884_GR03" SOAP_BDDLOCAL_JAVA TG11 "MySQL 5.0" "SOAP Java" SOAP_Java
+bash gen_mer_tg.sh "TG.1.2. PAO202651_EUREKA_BDDLOCAL_SOAP_DOTNET_NRC36884_GR03" SOAP_BDDLOCAL_DOTNET TG12 "Microsoft SQL Server 2008" "SOAP .NET" SOAP_DotNet
+bash gen_mer_tg.sh "TG.1.3. PAO202651_EUREKA_BDDLOCAL_RESTFUL_JAVA_NRC36884_GR03" RESTFUL_BDDLOCAL_JAVA TG13 "MySQL 5.0" "REST Java" REST_Java
+bash gen_mer_tg.sh "TG.1.4. PAO202651_EUREKA_BDDLOCAL_RESTFUL_DOTNET_NRC36884_GR03" RESTFUL_BDDLOCAL_DOTNET TG14 "Microsoft SQL Server 2008" "REST .NET" REST_DotNet
+```
+
+**Hecho en los 4 TG.** TG.1.3 tiene el mismo esquema que TG.1.1 (MySQL) y TG.1.4 el mismo que TG.1.2 (SQL Server).
+
+En SQL Server el spec agrega el nombre de cada DEFAULT (`df_…`), que se guarda en el atributo extendido
+`ExtDeftConstName`. El perfil SQL Server 2008 sí escribe en el script generado los CHECK, el UNIQUE y los DEFAULT con
+nombre.
+
+- No sirve la ingeniería inversa del script: el perfil MySQL 5.0 de PowerDesigner no entiende `CONSTRAINT x PRIMARY KEY`
+  y crea columnas falsas.
+- Al crear una referencia, PowerDesigner empareja la FK con la columna hija del mismo código y, si no existe, crea otra
+  (`chr_emplcreacuenta`, `chr_cuenreferencia`); el script reapunta el join y borra la columna creada.
+- Los modelos generados pasan los códigos a mayúsculas (`FK_CUENTA_CLIENTE`): se comparan con `LCase`.
+- `ClassKind`: CDM `509178224`, LDM `1598421368`, PDM `-840675807`.
+- Verificado generando el SQL desde el `.pdm` (`GetPackageOptions`, `GenerationPathName` con `\` final y
+  `GenerateDatabase`): coincide con el script salvo que el perfil MySQL 5.0 no escribe los CHECK (quedan en el modelo)
+  y escribe el UNIQUE como `key`.
+- Cada ejecución hace que PowerDesigner guarde al cerrar el último `.sws` que cargó: revisar `git status` y restaurar
+  los `.sws` de otros TG que aparezcan modificados.
+
 ## 5. Técnica de PowerDesigner (lecciones aprendidas)
 
 - PowerDesigner 16.1 está en `C:\Program Files (x86)\Sybase\PowerDesigner 16`. Se automatiza con **VBScript** usando el

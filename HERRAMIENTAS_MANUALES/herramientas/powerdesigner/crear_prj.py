@@ -1,7 +1,9 @@
 import sys,re,uuid,os
 """uso: crear_prj.py <plantilla.prj> <salida.prj> <nombre_proyecto> <modelo1.oom> [<modelo2.oom> ...]"""
 plantilla,salida,nombre=sys.argv[1:4]; modelos=sys.argv[4:]
-CLASES={'oom':'18112060-1A4B-11D1-83D9-444553540000','eam':'5215C79E-A9A1-4738-A627-36DA432EFE29'}  # OOM y EAM
+CLASES={'oom':'18112060-1A4B-11D1-83D9-444553540000','eam':'5215C79E-A9A1-4738-A627-36DA432EFE29',
+        'cdm':'1E597170-9350-11D1-AB3C-0020AF71E433','ldm':'5F45F978-C4F3-4E35-A3FC-AF3318663A0F',
+        'pdm':'CDE44E21-9669-11D1-9914-006097355D9B'}  # tipo de modelo (Type del encabezado de cada archivo)
 x=open(plantilla,encoding='utf8').read()
 g=lambda: str(uuid.uuid4()).upper()
 pid=g()
