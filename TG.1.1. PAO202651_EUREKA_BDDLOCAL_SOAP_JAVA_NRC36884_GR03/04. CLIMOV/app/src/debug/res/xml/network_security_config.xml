@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Solo en compilación debug (desarrollo y pruebas): permite HTTP hacia el servidor local
+     en cualquier IP de la red, para usar el emulador o un celular físico sin más cambios.
+     La compilación release usa src/main/res/xml/network_security_config.xml (restringido). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
