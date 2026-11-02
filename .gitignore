@@ -44,6 +44,7 @@
 # Credenciales locales de la base de datos (se suben solo los .example)
 **/db.properties
 **/conexion.config
+**/conexion.json
 
 # Proyectos de referencia de otros grupos (solo para consulta local)
 /temp/
