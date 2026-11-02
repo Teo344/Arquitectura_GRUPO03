@@ -171,8 +171,23 @@ bash gen_dc_tg.sh "$T" RESTFUL_BDDLOCAL_JAVA "$T/04. SERVIDOR/WS_EUREKA_JAVA_RES
 bash gen_ea_tg.sh "$T" RESTFUL_BDDLOCAL_JAVA TG13 Arquitectura_EurekaBank_REST_Java
 ```
 
-TG.1.4 (REST .NET) queda pendiente hasta que exista su servidor. Se podrá hacer con un perfil que combine `rest` y
-`dotnet` y con `extraer_clases_cs.py`.
+### TG.1.4 (REST .NET) — hecho
+
+Mismos proyectos en `RESTFUL_BDDLOCAL_DOTNET.sws`, con el perfil `restnet`, que aplica `rest` y después las equivalencias
+de ASP.NET Core y ADO.NET. Los controladores `[ApiController]` reemplazan a los recursos; en secuencia se llaman
+`*_CONTROLADOR_API` para no confundirlos con los controladores del cliente. `ManejadorAutenticacion` es un
+`IAuthorizationFilter` (`OnAuthorization`) que se activa con `[Protegido]` (`TypeFilterAttribute`) y guarda la sesión en
+`HttpContext.Items`. `ManejadorErrores` (`IExceptionFilter`) responde los errores en JSON. También se usan
+`SqlTransaction`, `UPDLOCK` y `BD_SQLSERVER`. `extraer_clases_cs.py` reconoce `[ApiController]`, los filtros
+`AuthorizationFilter`/`ExceptionFilter`, la dependencia `<<TypeFilter>>` y los parámetros con atributos (`[FromBody(...)]`).
+
+```bash
+T="TG.1.4. PAO202651_EUREKA_BDDLOCAL_RESTFUL_DOTNET_NRC36884_GR03"
+bash gen_da_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET TG14 "Kestrel / ASP.NET Core 8 · JSON" "SQL Server Express" restnet
+bash gen_ds_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET TG14 restnet
+bash gen_dc_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET "$T/04. SERVIDOR/WS_EUREKA_DOTNET_REST" WS_EUREKA_DOTNET_REST_DC cs
+bash gen_ea_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET TG14 Arquitectura_EurekaBank_REST_DotNet
+```
 
 ## 5. Técnica de PowerDesigner (lecciones aprendidas)
 

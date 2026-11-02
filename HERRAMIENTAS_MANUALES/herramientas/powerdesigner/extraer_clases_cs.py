@@ -6,7 +6,7 @@ Properties/AssemblyInfo.
 uso: extraer_clases_cs.py <carpeta del proyecto> <salida_spec.txt>"""
 raiz,salida=sys.argv[1:3]
 BASE='ec.edu.monster'
-DISPOSICION={'seguridad':(0,0,1),'controladores.wservicios':(1,0,2),'vista':(1,1,2),
+DISPOSICION={'seguridad':(0,0,1),'controladores.wservicios':(1,0,2),'controladores.recursos':(1,0,2),'vista':(1,1,2),
              'servicios':(2,0,2),'datos':(3,0,1),'modelo':(4,0,1)}
 OMITIR={'pruebas'}
 VIS={'public':'+','private':'-','protected':'#','internal':'*'}
@@ -74,7 +74,8 @@ def separar_mods(s):
 
 def var(decl):
     "tipo y nombre de 'mods Tipo nombre [= valor]' o de un parámetro"
-    _,decl=sin_atributos(decl.split('=')[0])
+    _,decl=sin_atributos(decl)          # primero los atributos: pueden tener '='
+    decl=decl.split('=')[0]
     mods,decl=separar_mods(decl.strip())
     decl=re.sub(r'^(ref|out|in|params|this)\s+','',decl)
     m=re.match(r'(.+?)\s+(\w+)$',decl.strip())
@@ -92,8 +93,11 @@ def tipo(paq,encabezado,cuerpo,externo=None):
     est=''
     if 'ServiceContract' in atrs: est='ServiceContract'
     elif 'DataContract' in atrs: est='DataContract'
+    elif 'ApiController' in atrs: est='ApiController'
     elif clase=='enum': est='Enum'
-    elif any(b=='Attribute' for b in bases): est='Attribute'
+    elif any(b.endswith('Attribute') for b in bases): est='Attribute'
+    elif any(b.startswith('IAuthorizationFilter') for b in bases): est='AuthorizationFilter'
+    elif any(b.startswith('IExceptionFilter') for b in bases): est='ExceptionFilter'
     elif any(b.startswith('IDispatchMessageInspector') for b in bases): est='MessageInspector'
     elif any(b.startswith('FaultException') for b in bases): est='FaultException'
     elif 'static' in mods: est='static'
@@ -152,6 +156,7 @@ for dp,_,fs in os.walk(os.path.join(raiz,*BASE.split('.'))):
 
 nombres={c['nombre'] for c in clases}
 interfaces={c['nombre'] for c in clases if c['interfaz']}
+def est_base(c): return c['est']
 def tipos_en(t): return [x for x in re.findall(r'\w+',t) if x in nombres]
 asoc=[]; dep=[]; real=[]; hay=set()
 for c in clases:
@@ -168,6 +173,9 @@ for c in clases:
     if 'Protegido' in c['atrs_clase'] and 'ProtegidoAttribute' in nombres:
         dep.append((c['nombre'],'ProtegidoAttribute','Protegido')); hay.add((c['nombre'],'ProtegidoAttribute'))
     propio=c['cuerpo']
+    for d in sorted(set(re.findall(r'typeof\((\w+)\)',propio))):   # ASP.NET Core: TypeFilterAttribute(typeof(X))
+        if d in nombres and d!=c['nombre'] and (c['nombre'],d) not in hay and est_base(c)=='Attribute':
+            dep.append((c['nombre'],d,'TypeFilter')); hay.add((c['nombre'],d))
     for m in re.finditer(r'(throw\s+)?new\s+(\w+)\s*[({]',propio):
         d=m.group(2)
         if d in nombres and d!=c['nombre'] and (c['nombre'],d) not in hay:

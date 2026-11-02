@@ -4,7 +4,8 @@ Cada diagrama es una lista de participantes (de izquierda a derecha) y de mensaj
 Mensajes: (origen, destino, texto) es una llamada; con 'R' al final es un retorno; origen = destino es reflexivo.
 uso: generar_specs_ds.py <clave> [perfil]      p. ej. TG11 (textos de SOAP Java)
 perfil: java (por defecto), dotnet, que traduce los mensajes del servidor a WCF y ADO.NET (TG.1.2), o rest, que los
-traduce a Jakarta REST (TG.1.3): rutas HTTP bajo /api, token Bearer, filtro @Protegido y errores JSON 400/401/500."""
+traduce a Jakarta REST (TG.1.3): rutas HTTP bajo /api, token Bearer, filtro @Protegido y errores JSON 400/401/500,
+o restnet (TG.1.4), que aplica rest y luego las equivalencias de ASP.NET Core y ADO.NET."""
 clave=sys.argv[1]; perfil=sys.argv[2] if len(sys.argv)>2 else 'java'
 SEP=19000; X0=-31000; Y0=31000; PASO=3600; PASO_REF=4400
 
@@ -43,21 +44,34 @@ REST=[('SOAP Request iniciarSesion(usuario, clave, equipo)','POST /api/autentica
 def http(codigo): return '401' if codigo.startswith('AUTH') else '500' if codigo.startswith('SYS') else '400'
 RENOMBRE={'dotnet':{'BD_MYSQL':'BD_SQLSERVER'},
           'rest':{'AUTENTICACION_WS':'AUTENTICACION_RECURSO','CUENTA_WS':'CUENTA_RECURSO',
-                  'TRANSACCION_WS':'TRANSACCION_RECURSO','CLIENTE_WS_EUREKA':'CLIENTE_REST_EUREKA'}}
+                  'TRANSACCION_WS':'TRANSACCION_RECURSO','CLIENTE_WS_EUREKA':'CLIENTE_REST_EUREKA'},
+          # ASP.NET Core: los controladores del servidor llevan _API para no confundirlos con los del cliente
+          'restnet':{'AUTENTICACION_WS':'AUTENTICACION_CONTROLADOR_API','CUENTA_WS':'CUENTA_CONTROLADOR_API',
+                     'TRANSACCION_WS':'TRANSACCION_CONTROLADOR_API','CLIENTE_WS_EUREKA':'CLIENTE_REST_EUREKA',
+                     'BD_MYSQL':'BD_SQLSERVER'}}
+# equivalencias REST .NET (ASP.NET Core); se aplican después de REST y antes de DOTNET
+RESTNET=[('filter(): leerToken(Authorization: Bearer)','OnAuthorization: LeerToken(Authorization: Bearer)'),
+         ('setProperty("sesion", Sesion) en la petición','HttpContext.Items["sesion"] = Sesion'),
+         ('sesion(): lee la Sesion de la petición','SesionActual(): lee la Sesion de HttpContext.Items'),
+         ('abortWith(MapeadorExcepciones.respuesta(e))','contexto.Result = ManejadorErrores.Respuesta(e)'),
+         ('vía MapeadorExcepciones','vía ManejadorErrores')]
 def es_cliente(p): return p in ('EMPLEADO','CLIENTE_WS_EUREKA') or p.endswith(('_VISTA','_CONTROLADOR'))
+def mayuscula_inicial(t): return re.sub(r'\b([a-z])(\w*)(?=\()',lambda m:m.group(1).upper()+m.group(2),t)
 def traducir(o,d,t,f):
     """en .NET los métodos del servidor van en PascalCase; las operaciones SOAP (del contrato) y el cliente no cambian.
     En REST las peticiones son rutas HTTP y el filtro entrega al recurso el DTO de la solicitud."""
     if perfil=='dotnet':
         for viejo,nuevo in DOTNET: t=t.replace(viejo,nuevo)
-        if f!='R' and not es_cliente(d) and not t.startswith('SOAP '):
-            t=re.sub(r'\b([a-z])(\w*)(?=\()',lambda m:m.group(1).upper()+m.group(2),t)
-    elif perfil=='rest':
+        if f!='R' and not es_cliente(d) and not t.startswith('SOAP '): t=mayuscula_inicial(t)
+    elif perfil in ('rest','restnet'):
         for viejo,nuevo in REST: t=t.replace(viejo,nuevo)
         t=re.sub(r'^SOAP Request (\w+\([^)]*\)) \(token en la cabecera\)',lambda m:RUTAS[m.group(1)]+' (Authorization: Bearer)',t)
         if o=='MANEJADOR_AUTENTICACION' and t in DTO_RECURSO: t=DTO_RECURSO[t]
         t=re.sub(r'^SOAP Fault ErrorServicio\(([A-Z]+)',lambda m:f'HTTP {http(m.group(1))} JSON ErrorServicio({m.group(1)}',t)
         if t.startswith('HTTP') and 'ErrorServicio' in t and o!='MANEJADOR_AUTENTICACION': t+=' vía MapeadorExcepciones'
+        if perfil=='restnet':
+            for viejo,nuevo in RESTNET+DOTNET: t=t.replace(viejo,nuevo)
+            if f!='R' and not es_cliente(d) and not t.startswith(('GET ','POST ','HTTP ')): t=mayuscula_inicial(t)
     return t
 def nombre_parte(p): return RENOMBRE.get(perfil,{}).get(p,p)
 

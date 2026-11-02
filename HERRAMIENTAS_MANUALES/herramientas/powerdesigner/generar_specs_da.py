@@ -4,7 +4,8 @@ Columnas: CLI (cliente), F (columna de errores del servidor), M (flujo principal
 Los flujos que salen de una decisión van primero en horizontal; los demás, primero en vertical.
 uso: generar_specs_da.py <clave> <servidor> <bd> [perfil]   p. ej. TG11 "Payara 7 / JAX-WS SOAP" MySQL
 perfil: java (por defecto), dotnet, que traduce los textos a sus equivalentes de WCF y ADO.NET (TG.1.2), o rest, que
-los traduce a Jakarta REST (TG.1.3): rutas HTTP bajo /api, token Bearer, filtro @Protegido y errores JSON 400/401/500."""
+los traduce a Jakarta REST (TG.1.3): rutas HTTP bajo /api, token Bearer, filtro @Protegido y errores JSON 400/401/500,
+o restnet (TG.1.4), que aplica rest y luego las equivalencias de ASP.NET Core y ADO.NET."""
 clave,servidor,bd=sys.argv[1:4]; perfil=sys.argv[4] if len(sys.argv)>4 else 'java'
 # equivalencias .NET: métodos en PascalCase, inspector de mensajes WCF, SqlTransaction y bloqueo de SQL Server
 DOTNET=[(re.compile(r'\b([A-Z]\w+)\.([a-z])'),lambda m:m.group(1)+'.'+m.group(2).upper()),
@@ -35,6 +36,13 @@ REST=[(re.compile(r'Enviar SOAP Request (\w+\([^)]*\)) con el token en la cabece
       ('Revertir la transacción (rollback) y generar SOAP Fault con ErrorServicio',
        'Rollback de la transacción; MapeadorExcepciones responde JSON ErrorServicio'),
       ('Enviar SOAP Request','Enviar petición HTTP')]
+# equivalencias REST .NET (ASP.NET Core): se aplican después de REST
+RESTNET=REST+[(re.compile(r'\b([A-Z]\w+)\.([a-z])'),lambda m:m.group(1)+'.'+m.group(2).upper()),
+              ('AutenticacionRecurso','AutenticacionControlador'),
+              ('ManejadorAutenticacion (filtro @Protegido)','ManejadorAutenticacion (IAuthorizationFilter [Protegido])'),
+              ('MapeadorExcepciones','ManejadorErrores'),
+              ('Iniciar la transacción y bloquear','Iniciar la transacción (SqlTransaction) y bloquear'),
+              ('FOR UPDATE','WITH (UPDLOCK, ROWLOCK)'),('(commit)','(Commit)')]
 def http(codigo): return '401' if codigo.startswith('AUTH') else '500' if codigo.startswith('SYS') else '400'
 X={'CLI':-21000,'F':-4500,'M':10000,'BD':30000}
 CALLE={'CLI':'CLI','F':'SRV','M':'SRV','BD':'BD'}
@@ -61,9 +69,9 @@ def spec(titulo,nodos,flujos):
         if xo!=xd and yo!=yd: p=f'{xd},{yo}' if to=='DEC' else f'{xo},{yd}'
         out.append(f'FLU|{o}|{d}|{et}|{p}')
     texto='\n'.join(out)+'\n'
-    for viejo,nuevo in {'dotnet':DOTNET,'rest':REST}.get(perfil,[]):
+    for viejo,nuevo in {'dotnet':DOTNET,'rest':REST,'restnet':RESTNET}.get(perfil,[]):
         texto=viejo.sub(nuevo,texto) if hasattr(viejo,'sub') else texto.replace(viejo,nuevo)
-    if perfil=='rest':   # código HTTP de cada rama de error: [No: AUTH-003 · 401]
+    if perfil in ('rest','restnet'):   # código HTTP de cada rama de error: [No: AUTH-003 · 401]
         texto=re.sub(r'(?m)^(FLU\|[^|]*\|[^|]*\|No: ([A-Z]+)-\d+[^|]*)',lambda m:f'{m.group(1)} · {http(m.group(2))}',texto)
     return texto
 
