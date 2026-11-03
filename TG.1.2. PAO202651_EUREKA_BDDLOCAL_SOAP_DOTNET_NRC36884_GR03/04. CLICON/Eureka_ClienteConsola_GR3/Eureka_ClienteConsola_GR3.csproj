@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{69DBC6A0-27B7-4484-B691-F9DB009243B9}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Eureka_ClienteConsola_GR3</RootNamespace>
+    <AssemblyName>Eureka_ClienteConsola_GR3</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ec\edu\monster\modelo\LoginModelo.cs" />
+    <Compile Include="ec\edu\monster\modelo\SesionModelo.cs" />
+    <Compile Include="ec\edu\monster\modelo\CuentaModelo.cs" />
+    <Compile Include="ec\edu\monster\modelo\MovimientoModelo.cs" />
+    <Compile Include="ec\edu\monster\modelo\TipoTransaccion.cs" />
+    <Compile Include="ec\edu\monster\modelo\TransaccionModelo.cs" />
+    <Compile Include="ec\edu\monster\modelo\ResultadoTransaccionModelo.cs" />
+    <Compile Include="ec\edu\monster\modelo\ErrorServicioModelo.cs" />
+    <Compile Include="ec\edu\monster\servicio\ContratoWSEureka.cs" />
+    <Compile Include="ec\edu\monster\servicio\ClienteWSEureka.cs" />
+    <Compile Include="ec\edu\monster\controlador\LoginControlador.cs" />
+    <Compile Include="ec\edu\monster\controlador\CuentaControlador.cs" />
+    <Compile Include="ec\edu\monster\controlador\TransaccionControlador.cs" />
+    <Compile Include="ec\edu\monster\vista\MensajesVista.cs" />
+    <Compile Include="ec\edu\monster\vista\LoginVista.cs" />
+    <Compile Include="ec\edu\monster\vista\MenuVista.cs" />
+    <Compile Include="ec\edu\monster\vista\CuentaVista.cs" />
+    <Compile Include="ec\edu\monster\vista\TransaccionVista.cs" />
+    <Compile Include="ec\edu\monster\util\EntradaUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

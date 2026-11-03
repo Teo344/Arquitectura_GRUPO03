@@ -1,0 +1,12 @@
+<Project>
+  <!-- La ruta de esta carpeta es muy larga: los archivos de obj\ (y los de EurekaBank.Shared, que se
+       compila con este proyecto) pueden superar los 260 caracteres de Windows. Por eso bin y obj se
+       generan en %LOCALAPPDATA%\MonsterBuild, el mismo arreglo de los clientes de escritorio y móvil. -->
+  <PropertyGroup>
+    <CarpetaCompilacion>$(LOCALAPPDATA)\MonsterBuild\TG.1.4\$(MSBuildProjectName)\</CarpetaCompilacion>
+    <BaseIntermediateOutputPath>$(CarpetaCompilacion)obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(CarpetaCompilacion)bin\</BaseOutputPath>
+    <!-- Ignora las carpetas bin/obj viejas que hayan quedado dentro del proyecto -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>
