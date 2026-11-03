@@ -1,0 +1,51 @@
+using ec.edu.monster.modelo;
+using ec.edu.monster.servicio;
+using ec.edu.monster.vista;
+
+namespace ec.edu.monster;
+
+/// <summary>Ventana única de la aplicación; las pantallas las dibuja la vista Blazor de EurekaBank.Shared.</summary>
+public partial class App : Application
+{
+    private readonly EstadoSesion estado;
+    private readonly AutenticacionRestService autenticacion;
+
+    public App(EstadoSesion estado, AutenticacionRestService autenticacion)
+    {
+        InitializeComponent();
+        this.estado = estado;
+        this.autenticacion = autenticacion;
+    }
+
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        Window ventana = new(new MainPage())
+        {
+            Title = "EurekaBank | Cliente móvil REST"
+        };
+        ventana.Destroying += (_, _) => CerrarSesionAlSalir();
+        return ventana;
+    }
+
+    /// <summary>
+    /// Al cerrar la aplicación con la sesión abierta también se invalida el token (RQF-002). Se
+    /// espera como máximo unos segundos para no retener el cierre si el servidor no responde.
+    /// </summary>
+    private void CerrarSesionAlSalir()
+    {
+        SesionModelo? sesion = estado.Sesion;
+        if (sesion == null)
+        {
+            return;
+        }
+        estado.Terminar(null, false);
+        try
+        {
+            Task.Run(() => autenticacion.CerrarSesionAsync(sesion.Token)).Wait(TimeSpan.FromSeconds(3));
+        }
+        catch (AggregateException)
+        {
+            // La sesión local se descarta de todas formas
+        }
+    }
+}
