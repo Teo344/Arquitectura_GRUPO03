@@ -1,0 +1,112 @@
+@*
+    Componente raíz interactivo: lo que en el escritorio es el BlazorWebView de MainPage.xaml con
+    RootComponent = Rutas. Muestra las pantallas de EurekaBank.Shared y, por ser web, conserva la
+    sesión del empleado si recarga la página (F5).
+*@
+@implements IDisposable
+@inject EstadoSesion Estado
+@inject OpcionesCliente Opciones
+@inject ProtectedSessionStorage Almacen
+@inject NavigationManager Navegacion
+
+@if (listo)
+{
+    <Rutas />
+}
+
+@code {
+    private const string Clave = "eureka.sesion";
+
+    /// <summary>Dirección del navegador, que App.razor lee de la petición HTTP.</summary>
+    [Parameter]
+    public string? Equipo { get; set; }
+
+    private bool listo;
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrWhiteSpace(Equipo))
+        {
+            Opciones.NombreEquipo = Equipo;
+        }
+        Navegacion.LocationChanged += AlCambiarRuta;
+    }
+
+    /// <summary>
+    /// Recargar crea un circuito nuevo con un EstadoSesion vacío: antes de mostrar las pantallas se
+    /// recupera la sesión que la pestaña guardó (cifrada por ASP.NET Core). Si el token ya caducó en el
+    /// servidor, la primera operación responde AUTH-003 y las pantallas vuelven al login.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        if (!primeraVez)
+        {
+            return;
+        }
+        try
+        {
+            ProtectedBrowserStorageResult<SesionGuardada> guardada = await Almacen.GetAsync<SesionGuardada>(Clave);
+            if (guardada.Success && guardada.Value != null && Estado.Sesion == null)
+            {
+                Estado.Iniciar(guardada.Value.ASesion());
+            }
+        }
+        catch (System.Security.Cryptography.CryptographicException)
+        {
+            // Guardada con otra clave de protección (por ejemplo, tras reiniciar el servidor): se descarta
+            await Almacen.DeleteAsync(Clave);
+        }
+        listo = true;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Las pantallas navegan después de iniciar o terminar la sesión (menú al ingresar, login al salir o
+    /// al caducar el token): en cada cambio de ruta se guarda la sesión actual o se borra.
+    /// </summary>
+    private void AlCambiarRuta(object? remitente, LocationChangedEventArgs evento)
+    {
+        _ = InvokeAsync(GuardarAsync);
+    }
+
+    private async Task GuardarAsync()
+    {
+        try
+        {
+            if (Estado.Sesion == null)
+            {
+                await Almacen.DeleteAsync(Clave);
+            }
+            else
+            {
+                await Almacen.SetAsync(Clave, SesionGuardada.De(Estado.Sesion));
+            }
+        }
+        catch (Exception ex) when (ex is Microsoft.JSInterop.JSDisconnectedException || ex is TaskCanceledException
+                                   || ex is InvalidOperationException)
+        {
+            // La pestaña ya se cerró: no hay dónde guardar
+        }
+    }
+
+    public void Dispose()
+    {
+        Navegacion.LocationChanged -= AlCambiarRuta;
+    }
+
+    /// <summary>Copia de SesionModelo que se puede guardar como JSON (SesionModelo no tiene constructor vacío).</summary>
+    public sealed record SesionGuardada(string Token, string? ExpiraEn, string? CodigoEmpleado, string? NombreEmpleado,
+        string? CodigoSucursal, string? Sucursal)
+    {
+        public static SesionGuardada De(SesionModelo sesion)
+        {
+            return new SesionGuardada(sesion.Token, sesion.ExpiraEn, sesion.CodigoEmpleado, sesion.NombreEmpleado,
+                sesion.CodigoSucursal, sesion.Sucursal);
+        }
+
+        public SesionModelo ASesion()
+        {
+            return new SesionModelo(Token, ExpiraEn, CodigoEmpleado, NombreEmpleado, CodigoSucursal, Sucursal);
+        }
+    }
+}

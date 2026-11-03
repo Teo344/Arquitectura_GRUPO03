@@ -1,0 +1,53 @@
+@* Documento HTML de la aplicación: lo que en el escritorio es wwwroot/index.html del BlazorWebView. *@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EurekaBank | Cliente web</title>
+    <base href="/" />
+    <!-- Diseño "Azul" compartido por los clientes .NET (EurekaBank.Shared/wwwroot) -->
+    <link rel="stylesheet" href="_content/EurekaBank.Shared/css/eureka.css" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6.7' fill='%231D56CC'/%3E%3Cpath fill='white' transform='translate(4.8 4.8) scale(0.6)' d='M4,10h3v7H4zM10.5,10h3v7h-3zM2,19h20v3H2zM17,10h3v7h-3zM12,1L2,6v2h20V6z'/%3E%3C/svg%3E" />
+    <style>
+        #blazor-error-ui { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; padding: 12px 16px;
+                           background: #FCEBE8; color: #C0392B; border-top: 1px solid #C0392B; font-family: sans-serif; }
+        #blazor-error-ui .dismiss { float: right; cursor: pointer; }
+        /* Aviso mientras se recupera la conexión con el servidor (Blazor Server) */
+        #components-reconnect-modal { font-family: "Plus Jakarta Sans", sans-serif; }
+    </style>
+</head>
+
+<body>
+    <Raiz @rendermode="SinPrerender" Equipo="@equipo" />
+
+    <div id="blazor-error-ui" data-nosnippet>
+        Ocurrió un error inesperado.
+        <a href="." class="reload">Recargar</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    /// <summary>
+    /// Sin prerender: la sesión guardada en la pestaña solo se puede leer desde el navegador, y así
+    /// las pantallas (y sus controladores) se crean una sola vez.
+    /// </summary>
+    private static readonly IComponentRenderMode SinPrerender = new InteractiveServerRenderMode(prerender: false);
+
+    [CascadingParameter]
+    private HttpContext? Contexto { get; set; }
+
+    private string? equipo;
+
+    /// <summary>El "equipo" que el servidor guarda en logsession es la dirección del navegador del empleado.</summary>
+    protected override void OnInitialized()
+    {
+        equipo = Contexto?.Connection.RemoteIpAddress?.ToString();
+    }
+}
