@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+    <!-- Icono ic_banco del cliente móvil, centrado y escalado -->
+    <g transform="translate(108 108) scale(10)">
+        <path d="M4,10h3v7H4zM10.5,10h3v7h-3zM2,19h20v3H2zM17,10h3v7h-3zM12,1L2,6v2h20V6z" fill="#FFFFFF" />
+    </g>
+</svg>

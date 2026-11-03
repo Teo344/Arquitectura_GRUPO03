@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="EurekaBank.Desktop/EurekaBank.Desktop.csproj" />
+  <Project Path="EurekaBank.Shared/EurekaBank.Shared.csproj" />
+</Solution>

@@ -1,0 +1,24 @@
+@* Barra de navegación superior (#0B1D44 con texto blanco y #B8D2FF), con una acción opcional a la derecha. *@
+<header class="eb-barra">
+    <div class="eb-barra__contenido">
+        @if (AlVolver.HasDelegate)
+        {
+            <button type="button" class="eb-boton-icono eb-boton-icono--claro" title="Volver" aria-label="Volver"
+                    @onclick="AlVolver">
+                <Icono Nombre="NombreIcono.Volver" Tamano="24" />
+            </button>
+        }
+        <div class="eb-barra__textos">
+            <div class="eb-barra__titulo">@Titulo</div>
+            <div class="eb-barra__subtitulo">@Subtitulo</div>
+        </div>
+        @Accion
+    </div>
+</header>
+
+@code {
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    [Parameter, EditorRequired] public string Subtitulo { get; set; } = "";
+    [Parameter] public EventCallback AlVolver { get; set; }
+    [Parameter] public RenderFragment? Accion { get; set; }
+}

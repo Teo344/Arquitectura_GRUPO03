@@ -1,0 +1,29 @@
+@*
+    Botones del tema: primario (#1D56CC, 48 de alto, uno por vista), secundario (#EDF4FF con borde
+    #B8D2FF), peligro (#C0392B, compacto para la barra) y texto. Mientras carga se deshabilita y
+    muestra el indicador giratorio.
+*@
+<button type="button" class="eb-boton eb-boton--@Estilo.ToString().ToLowerInvariant() @Clase"
+        disabled="@(Cargando || !Habilitado)" aria-busy="@(Cargando ? "true" : "false")" @onclick="AlPulsar">
+    @if (Cargando)
+    {
+        <span class="eb-indicador" aria-hidden="true"></span>
+    }
+    else if (IconoBoton != null)
+    {
+        <Icono Nombre="IconoBoton.Value" Tamano="18" />
+    }
+    <span>@Texto</span>
+</button>
+
+@code {
+    public enum EstiloBoton { Primario, Secundario, Peligro, Texto }
+
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+    [Parameter] public EventCallback AlPulsar { get; set; }
+    [Parameter] public EstiloBoton Estilo { get; set; } = EstiloBoton.Primario;
+    [Parameter] public NombreIcono? IconoBoton { get; set; }
+    [Parameter] public bool Cargando { get; set; }
+    [Parameter] public bool Habilitado { get; set; } = true;
+    [Parameter] public string? Clase { get; set; }
+}

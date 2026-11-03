@@ -1,0 +1,11 @@
+@* Fila etiqueta / valor de una ficha. *@
+<div class="eb-fila-dato">
+    <span class="eb-fila-dato__etiqueta">@Etiqueta</span>
+    <span class="eb-fila-dato__valor @(Destacado ? "eb-fila-dato__valor--destacado" : "")">@Valor</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Etiqueta { get; set; } = "";
+    [Parameter, EditorRequired] public string Valor { get; set; } = "";
+    [Parameter] public bool Destacado { get; set; }
+}

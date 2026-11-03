@@ -1,0 +1,10 @@
+@* Icono vectorial de 24 x 24 que toma el color del texto (currentColor). *@
+<svg class="eb-icono @Clase" width="@Tamano" height="@Tamano" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="@Iconos.Trazo(Nombre)" fill="currentColor" />
+</svg>
+
+@code {
+    [Parameter, EditorRequired] public NombreIcono Nombre { get; set; }
+    [Parameter] public int Tamano { get; set; } = 20;
+    [Parameter] public string? Clase { get; set; }
+}

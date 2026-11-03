@@ -1,0 +1,10 @@
+@* Título de sección: sobretítulo y título H4. *@
+<div class="eb-titulo-seccion">
+    <div class="eb-sobretitulo">@Sobretitulo</div>
+    <div class="eb-h4">@Titulo</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Sobretitulo { get; set; } = "";
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+}

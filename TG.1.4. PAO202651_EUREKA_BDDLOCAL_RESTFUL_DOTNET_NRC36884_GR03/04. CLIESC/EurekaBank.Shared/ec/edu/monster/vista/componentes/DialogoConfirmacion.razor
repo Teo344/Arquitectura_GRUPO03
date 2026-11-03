@@ -1,0 +1,44 @@
+@* Confirmación antes de registrar una operación: resumen y dos acciones. Esc cancela. *@
+<div class="eb-velo" @onclick="AlCancelar">
+    <div class="eb-dialogo" role="dialog" aria-modal="true" aria-labelledby="dialogo-titulo" tabindex="-1"
+         @ref="panel" @onclick:stopPropagation="true" @onkeydown="TeclaPulsada">
+        <div id="dialogo-titulo" class="eb-h4">@Titulo</div>
+        <p class="eb-cuerpo eb-texto-secundario">Revisa los datos antes de registrar la operación.</p>
+        <div class="eb-dialogo__filas">
+            @foreach ((string etiqueta, string valor) in Filas)
+            {
+                <FilaDato Etiqueta="@etiqueta" Valor="@valor" />
+            }
+        </div>
+        <div class="eb-dialogo__acciones">
+            <Boton Texto="Cancelar" Estilo="Boton.EstiloBoton.Texto" AlPulsar="AlCancelar" />
+            <Boton Texto="@TextoConfirmar" AlPulsar="AlConfirmar" Clase="eb-boton--compacto" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference panel;
+
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    [Parameter, EditorRequired] public IReadOnlyList<(string Etiqueta, string Valor)> Filas { get; set; } = [];
+    [Parameter] public string TextoConfirmar { get; set; } = "Registrar";
+    [Parameter] public EventCallback AlConfirmar { get; set; }
+    [Parameter] public EventCallback AlCancelar { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        if (primeraVez)
+        {
+            await panel.FocusAsync();
+        }
+    }
+
+    private async Task TeclaPulsada(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await AlCancelar.InvokeAsync();
+        }
+    }
+}

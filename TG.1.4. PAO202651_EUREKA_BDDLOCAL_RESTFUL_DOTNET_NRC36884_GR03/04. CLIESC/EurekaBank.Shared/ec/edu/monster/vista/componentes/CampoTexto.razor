@@ -1,0 +1,65 @@
+@*
+    Campo con etiqueta visible encima y ayuda debajo (48 de alto, borde 1.5 #B1BFD4, foco
+    #1D56CC). Las claves se pueden mostrar u ocultar. Enter ejecuta AlConfirmar.
+*@
+<div class="eb-campo">
+    <label class="eb-campo__etiqueta" for="@id">@Etiqueta</label>
+    <div class="eb-campo__caja @(Habilitado ? "" : "eb-campo__caja--deshabilitada")">
+        <input @ref="entrada" id="@id" class="eb-campo__entrada"
+               type="@(EsClave && !claveVisible ? "password" : "text")"
+               inputmode="@ModoTeclado" autocomplete="@(EsClave ? "current-password" : "off")"
+               placeholder="@Marcador" disabled="@(!Habilitado)"
+               value="@Valor" @oninput="Cambiar" @onkeydown="TeclaPulsada" />
+        @if (EsClave)
+        {
+            <button type="button" class="eb-boton-icono" disabled="@(!Habilitado)"
+                    title="@(claveVisible ? "Ocultar contraseña" : "Mostrar contraseña")"
+                    aria-label="@(claveVisible ? "Ocultar contraseña" : "Mostrar contraseña")"
+                    @onclick="() => claveVisible = !claveVisible">
+                <Icono Nombre="@(claveVisible ? NombreIcono.Ocultar : NombreIcono.Ver)" Tamano="20" />
+            </button>
+        }
+    </div>
+    @if (Ayuda != null)
+    {
+        <div class="eb-campo__ayuda">@Ayuda</div>
+    }
+</div>
+
+@code {
+    private static int contador;
+
+    private readonly string id = "campo-" + Interlocked.Increment(ref contador);
+    private ElementReference entrada;
+    private bool claveVisible;
+
+    [Parameter, EditorRequired] public string Etiqueta { get; set; } = "";
+    [Parameter] public string? Valor { get; set; }
+    [Parameter] public EventCallback<string> ValorChanged { get; set; }
+    [Parameter] public string? Ayuda { get; set; }
+    [Parameter] public string? Marcador { get; set; }
+    [Parameter] public bool EsClave { get; set; }
+    /// <summary>Teclado en móvil: text, numeric o decimal.</summary>
+    [Parameter] public string ModoTeclado { get; set; } = "text";
+    [Parameter] public EventCallback AlConfirmar { get; set; }
+    [Parameter] public bool Habilitado { get; set; } = true;
+
+    public ValueTask EnfocarAsync()
+    {
+        return entrada.FocusAsync();
+    }
+
+    private Task Cambiar(ChangeEventArgs e)
+    {
+        Valor = e.Value?.ToString();
+        return ValorChanged.InvokeAsync(Valor);
+    }
+
+    private async Task TeclaPulsada(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && AlConfirmar.HasDelegate)
+        {
+            await AlConfirmar.InvokeAsync();
+        }
+    }
+}

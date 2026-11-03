@@ -1,0 +1,9 @@
+@* Navegación entre pantallas; cada aplicación (escritorio, móvil o web) la usa como componente raíz. *@
+<Router AppAssembly="typeof(Rutas).Assembly">
+    <Found Context="datosRuta">
+        <RouteView RouteData="datosRuta" />
+    </Found>
+    <NotFound>
+        <LoginVista />
+    </NotFound>
+</Router>

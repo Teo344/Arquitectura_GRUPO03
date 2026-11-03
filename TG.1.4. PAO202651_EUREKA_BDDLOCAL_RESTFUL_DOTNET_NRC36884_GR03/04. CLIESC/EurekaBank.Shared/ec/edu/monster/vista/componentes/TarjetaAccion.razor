@@ -1,0 +1,17 @@
+@* Tarjeta de acción del menú: icono, título y descripción; toda la tarjeta es pulsable. *@
+<button type="button" class="eb-tarjeta-accion" disabled="@(!Habilitado)" @onclick="AlPulsar">
+    <IconoEnCaja IconoCaja="IconoAccion" Estilo="@(Acento ? "cian" : "azul")" Tamano="48" />
+    <span class="eb-tarjeta-accion__textos">
+        <span class="eb-tarjeta-accion__titulo">@Titulo</span>
+        <span class="eb-tarjeta-accion__descripcion">@Descripcion</span>
+    </span>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    [Parameter, EditorRequired] public string Descripcion { get; set; } = "";
+    [Parameter, EditorRequired] public NombreIcono IconoAccion { get; set; }
+    [Parameter] public EventCallback AlPulsar { get; set; }
+    [Parameter] public bool Acento { get; set; }
+    [Parameter] public bool Habilitado { get; set; } = true;
+}

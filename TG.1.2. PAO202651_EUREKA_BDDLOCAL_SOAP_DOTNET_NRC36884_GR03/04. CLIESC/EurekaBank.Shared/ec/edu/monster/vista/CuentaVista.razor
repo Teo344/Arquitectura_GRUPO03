@@ -1,0 +1,210 @@
+@page "/cuenta"
+@page "/cuenta/{ModoRuta}"
+@implements IDisposable
+@inject CuentaSoapService Servicio
+@inject EstadoSesion Estado
+@inject NavigationManager Navegacion
+
+@* Vista de consultas (RQF-003 y RQF-004): solo muestra datos y delega al CuentaControlador. *@
+@if (controlador != null)
+{
+    <div class="eb-pantalla">
+        <BarraSuperior Titulo="Consultas" Subtitulo="Cuentas y movimientos" AlVolver="Volver" />
+
+        <main class="eb-contenido">
+            @* Escritorio: búsqueda a la izquierda y resultado a la derecha; en pantallas angostas, uno debajo del otro *@
+            <div class="eb-columnas eb-columnas--cuenta">
+                <div>
+                    <Tarjeta>
+                        <div class="eb-sobretitulo">Consulta</div>
+                        <div class="eb-h4 eb-espacio-xxs">Buscar una cuenta</div>
+                        <div class="eb-espacio-m">
+                            <SelectorSegmentado T="Modo" Opciones="modos" Seleccionada="modo" SeleccionadaChanged="CambiarModo"
+                                                Texto="EtiquetaDe" Icono="IconoDe" Habilitado="!cargando" />
+                        </div>
+                        <div class="eb-espacio-m">
+                            <CampoTexto Etiqueta="Número de cuenta" @bind-Valor="cuenta" Ayuda="8 dígitos, por ejemplo 00100001"
+                                        Marcador="00100001" ModoTeclado="numeric" AlConfirmar="Consultar" Habilitado="!cargando" />
+                        </div>
+                        <div class="eb-espacio-l">
+                            <Boton Texto="@(modo == Modo.Cuenta ? "Consultar cuenta" : "Ver movimientos")" IconoBoton="IconoDe(modo)"
+                                   Cargando="cargando" AlPulsar="Consultar" />
+                        </div>
+                        @if (mensaje != null)
+                        {
+                            <div class="eb-espacio-m"><Alerta Mensaje="@mensaje" EsError="mensajeEsError" /></div>
+                        }
+                    </Tarjeta>
+                </div>
+
+                <div>
+                    @if (modo == Modo.Cuenta)
+                    {
+                        if (datosCuenta == null)
+                        {
+                            <EstadoVacio IconoVacio="NombreIcono.Cuenta" Titulo="Sin consulta"
+                                         Texto="Escribe un número de cuenta para ver su titular, saldo y estado." />
+                        }
+                        else
+                        {
+                            <Tarjeta>
+                                <div class="eb-encabezado">
+                                    <IconoEnCaja IconoCaja="NombreIcono.Cuenta" Tamano="44" />
+                                    <div class="eb-encabezado__textos">
+                                        <div class="eb-sobretitulo">Cuenta</div>
+                                        <div class="eb-h4">@Formato.ValorO(datosCuenta.Codigo)</div>
+                                    </div>
+                                    <ChipEstado Estado="@datosCuenta.Estado" />
+                                </div>
+                                <div class="eb-cuerpo eb-texto-secundario eb-espacio-l">Saldo disponible</div>
+                                <div class="eb-h2 eb-texto-oscuro">@Formato.Importe(datosCuenta.Saldo)</div>
+                                <div class="eb-etiqueta eb-texto-cian">@datosCuenta.Moneda</div>
+                                <hr class="eb-divisor eb-espacio-m" />
+                                <FilaDato Etiqueta="Titular" Valor="@Formato.ValorO(datosCuenta.Titular)" />
+                                <FilaDato Etiqueta="Sucursal" Valor="@Formato.ValorO(datosCuenta.Sucursal)" />
+                                <FilaDato Etiqueta="Fecha de creación" Valor="@Formato.ValorO(datosCuenta.FechaCreacion)" />
+                            </Tarjeta>
+                        }
+                    }
+                    else if (movimientos == null)
+                    {
+                        <EstadoVacio IconoVacio="NombreIcono.Movimientos" Titulo="Sin consulta"
+                                     Texto="Escribe un número de cuenta para ver su historial de movimientos." />
+                    }
+                    else if (movimientos.Count == 0)
+                    {
+                        <EstadoVacio IconoVacio="NombreIcono.Info" Titulo="@($"Cuenta {cuentaMovimientos}")"
+                                     Texto="La cuenta no registra movimientos." />
+                    }
+                    else
+                    {
+                        <Tarjeta>
+                            <div class="eb-encabezado">
+                                <div class="eb-encabezado__textos">
+                                    <div class="eb-sobretitulo">Cuenta @cuentaMovimientos</div>
+                                    <div class="eb-h4">Historial de movimientos</div>
+                                </div>
+                                <Chip Texto="@($"{movimientos.Count} movimientos")" />
+                            </div>
+                            <div class="eb-espacio-s">
+                                @for (int i = 0; i < movimientos.Count; i++)
+                                {
+                                    if (i > 0)
+                                    {
+                                        <hr class="eb-divisor" />
+                                    }
+                                    <ItemMovimiento Movimiento="movimientos[i]" />
+                                }
+                            </div>
+                        </Tarjeta>
+                    }
+                </div>
+            </div>
+        </main>
+    </div>
+}
+
+@code {
+    private enum Modo { Cuenta, Movimientos }
+
+    private static readonly IReadOnlyList<Modo> modos = [Modo.Cuenta, Modo.Movimientos];
+
+    [Parameter] public string? ModoRuta { get; set; }
+
+    private CuentaControlador? controlador;
+    private Modo modo;
+    private string? cuenta;
+    private CuentaModelo? datosCuenta;
+    private IReadOnlyList<MovimientoModelo>? movimientos;
+    private string cuentaMovimientos = "";
+    private string? mensaje;
+    private bool mensajeEsError;
+    private bool cargando;
+
+    protected override void OnInitialized()
+    {
+        SesionModelo? sesion = Estado.Sesion;
+        if (sesion == null)
+        {
+            Estado.Terminar("Inicia sesión para continuar.", true);
+            Navegacion.NavigateTo("", replace: true);
+            return;
+        }
+        modo = ModoRuta == "movimientos" ? Modo.Movimientos : Modo.Cuenta;
+        controlador = new CuentaControlador(this, Servicio, sesion);
+    }
+
+    public void Dispose()
+    {
+        controlador?.Detener();
+    }
+
+    // ---- Métodos que usa el controlador ----
+
+    public void SetProcesando(bool procesando)
+    {
+        cargando = procesando;
+        if (procesando)
+        {
+            mensaje = null;
+        }
+        StateHasChanged();
+    }
+
+    public void MostrarMensaje(string texto, bool esError)
+    {
+        mensaje = texto;
+        mensajeEsError = esError;
+        StateHasChanged();
+    }
+
+    public void MostrarCuenta(CuentaModelo resultado)
+    {
+        datosCuenta = resultado;
+        StateHasChanged();
+    }
+
+    public void MostrarMovimientos(string codigo, IReadOnlyList<MovimientoModelo> lista)
+    {
+        cuentaMovimientos = codigo;
+        movimientos = lista;
+        StateHasChanged();
+    }
+
+    public void VolverAlLogin(string texto)
+    {
+        Estado.Terminar(texto + ". Inicia sesión nuevamente.", true);
+        Navegacion.NavigateTo("", replace: true);
+    }
+
+    // ---- Interfaz ----
+
+    private Task Consultar()
+    {
+        return modo == Modo.Cuenta
+            ? controlador!.ConsultarCuentaAsync(cuenta)
+            : controlador!.ConsultarMovimientosAsync(cuenta);
+    }
+
+    private void CambiarModo(Modo nuevo)
+    {
+        modo = nuevo;
+        mensaje = null;
+    }
+
+    private void Volver()
+    {
+        controlador?.Detener();
+        Navegacion.NavigateTo("menu");
+    }
+
+    private static string EtiquetaDe(Modo m)
+    {
+        return m == Modo.Cuenta ? "Datos de la cuenta" : "Movimientos";
+    }
+
+    private static NombreIcono IconoDe(Modo m)
+    {
+        return m == Modo.Cuenta ? NombreIcono.Cuenta : NombreIcono.Movimientos;
+    }
+}

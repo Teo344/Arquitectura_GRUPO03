@@ -1,0 +1,132 @@
+@page "/"
+@implements IDisposable
+@inject AutenticacionSoapService Autenticacion
+@inject EstadoSesion Estado
+@inject OpcionesCliente Opciones
+@inject NavigationManager Navegacion
+
+@* Vista de acceso (RQF-001): solo muestra datos y delega las acciones al LoginControlador. *@
+<div class="eb-login">
+    @* Foto del grupo con un velo sólido azul oscuro (sin degradados) y los textos de marca *@
+    <div class="eb-login__marca">
+        <img class="eb-login__foto" src="_content/EurekaBank.Shared/imagenes/fotoLogin.jpg" alt="" />
+        <div class="eb-login__marca-contenido">
+            <div class="eb-logo">
+                <IconoEnCaja IconoCaja="NombreIcono.Banco" Estilo="blanco" Tamano="36" TamanoIcono="20" />
+                <span class="eb-sobretitulo eb-texto-blanco">EUREKABANK</span>
+            </div>
+            <div>
+                <h1 class="eb-login__lema">Banca de ventanilla,<br />simple y segura</h1>
+                <p class="eb-cuerpo eb-login__detalle">Consulta cuentas y registra depósitos, retiros y transferencias en tiempo real.</p>
+                <div class="eb-login__chips">
+                    <Chip Texto="SOAP" Estilo="cian" />
+                    <Chip Texto=".NET" />
+                    <Chip Texto="Grupo 03" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="eb-login__lado">
+        <div class="eb-login__columna">
+            <Tarjeta>
+                <div class="eb-sobretitulo">Acceso de empleados</div>
+                <h2 class="eb-h3 eb-espacio-xs">Iniciar sesión</h2>
+                <p class="eb-cuerpo eb-texto-secundario">Ingresa con tu usuario del sistema EurekaBank.</p>
+                <div class="eb-espacio-l">
+                    <CampoTexto @ref="campoUsuario" Etiqueta="Usuario" @bind-Valor="usuario" Marcador="Ej. MONSTER"
+                                Habilitado="!cargando" AlConfirmar="EnfocarClave" />
+                </div>
+                <div class="eb-espacio-m">
+                    <CampoTexto @ref="campoClave" Etiqueta="Contraseña" @bind-Valor="clave" EsClave="true"
+                                Habilitado="!cargando" AlConfirmar="IniciarSesion" />
+                </div>
+                <div class="eb-espacio-l">
+                    <Boton Texto="Ingresar" AlPulsar="IniciarSesion" Cargando="cargando" />
+                </div>
+                @if (mensaje != null)
+                {
+                    <div class="eb-espacio-m"><Alerta Mensaje="@mensaje" EsError="mensajeEsError" /></div>
+                }
+            </Tarjeta>
+            <p class="eb-pie">@Opciones.NombreCliente · EurekaBank SOAP · Grupo 03</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginControlador controlador = default!;
+    private CampoTexto? campoUsuario;
+    private CampoTexto? campoClave;
+
+    private string? usuario;
+    private string? clave;
+    private string? mensaje;
+    private bool mensajeEsError;
+    private bool cargando;
+
+    protected override void OnInitialized()
+    {
+        controlador = new LoginControlador(this, Autenticacion);
+        (string? texto, bool esError) = Estado.TomarMensaje();
+        if (texto != null)
+        {
+            MostrarMensaje(texto, esError);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        if (primeraVez && campoUsuario != null)
+        {
+            await campoUsuario.EnfocarAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        controlador.Detener();
+    }
+
+    // ---- Métodos que usa el controlador ----
+
+    public void MostrarMensaje(string texto, bool esError)
+    {
+        mensaje = texto;
+        mensajeEsError = esError;
+        StateHasChanged();
+    }
+
+    public void SetProcesando(bool procesando)
+    {
+        cargando = procesando;
+        StateHasChanged();
+    }
+
+    public void LimpiarClave()
+    {
+        clave = "";
+        StateHasChanged();
+    }
+
+    public void AbrirMenu(SesionModelo sesion)
+    {
+        Estado.Iniciar(sesion);
+        Navegacion.NavigateTo("menu");
+    }
+
+    // ---- Interfaz ----
+
+    private Task IniciarSesion()
+    {
+        return controlador.IniciarSesionAsync(usuario, clave);
+    }
+
+    private async Task EnfocarClave()
+    {
+        if (campoClave != null)
+        {
+            await campoClave.EnfocarAsync();
+        }
+    }
+}

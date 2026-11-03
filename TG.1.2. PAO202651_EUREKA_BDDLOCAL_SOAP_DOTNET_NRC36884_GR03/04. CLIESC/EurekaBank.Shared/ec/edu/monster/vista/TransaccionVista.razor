@@ -1,0 +1,228 @@
+@page "/transaccion/{TipoRuta}"
+@implements IDisposable
+@inject TransaccionSoapService Servicio
+@inject EstadoSesion Estado
+@inject NavigationManager Navegacion
+
+@*
+    Vista de transacciones (RQF-005 a RQF-007): captura los datos, muestra la confirmación y el
+    comprobante; las reglas las valida el TransaccionControlador.
+*@
+@if (controlador != null)
+{
+    bool esTransferencia = tipo == TipoTransaccion.Transferencia;
+    <div class="eb-pantalla">
+        <BarraSuperior Titulo="Transacciones" Subtitulo="Depósitos, retiros y transferencias" AlVolver="Volver" />
+
+        <main class="eb-contenido">
+            @* Escritorio: formulario a la izquierda y comprobante a la derecha *@
+            <div class="eb-columnas eb-columnas--transaccion">
+                <div>
+                    <Tarjeta>
+                        <div class="eb-sobretitulo">Nueva operación</div>
+                        <div class="eb-h4 eb-espacio-xxs">Registrar @tipo.NombreVisible().ToLowerInvariant()</div>
+                        <div class="eb-espacio-m">
+                            <SelectorSegmentado T="TipoTransaccion" Opciones="tipos" Seleccionada="tipo"
+                                                SeleccionadaChanged="CambiarTipo" Texto="t => t.NombreVisible()"
+                                                Icono="Iconos.De" Habilitado="!cargando" />
+                        </div>
+                        <div class="eb-espacio-m">
+                            <CampoTexto Etiqueta="@(esTransferencia ? "Cuenta de origen" : "Número de cuenta")" @bind-Valor="cuenta"
+                                        Ayuda="8 dígitos, por ejemplo 00100001" Marcador="00100001" ModoTeclado="numeric"
+                                        Habilitado="!cargando" />
+                        </div>
+                        @if (esTransferencia)
+                        {
+                            <div class="eb-espacio-m">
+                                <CampoTexto Etiqueta="Cuenta de destino" @bind-Valor="cuentaDestino"
+                                            Ayuda="Debe ser distinta de la de origen y de la misma moneda" Marcador="00200002"
+                                            ModoTeclado="numeric" Habilitado="!cargando" />
+                            </div>
+                        }
+                        <div class="eb-espacio-m">
+                            <CampoTexto Etiqueta="Importe" @bind-Valor="importe" Ayuda="Mayor que cero y con máximo dos decimales"
+                                        Marcador="150.00" ModoTeclado="decimal" AlConfirmar="Preparar" Habilitado="!cargando" />
+                        </div>
+                        <div class="eb-espacio-l">
+                            <Boton Texto="Continuar" IconoBoton="Iconos.De(tipo)" Cargando="cargando" AlPulsar="Preparar" />
+                        </div>
+                        @if (mensaje != null)
+                        {
+                            <div class="eb-espacio-m"><Alerta Mensaje="@mensaje" EsError="mensajeEsError" /></div>
+                        }
+                    </Tarjeta>
+                </div>
+
+                <div>
+                    @if (registrada == null || resultado == null)
+                    {
+                        <EstadoVacio IconoVacio="NombreIcono.Movimientos" Titulo="Sin operaciones registradas"
+                                     Texto="Completa el formulario y confirma para ver aquí el comprobante con el nuevo saldo." />
+                    }
+                    else
+                    {
+                        <TarjetaResultado Mensaje="@(resultado.Mensaje ?? "Operación registrada")" Filas="FilasComprobante()" />
+                    }
+                </div>
+            </div>
+        </main>
+    </div>
+
+    @if (porConfirmar != null)
+    {
+        <DialogoConfirmacion Titulo="@($"Confirmar {porConfirmar.Tipo.NombreVisible().ToLowerInvariant()}")"
+                             Filas="Resumen(porConfirmar)" TextoConfirmar="Registrar"
+                             AlConfirmar="Confirmar" AlCancelar="() => porConfirmar = null" />
+    }
+}
+
+@code {
+    private static readonly IReadOnlyList<TipoTransaccion> tipos =
+        [TipoTransaccion.Deposito, TipoTransaccion.Retiro, TipoTransaccion.Transferencia];
+
+    [Parameter] public string? TipoRuta { get; set; }
+
+    private TransaccionControlador? controlador;
+    private TipoTransaccion tipo;
+    private string? cuenta;
+    private string? cuentaDestino;
+    private string? importe;
+    private TransaccionModelo? porConfirmar;
+    private TransaccionModelo? registrada;
+    private ResultadoTransaccionModelo? resultado;
+    private string? mensaje;
+    private bool mensajeEsError;
+    private bool cargando;
+
+    protected override void OnInitialized()
+    {
+        SesionModelo? sesion = Estado.Sesion;
+        if (sesion == null)
+        {
+            Estado.Terminar("Inicia sesión para continuar.", true);
+            Navegacion.NavigateTo("", replace: true);
+            return;
+        }
+        if (Enum.TryParse(TipoRuta, true, out TipoTransaccion elegido))
+        {
+            tipo = elegido;
+        }
+        controlador = new TransaccionControlador(this, Servicio, sesion);
+    }
+
+    public void Dispose()
+    {
+        controlador?.Detener();
+    }
+
+    // ---- Métodos que usa el controlador ----
+
+    public void SetProcesando(bool procesando)
+    {
+        cargando = procesando;
+        if (procesando)
+        {
+            mensaje = null;
+        }
+        StateHasChanged();
+    }
+
+    public void MostrarMensaje(string texto, bool esError)
+    {
+        mensaje = texto;
+        mensajeEsError = esError;
+        StateHasChanged();
+    }
+
+    public void PedirConfirmacion(TransaccionModelo modelo)
+    {
+        mensaje = null;
+        porConfirmar = modelo;
+        StateHasChanged();
+    }
+
+    public void MostrarResultado(TransaccionModelo modelo, ResultadoTransaccionModelo registro)
+    {
+        registrada = modelo;
+        resultado = registro;
+        importe = "";
+        StateHasChanged();
+    }
+
+    public void VolverAlLogin(string texto)
+    {
+        Estado.Terminar(texto + ". Inicia sesión nuevamente.", true);
+        Navegacion.NavigateTo("", replace: true);
+    }
+
+    // ---- Interfaz ----
+
+    private void Preparar()
+    {
+        controlador!.Preparar(tipo, cuenta, cuentaDestino, importe);
+    }
+
+    private Task Confirmar()
+    {
+        TransaccionModelo modelo = porConfirmar!;
+        porConfirmar = null;
+        return controlador!.EjecutarAsync(modelo);
+    }
+
+    private void CambiarTipo(TipoTransaccion nuevo)
+    {
+        tipo = nuevo;
+        mensaje = null;
+        resultado = null;
+        registrada = null;
+    }
+
+    private void Volver()
+    {
+        controlador?.Detener();
+        Navegacion.NavigateTo("menu");
+    }
+
+    private IReadOnlyList<(string Etiqueta, string Valor)> FilasComprobante()
+    {
+        string origen = Formato.ValorO(registrada!.Cuenta);
+        if (registrada.Tipo == TipoTransaccion.Transferencia)
+        {
+            return
+            [
+                ("Nuevo saldo de origen", Formato.Importe(resultado!.NuevoSaldo)),
+                ("Cuenta de origen", origen),
+                ("Cuenta de destino", Formato.ValorO(registrada.CuentaDestino)),
+                ("Importe", Formato.Importe(registrada.Importe)),
+                ("Movimiento en origen", $"N.º {resultado.NumeroMovimiento?.ToString() ?? "-"}"),
+                ("Movimiento en destino", $"N.º {resultado.NumeroMovimientoDestino?.ToString() ?? "-"}")
+            ];
+        }
+        return
+        [
+            ("Nuevo saldo", Formato.Importe(resultado!.NuevoSaldo)),
+            ("Cuenta", origen),
+            ("Importe", Formato.Importe(registrada.Importe)),
+            ("Movimiento", $"N.º {resultado.NumeroMovimiento?.ToString() ?? "-"}")
+        ];
+    }
+
+    private static IReadOnlyList<(string Etiqueta, string Valor)> Resumen(TransaccionModelo modelo)
+    {
+        if (modelo.Tipo == TipoTransaccion.Transferencia)
+        {
+            return
+            [
+                ("Cuenta de origen", Formato.ValorO(modelo.Cuenta)),
+                ("Cuenta de destino", Formato.ValorO(modelo.CuentaDestino)),
+                ("Importe", Formato.Importe(modelo.Importe))
+            ];
+        }
+        return
+        [
+            ("Operación", modelo.Tipo.NombreVisible()),
+            ("Cuenta", Formato.ValorO(modelo.Cuenta)),
+            ("Importe", Formato.Importe(modelo.Importe))
+        ];
+    }
+}

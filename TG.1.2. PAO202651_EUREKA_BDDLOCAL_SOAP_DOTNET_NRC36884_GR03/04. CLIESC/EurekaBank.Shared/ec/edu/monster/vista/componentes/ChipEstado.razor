@@ -1,0 +1,13 @@
+@* Estado de una cuenta: ACTIVO en verde con check; cualquier otro en ámbar con advertencia. *@
+@if (Estado == "ACTIVO")
+{
+    <Chip Texto="ACTIVO" Estilo="exito" IconoChip="NombreIcono.Exito" />
+}
+else
+{
+    <Chip Texto="@(Estado ?? "SIN ESTADO")" Estilo="advertencia" IconoChip="NombreIcono.Advertencia" />
+}
+
+@code {
+    [Parameter] public string? Estado { get; set; }
+}

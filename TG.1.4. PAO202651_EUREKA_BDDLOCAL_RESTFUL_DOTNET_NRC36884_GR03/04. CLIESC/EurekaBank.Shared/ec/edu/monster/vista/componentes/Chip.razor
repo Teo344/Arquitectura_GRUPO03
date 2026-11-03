@@ -1,0 +1,14 @@
+@* Etiqueta pequeña (chip) con radio 6. Estilo: azul, cian, exito o advertencia. *@
+<span class="eb-chip eb-chip--@Estilo">
+    @if (IconoChip != null)
+    {
+        <Icono Nombre="IconoChip.Value" Tamano="14" Clase="eb-chip__icono" />
+    }
+    @Texto
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+    [Parameter] public string Estilo { get; set; } = "azul";
+    [Parameter] public NombreIcono? IconoChip { get; set; }
+}

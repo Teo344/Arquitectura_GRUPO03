@@ -1,0 +1,9 @@
+@* Tarjeta: fondo blanco, borde #D3DCEA, radio 16, sombra md (tinte #12306A) y padding 24. *@
+<section class="eb-tarjeta @Clase">
+    @ChildContent
+</section>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Clase { get; set; }
+}

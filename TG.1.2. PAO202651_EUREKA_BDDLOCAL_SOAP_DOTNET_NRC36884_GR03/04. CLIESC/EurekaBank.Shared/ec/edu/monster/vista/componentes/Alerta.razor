@@ -1,0 +1,10 @@
+@* Alerta con icono y texto: el estado nunca se comunica solo con color. *@
+<div class="eb-alerta @(EsError ? "eb-alerta--error" : "eb-alerta--info")" role="@(EsError ? "alert" : "status")">
+    <Icono Nombre="@(EsError ? NombreIcono.Error : NombreIcono.Info)" Tamano="20" />
+    <span>@Mensaje</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Mensaje { get; set; } = "";
+    [Parameter] public bool EsError { get; set; }
+}

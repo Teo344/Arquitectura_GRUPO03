@@ -1,0 +1,12 @@
+@* Mensaje centrado para cuando todavía no hay datos que mostrar. *@
+<div class="eb-vacio">
+    <IconoEnCaja IconoCaja="IconoVacio" Tamano="56" />
+    <div class="eb-vacio__titulo">@Titulo</div>
+    <div class="eb-vacio__texto">@Texto</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public NombreIcono IconoVacio { get; set; }
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+}

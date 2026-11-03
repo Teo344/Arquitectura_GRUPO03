@@ -1,0 +1,102 @@
+@page "/menu"
+@implements IDisposable
+@inject AutenticacionSoapService Autenticacion
+@inject EstadoSesion Estado
+@inject NavigationManager Navegacion
+
+@* Vista del menú principal: muestra la sesión y delega cada opción al MenuControlador. *@
+@if (sesion != null)
+{
+    <div class="eb-pantalla">
+        <BarraSuperior Titulo="@($"Hola, {sesion.NombreEmpleado ?? "empleado"}")"
+                       Subtitulo="@($"Sucursal {Formato.ValorO(sesion.CodigoSucursal)} · {Formato.ValorO(sesion.Sucursal)}")">
+            <Accion>
+                <Boton Texto="Salir" Estilo="Boton.EstiloBoton.Peligro" IconoBoton="NombreIcono.Salir"
+                       Cargando="cargando" AlPulsar="controlador.CerrarSesionAsync" />
+            </Accion>
+        </BarraSuperior>
+
+        <main class="eb-contenido">
+            <div class="eb-centrado eb-centrado--contenido">
+                <div>
+                    <div class="eb-sobretitulo">Panel de operaciones</div>
+                    <h1 class="eb-h3">¿Qué deseas hacer hoy?</h1>
+                </div>
+                <div>
+                    <Chip Texto="@($"Sesión activa hasta las {Formato.HoraLocal(sesion.ExpiraEn)} · se renueva con cada operación")"
+                          Estilo="cian" IconoChip="NombreIcono.Info" />
+                </div>
+
+                <TituloSeccion Sobretitulo="Consultas" Titulo="Información de cuentas" />
+                <div class="eb-cuadricula">
+                    <TarjetaAccion Titulo="Consultar cuenta" Descripcion="Titular, moneda, saldo y estado de una cuenta."
+                                   IconoAccion="NombreIcono.Cuenta" Habilitado="!cargando"
+                                   AlPulsar="controlador.AbrirConsultaCuenta" />
+                    <TarjetaAccion Titulo="Movimientos" Descripcion="Historial de ingresos y salidas de una cuenta."
+                                   IconoAccion="NombreIcono.Movimientos" Habilitado="!cargando"
+                                   AlPulsar="controlador.AbrirMovimientos" />
+                </div>
+
+                <TituloSeccion Sobretitulo="Transacciones" Titulo="Registrar una operación" />
+                <div class="eb-cuadricula">
+                    <TarjetaAccion Titulo="Depósito" Descripcion="Suma un importe al saldo de una cuenta."
+                                   IconoAccion="NombreIcono.Deposito" Habilitado="!cargando"
+                                   AlPulsar="() => controlador.AbrirTransaccion(TipoTransaccion.Deposito)" />
+                    <TarjetaAccion Titulo="Retiro" Descripcion="Descuenta un importe con saldo suficiente."
+                                   IconoAccion="NombreIcono.Retiro" Habilitado="!cargando"
+                                   AlPulsar="() => controlador.AbrirTransaccion(TipoTransaccion.Retiro)" />
+                    <TarjetaAccion Titulo="Transferencia" Descripcion="Mueve fondos entre cuentas de la misma moneda."
+                                   IconoAccion="NombreIcono.Transferencia" Acento="true" Habilitado="!cargando"
+                                   AlPulsar="() => controlador.AbrirTransaccion(TipoTransaccion.Transferencia)" />
+                </div>
+            </div>
+        </main>
+    </div>
+}
+
+@code {
+    private MenuControlador controlador = default!;
+    private SesionModelo? sesion;
+    private bool cargando;
+
+    protected override void OnInitialized()
+    {
+        sesion = Estado.Sesion;
+        if (sesion == null)
+        {
+            VolverAlLogin("Inicia sesión para continuar.", true);
+            return;
+        }
+        controlador = new MenuControlador(this, Autenticacion, sesion);
+    }
+
+    public void Dispose()
+    {
+        controlador?.Detener();
+    }
+
+    // ---- Métodos que usa el controlador ----
+
+    public void SetProcesando(bool procesando)
+    {
+        cargando = procesando;
+        StateHasChanged();
+    }
+
+    public void MostrarCuenta(bool verMovimientos)
+    {
+        Navegacion.NavigateTo(verMovimientos ? "cuenta/movimientos" : "cuenta");
+    }
+
+    public void MostrarTransaccion(TipoTransaccion tipo)
+    {
+        Navegacion.NavigateTo("transaccion/" + tipo.ToString().ToLowerInvariant());
+    }
+
+    /// <summary>Cierra las pantallas de la sesión y vuelve al login, opcionalmente con un mensaje.</summary>
+    public void VolverAlLogin(string mensaje, bool esError)
+    {
+        Estado.Terminar(mensaje, esError);
+        Navegacion.NavigateTo("", replace: true);
+    }
+}

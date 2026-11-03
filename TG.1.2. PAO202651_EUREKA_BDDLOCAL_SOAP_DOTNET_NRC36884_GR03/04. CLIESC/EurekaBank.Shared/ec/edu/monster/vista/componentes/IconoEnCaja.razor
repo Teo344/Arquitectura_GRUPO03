@@ -1,0 +1,11 @@
+@* Icono dentro de un cuadro de color suave (radio 10). Estilo: azul, cian, exito o blanco. *@
+<span class="eb-icono-caja eb-icono-caja--@Estilo" style="width:@(Tamano)px;height:@(Tamano)px">
+    <Icono Nombre="IconoCaja" Tamano="@(TamanoIcono ?? Tamano / 2)" />
+</span>
+
+@code {
+    [Parameter, EditorRequired] public NombreIcono IconoCaja { get; set; }
+    [Parameter] public string Estilo { get; set; } = "azul";
+    [Parameter] public int Tamano { get; set; } = 44;
+    [Parameter] public int? TamanoIcono { get; set; }
+}

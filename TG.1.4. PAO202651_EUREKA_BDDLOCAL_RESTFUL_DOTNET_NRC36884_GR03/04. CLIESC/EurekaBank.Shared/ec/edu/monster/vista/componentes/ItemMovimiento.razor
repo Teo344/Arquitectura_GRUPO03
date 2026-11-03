@@ -1,0 +1,26 @@
+@*
+    Movimiento del historial: icono y signo indican si es ingreso o salida (además del color),
+    con fecha, número y cuenta de referencia.
+*@
+@{
+    bool ingreso = Movimiento.Accion == "INGRESO";
+    string referencia = Movimiento.CuentaReferencia == null ? "" : "  ·  Ref. " + Movimiento.CuentaReferencia;
+}
+<div class="eb-movimiento">
+    <span class="eb-movimiento__circulo @(ingreso ? "eb-movimiento__circulo--ingreso" : "eb-movimiento__circulo--salida")"
+          title="@(ingreso ? "Ingreso" : "Salida")">
+        <Icono Nombre="@(ingreso ? NombreIcono.Deposito : NombreIcono.Retiro)" Tamano="20" />
+    </span>
+    <span class="eb-movimiento__datos">
+        <span class="eb-movimiento__tipo">@Formato.ValorO(Movimiento.Tipo)</span>
+        <span class="eb-movimiento__detalle">N.º @Movimiento.Numero  ·  @Formato.ValorO(Movimiento.Fecha)@referencia</span>
+    </span>
+    <span class="eb-movimiento__importe">
+        <span class="@(ingreso ? "eb-texto-exito" : "eb-texto-error")">@(ingreso ? "+ " : "− ")@Formato.Importe(Movimiento.Importe)</span>
+        <span class="eb-movimiento__accion">@Movimiento.Accion</span>
+    </span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public MovimientoModelo Movimiento { get; set; } = default!;
+}

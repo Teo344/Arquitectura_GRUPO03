@@ -1,0 +1,39 @@
+@typeparam T
+@*
+    Selector de opciones excluyentes (pestañas en píldora): la opción elegida se marca con fondo
+    blanco, borde y texto en negrita, no solo con color.
+*@
+<div class="eb-selector" role="tablist">
+    @foreach (T opcion in Opciones)
+    {
+        bool elegida = EqualityComparer<T>.Default.Equals(opcion, Seleccionada);
+        <button type="button" role="tab" aria-selected="@(elegida ? "true" : "false")"
+                class="eb-selector__opcion @(elegida ? "eb-selector__opcion--elegida" : "")"
+                disabled="@(!Habilitado)" @onclick="() => Elegir(opcion)">
+            @if (Icono != null)
+            {
+                <Icono Nombre="Icono(opcion)" Tamano="18" />
+            }
+            <span>@Texto(opcion)</span>
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<T> Opciones { get; set; } = Array.Empty<T>();
+    [Parameter, EditorRequired] public T Seleccionada { get; set; } = default!;
+    [Parameter] public EventCallback<T> SeleccionadaChanged { get; set; }
+    [Parameter, EditorRequired] public Func<T, string> Texto { get; set; } = o => o?.ToString() ?? "";
+    [Parameter] public Func<T, NombreIcono>? Icono { get; set; }
+    [Parameter] public bool Habilitado { get; set; } = true;
+
+    private Task Elegir(T opcion)
+    {
+        if (EqualityComparer<T>.Default.Equals(opcion, Seleccionada))
+        {
+            return Task.CompletedTask;
+        }
+        Seleccionada = opcion;
+        return SeleccionadaChanged.InvokeAsync(opcion);
+    }
+}
