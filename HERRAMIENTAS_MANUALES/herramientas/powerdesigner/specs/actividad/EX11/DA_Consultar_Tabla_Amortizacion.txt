@@ -1,0 +1,41 @@
+# DA16: Consultar tabla de amortización
+AREA|15000|-54100
+CALLE|CLI|Comercializadora (cliente del servicio)|-30000|-12000
+CALLE|SRV|Core BanQuito (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD banquito (MySQL)|22000|39000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Enviar GET /api/v1/creditos/{codCredito}/cuotas con X-Api-Key
+ACT|N3|SRV|10000|6700|15000|3600|FiltroClaveApi compara la cabecera X-Api-Key con api.clave
+DEC|N4|SRV|10000|1400|18000|4400|¿Clave de API válida? (ECUD18)
+DEC|N5|SRV|10000|-3900|18000|4400|¿Código de crédito mayor que cero?
+ACT|N6|SRV|10000|-9200|15000|3600|Buscar el crédito (CreditoDao.buscar)
+ACT|N7|BD|30500|-9200|14000|3600|SELECT CREDITO WHERE COD_CREDITO
+DEC|N8|SRV|10000|-14500|18000|4400|¿Base de datos disponible?
+DEC|N9|SRV|10000|-19800|18000|4400|¿El crédito existe?
+ACT|N10|SRV|10000|-25100|15000|3600|Listar sus cuotas (CuotaDao.listar)
+ACT|N11|BD|30500|-25100|14000|3600|SELECT CUOTA ORDER BY NUM_CUOTA
+ACT|N12|SRV|10000|-30400|15000|3600|Responder 200 con todas las cuotas
+ACT|N13|SRV|-4500|-35700|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N14|CLI|-21000|-35700|13000|3600|PasarelaBanquito recibe el problem+json (código del Core o EXT-001)
+FIN|N15|CLI|-21000|-41000
+ACT|N16|CLI|-21000|-46300|13000|3600|Recibir la tabla de amortización
+FIN|N17|CLI|-21000|-51600
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5|Sí|
+FLU|N5|N6|Sí|
+FLU|N6|N7||
+FLU|N7|N8||30500,-11850;10000,-11850
+FLU|N8|N9|Sí|
+FLU|N9|N10|Sí|
+FLU|N10|N11||
+FLU|N11|N12||30500,-27750;10000,-27750
+FLU|N4|N13|No: AUTH-004 · 401|-4500,1400
+FLU|N5|N13|No: DATA-001 · 400|-4500,-3900
+FLU|N8|N13|No: SYS-001 · 503|-4500,-14500
+FLU|N9|N13|No: CRE-004 · 404|-4500,-19800
+FLU|N13|N14||
+FLU|N14|N15||
+FLU|N12|N16||10000,-46300
+FLU|N16|N17||

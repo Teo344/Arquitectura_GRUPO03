@@ -1,0 +1,68 @@
+# DA15: Otorgar crédito
+AREA|15000|-101800
+CALLE|CLI|Comercializadora (cliente del servicio)|-30000|-12000
+CALLE|SRV|Core BanQuito (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD banquito (MySQL)|22000|39000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Enviar POST /api/v1/creditos {codCliente, monto, numCuotas} con X-Api-Key
+ACT|N3|SRV|10000|6700|15000|3600|FiltroClaveApi compara la cabecera X-Api-Key con api.clave
+DEC|N4|SRV|10000|1400|18000|4400|¿Clave de API válida? (ECUD18)
+DEC|N5|SRV|10000|-3900|18000|4400|¿Código de cliente válido?
+DEC|N6|SRV|10000|-9200|18000|4400|¿Monto mayor que cero y con 2 decimales?
+DEC|N7|SRV|10000|-14500|18000|4400|¿Cuotas entre 3 y 18?
+ACT|N8|SRV|10000|-19800|15000|3600|Calcular la tabla francesa con 16.50 % anual (CalculadoraAmortizacion)
+DEC|N9|SRV|10000|-25100|18000|4400|¿Todas las cuotas tienen capital positivo?
+ACT|N10|SRV|10000|-30400|15000|3600|Iniciar la transacción y bloquear al cliente (ClienteDao.bloquear)
+ACT|N11|BD|30500|-30400|14000|3600|SELECT CLIENTE … FOR UPDATE
+DEC|N12|SRV|10000|-35700|18000|4400|¿Base de datos disponible?
+DEC|N13|SRV|10000|-41000|18000|4400|¿El cliente existe?
+ACT|N14|SRV|10000|-46300|15000|3600|Reevaluar las reglas RN-02 a RN-04 (ClienteDao.reglas)
+ACT|N15|BD|30500|-46300|14000|3600|Consultar las reglas del cliente
+DEC|N16|SRV|10000|-51600|18000|4400|¿Es sujeto de crédito?
+ACT|N17|SRV|10000|-56900|15000|3600|Calcular el monto máximo (MovimientoDao.promedios)
+ACT|N18|BD|30500|-56900|14000|3600|AVG de MOVIMIENTO de 3 meses
+DEC|N19|SRV|10000|-62200|18000|4400|¿El monto no supera el monto máximo?
+ACT|N20|SRV|10000|-67500|15000|3600|Insertar el crédito y sus cuotas (CreditoDao, CuotaDao)
+ACT|N21|BD|30500|-67500|14000|3600|INSERT CREDITO y CUOTA
+ACT|N22|SRV|10000|-72800|15000|3600|Confirmar la transacción (commit)
+ACT|N23|SRV|10000|-78100|15000|3600|Responder 201 Created con el crédito y su tabla
+ACT|N24|SRV|-4500|-83400|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N25|CLI|-21000|-83400|13000|3600|PasarelaBanquito recibe el problem+json (código del Core o EXT-001)
+FIN|N26|CLI|-21000|-88700
+ACT|N27|CLI|-21000|-94000|13000|3600|Recibir el crédito otorgado
+FIN|N28|CLI|-21000|-99300
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5|Sí|
+FLU|N5|N6|Sí|
+FLU|N6|N7|Sí|
+FLU|N7|N8|Sí|
+FLU|N8|N9||
+FLU|N9|N10|Sí|
+FLU|N10|N11||
+FLU|N11|N12||30500,-33050;10000,-33050
+FLU|N12|N13|Sí|
+FLU|N13|N14|Sí|
+FLU|N14|N15||
+FLU|N15|N16||30500,-48950;10000,-48950
+FLU|N16|N17|Sí|
+FLU|N17|N18||
+FLU|N18|N19||30500,-59550;10000,-59550
+FLU|N19|N20|Sí|
+FLU|N20|N21||
+FLU|N21|N22||30500,-70150;10000,-70150
+FLU|N22|N23||
+FLU|N4|N24|No: AUTH-004 · 401|-4500,1400
+FLU|N5|N24|No: DATA-001 · 400|-4500,-3900
+FLU|N6|N24|No: CRE-005 · 400|-4500,-9200
+FLU|N7|N24|No: CRE-003 · 400|-4500,-14500
+FLU|N9|N24|No: CRE-005 · 400|-4500,-25100
+FLU|N12|N24|No: SYS-001 · 503|-4500,-35700
+FLU|N13|N24|No: CLI-001 · 404|-4500,-41000
+FLU|N16|N24|No: CRE-001 · 409|-4500,-51600
+FLU|N19|N24|No: CRE-002 · 409|-4500,-62200
+FLU|N24|N25||
+FLU|N25|N26||
+FLU|N23|N27||10000,-94000
+FLU|N27|N28||

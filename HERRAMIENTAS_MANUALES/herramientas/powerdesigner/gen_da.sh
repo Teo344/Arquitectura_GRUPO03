@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Genera diagramas de actividad de un TG en PowerDesigner 16.1 a partir de specs/actividad/<clave>/<DA_x>.txt (UTF-8):
-#   <TG>/01. UML/03 DIAGRAMAS/02_ACTIVIDAD/<DA_x>.oom y .png
+#   <TG>/01. UML/03 DIAGRAMAS/02_ACTIVIDAD/<DA_x>.oom (sin PNG; la imagen de revisión queda en tmp/revision)
 # uso: bash gen_da.sh <carpeta_TG> <clave_specs> [DA_x ...]   (sin nombres, genera todos los specs de la clave)
 set -u
 S="$(cd "$(dirname "$0")" && pwd)"
 RAIZ="$(cd "$S/../../.." && pwd)"
 TPL="$RAIZ/TI.1.1. PAO202651_SOAP_JAVA_SINBDD_NRC36884_GR03/01. UML/03 DIAGRAMAS/02_ACTIVIDAD/Diagrama_Actividad_Conversor.oom"
-TMP="$S/tmp"; mkdir -p "$TMP"
+TMP="$S/tmp"; REV="$TMP/revision"; mkdir -p "$REV"
 TG="$(cd "$1" && pwd)"; CLAVE="$2"; shift 2
 D="$TG/01. UML/03 DIAGRAMAS/02_ACTIVIDAD"; mkdir -p "$D"
 
@@ -27,7 +27,7 @@ for a in "${nombres[@]}"; do
     [ -f "$D/$a.oom" ] && [ "$(stat -c %s "$D/$a.oom")" -gt 20000 ] && break
   done
   python -I "$S/finalizar_da.py" "$D/$a.oom" "$TMP/base_da.oom" >/dev/null || echo "fallo al finalizar $a"
-  rm -f "${D:?}/${a:?}.png"
-  for intento in 1 2 3; do esperar; "$CSCRIPT" //nologo "$(w "$S/exportar_diagrama.vbs")" "$(w "$D/$a.oom")" "$(w "$D/$a.png")" >/dev/null 2>&1; [ -f "$D/$a.png" ] && break; done
-  echo "  $a oom=$(stat -c %s "$D/$a.oom") png=$([ -f "$D/$a.png" ] && echo ok || echo FALTA)"
+  rm -f "${REV:?}/${a:?}.png"
+  for intento in 1 2 3; do esperar; "$CSCRIPT" //nologo "$(w "$S/exportar_diagrama.vbs")" "$(w "$D/$a.oom")" "$(w "$REV/$a.png")" >/dev/null 2>&1; [ -f "$REV/$a.png" ] && break; done
+  echo "  $a oom=$(stat -c %s "$D/$a.oom") revision=$([ -f "$REV/$a.png" ] && echo ok || echo FALTA)"
 done

@@ -191,38 +191,50 @@ bash gen_ea_tg.sh "$T" RESTFUL_BDDLOCAL_DOTNET TG14 Arquitectura_EurekaBank_REST
 
 ### MER: conceptual, lógico y físico (`02. MER`)
 
-Se generan desde `03. BDD/init/01_crea_bd.sql` de cada TG: `<TG>/02. MER/MER_Conceptual_EurekaBank_<Tec>.cdm`,
-`MER_Logico_…ldm`, `MER_Fisico_…pdm` y `MER.prj` (agregado al `.sws` como proyecto `MER`). Los PNG de revisión quedan
-en `tmp/revision`.
+Se generan desde el script de creación de cada BD: `<proyecto>/02. MER/MER_Conceptual_<sistema>.cdm`,
+`MER_Logico_…ldm`, `MER_Fisico_…pdm` y `MER.prj` con todos los modelos `MER_*` de la carpeta (agregado al `.sws` como
+proyecto `MER`). Un proyecto con varias BD (EX.1.1) tiene un juego de tres modelos por BD en el mismo `MER.prj`. Los PNG
+de revisión quedan en `tmp/revision`.
 
 | Archivo | Uso |
 |---|---|
-| `generar_specs_mer.py` | Lee el script (MySQL o T-SQL) y escribe `specs/mer/<clave>.txt`: tablas, columnas, PK/UQ, CHECK (los `IN (...)` como lista de valores) y FK. Ahí están los nombres legibles, la posición de cada tabla y el verbo de cada relación. |
-| `mer_detalle.vbs` | Construye el físico por COM (`app.CreateModel(KIND_PDM, "\|DBMS=…")`), genera el lógico y el conceptual con `m.GenerateModel(Nothing, kind, "", True)`, pone los verbos y acomoda los tres diagramas en la cuadrícula del spec. Al final el físico toma los códigos del script como nombres. |
+| `perfiles_mer.py` | Lo que el script no dice, por perfil (`eureka`, `banquito`, `comercializadora`): descripción de tablas y columnas (`'TABLA.COLUMNA'` o `'COLUMNA'`), posición de cada tabla en la cuadrícula y verbo de cada FK. Para otra BD se agrega un perfil. |
+| `generar_specs_mer.py` | Lee el script (MySQL o T-SQL) y escribe `specs/mer/<clave>.txt`: tablas, columnas, PK/UQ, índices, CHECK (los `IN (...)` como lista de valores; los de una columna en la columna y los de varias en la tabla) y FK. |
+| `mer_detalle.vbs` | Construye el físico por COM (`app.CreateModel(KIND_PDM, "\|DBMS=…")`), genera el lógico y el conceptual con `m.GenerateModel(Nothing, kind, "", True)`, pone los verbos (en relaciones y en enlaces de asociación) y acomoda los tres diagramas en la cuadrícula del spec. |
 | `finalizar_mer.py` | Recalcula el rectángulo de cada enlace con sus puntos (si no, la imagen sale con espacio vacío arriba). |
-| `limpiar_sws.py` | Quita de todos los `.sws` los modelos MER sueltos que PowerDesigner agrega al cerrarse. |
-| `gen_mer_tg.sh` | Hace todo para un TG. `crear_prj.py` ya reconoce `.cdm`, `.ldm` y `.pdm`. |
+| `limpiar_sws.py` | Quita de los `.sws` de TG y EX los modelos MER sueltos que PowerDesigner agrega al cerrarse. |
+| `gen_mer_tg.sh` | Hace todo para una BD. `crear_prj.py` ya reconoce `.cdm`, `.ldm` y `.pdm`. |
 
 Los tres modelos usan los nombres del script (tablas y columnas); la descripción legible va como comentario.
 
 ```bash
-bash gen_mer_tg.sh "TG.1.1. PAO202651_EUREKA_BDDLOCAL_SOAP_JAVA_NRC36884_GR03" SOAP_BDDLOCAL_JAVA TG11 "MySQL 5.0" "SOAP Java" SOAP_Java
-bash gen_mer_tg.sh "TG.1.2. PAO202651_EUREKA_BDDLOCAL_SOAP_DOTNET_NRC36884_GR03" SOAP_BDDLOCAL_DOTNET TG12 "Microsoft SQL Server 2008" "SOAP .NET" SOAP_DotNet
-bash gen_mer_tg.sh "TG.1.3. PAO202651_EUREKA_BDDLOCAL_RESTFUL_JAVA_NRC36884_GR03" RESTFUL_BDDLOCAL_JAVA TG13 "MySQL 5.0" "REST Java" REST_Java
-bash gen_mer_tg.sh "TG.1.4. PAO202651_EUREKA_BDDLOCAL_RESTFUL_DOTNET_NRC36884_GR03" RESTFUL_BDDLOCAL_DOTNET TG14 "Microsoft SQL Server 2008" "REST .NET" REST_DotNet
+S="03. BDD/init/01_crea_bd.sql"
+bash gen_mer_tg.sh "TG.1.1. PAO202651_EUREKA_BDDLOCAL_SOAP_JAVA_NRC36884_GR03" SOAP_BDDLOCAL_JAVA TG11 "MySQL 5.0" "EurekaBank SOAP Java" EurekaBank_SOAP_Java "$S" eureka
+bash gen_mer_tg.sh "TG.1.2. PAO202651_EUREKA_BDDLOCAL_SOAP_DOTNET_NRC36884_GR03" SOAP_BDDLOCAL_DOTNET TG12 "Microsoft SQL Server 2008" "EurekaBank SOAP .NET" EurekaBank_SOAP_DotNet "$S" eureka
+bash gen_mer_tg.sh "TG.1.3. PAO202651_EUREKA_BDDLOCAL_RESTFUL_JAVA_NRC36884_GR03" RESTFUL_BDDLOCAL_JAVA TG13 "MySQL 5.0" "EurekaBank REST Java" EurekaBank_REST_Java "$S" eureka
+bash gen_mer_tg.sh "TG.1.4. PAO202651_EUREKA_BDDLOCAL_RESTFUL_DOTNET_NRC36884_GR03" RESTFUL_BDDLOCAL_DOTNET TG14 "Microsoft SQL Server 2008" "EurekaBank REST .NET" EurekaBank_REST_DotNet "$S" eureka
+E="EX.1.1. PAO202651_BANQUITO_CELULARES_RESTFUL_JAVA_NRC36884_GR03"
+bash gen_mer_tg.sh "$E" BANQUITO_CELULARES_RESTFUL_JAVA EX11_BANQUITO "MySQL 5.0" "BanQuito REST Java" BanQuito_REST_Java "03. BDD/banquito/01_crea_bd.sql" banquito
+bash gen_mer_tg.sh "$E" BANQUITO_CELULARES_RESTFUL_JAVA EX11_COMERCIALIZADORA "MySQL 5.0" "Comercializadora REST Java" Comercializadora_REST_Java "03. BDD/comercializadora/01_crea_bd.sql" comercializadora
 ```
 
-**Hecho en los 4 TG.** TG.1.3 tiene el mismo esquema que TG.1.1 (MySQL) y TG.1.4 el mismo que TG.1.2 (SQL Server).
+**Hecho en los 4 TG y en EX.1.1.** TG.1.3 tiene el mismo esquema que TG.1.1 (MySQL) y TG.1.4 el mismo que TG.1.2 (SQL
+Server). En EX.1.1, el conceptual de la comercializadora convierte `DETALLE_FACTURA` (su PK son solo las dos FK) en una
+asociación N:M entre FACTURA y TELEFONO; los enlaces de asociación están en `md.AssociationsLinks` y el verbo va en `Role`.
 
 En SQL Server el spec agrega el nombre de cada DEFAULT (`df_…`), que se guarda en el atributo extendido
 `ExtDeftConstName`. El perfil SQL Server 2008 sí escribe en el script generado los CHECK, el UNIQUE y los DEFAULT con
 nombre.
 
+- PowerDesigner tiene una sola regla de validación por tabla: si una tabla tiene varios CHECK de varias columnas
+  (FACTURA), se unen con `and` y el nombre de los siguientes va como comentario.
+- Índices: `t.Indexes.CreateNew()` y, por columna, `ix.IndexColumns.CreateNew()` con `Set ic.Column = columna`.
 - No sirve la ingeniería inversa del script: el perfil MySQL 5.0 de PowerDesigner no entiende `CONSTRAINT x PRIMARY KEY`
   y crea columnas falsas.
 - Al crear una referencia, PowerDesigner empareja la FK con la columna hija del mismo código y, si no existe, crea otra
   (`chr_emplcreacuenta`, `chr_cuenreferencia`); el script reapunta el join y borra la columna creada.
-- Los modelos generados pasan los códigos a mayúsculas (`FK_CUENTA_CLIENTE`): se comparan con `LCase`.
+- Los modelos generados pasan los códigos a mayúsculas (`FK_CUENTA_CLIENTE`) y los scripts pueden venir en
+  mayúsculas o minúsculas: las claves internas (celdas, verbos) se guardan y se comparan con `LCase`.
 - `ClassKind`: CDM `509178224`, LDM `1598421368`, PDM `-840675807`.
 - Verificado generando el SQL desde el `.pdm` (`GetPackageOptions`, `GenerationPathName` con `\` final y
   `GenerateDatabase`): coincide con el script salvo que el perfil MySQL 5.0 no escribe los CHECK (quedan en el modelo)
@@ -230,7 +242,7 @@ nombre.
 - Cada ejecución hace que PowerDesigner guarde al cerrar el último `.sws` que cargó: revisar `git status` y restaurar
   los `.sws` de otros TG que aparezcan modificados.
 
-### EX.1.1 (BanQuito y Comercializadora de celulares, REST Java) — casos de uso hechos
+### EX.1.1 (BanQuito y Comercializadora de celulares, REST Java) — casos de uso
 
 Otro dominio: dos aplicaciones REST, el Core BanQuito (módulo de crédito) y la Comercializadora de celulares.
 Los diagramas salen del ERS y del ECUD de EX.1.1, contrastados con el código de los dos servidores.
@@ -262,6 +274,34 @@ Decisiones de construcción:
 
 Inconsistencia del ECUD: en ECUD2 los incluidos dicen "N/A". Pero ECUD17 dice que lo incluyen ECUD2 a ECUD12, y el
 código protege `DELETE /sesiones/actual` con `@Protegido`. El diagrama sigue a ECUD17 y al código.
+
+### EX.1.1 — actividad, secuencia, clases y arquitectura
+
+Ningún proyecto deja PNG: las imágenes de revisión quedan en `tmp/revision`, como en los commits de los TG.
+`gen_da.sh` ya no deja PNG en el proyecto. `gen_da_tg.sh` y `gen_ds_tg.sh` aceptan `-` para usar specs ya generados y
+arman el `.prj` con todos los specs de la clave. `gen_dc_tg.sh` incluye en `04_CLASES.prj` todos los modelos de la
+carpeta.
+
+```bash
+T="EX.1.1. PAO202651_BANQUITO_CELULARES_RESTFUL_JAVA_NRC36884_GR03"; W=BANQUITO_CELULARES_RESTFUL_JAVA
+python -I generar_specs_da_ex.py && bash gen_da_tg.sh "$T" $W EX11 - -
+python -I generar_specs_ds_ex.py && bash gen_ds_tg.sh "$T" $W EX11 -
+bash gen_dc_tg.sh "$T" $W "$T/04. SERVIDOR/WS_BANQUITO_JAVA_REST/src/main/java" WS_BANQUITO_JAVA_REST_DC java
+bash gen_dc_tg.sh "$T" $W "$T/04. SERVIDOR/WS_COMERCIALIZADORA_JAVA_REST/src/main/java" WS_COMERCIALIZADORA_JAVA_REST_DC java
+bash gen_ea_tg.sh "$T" $W EX11 Arquitectura_BanQuito_Comercializadora_REST_Java
+```
+
+- Actividad: un diagrama por ECUD1–16. `generar_specs_da_ex.py` describe cada caso como una lista de pasos
+  (`C`, `S`, `D`, `B`, `K`, `R`) y los ubica en la cuadrícula. Los carriles son Cliente y Servidor, más BD comercializadora
+  y Core BanQuito si el caso los usa. En ECUD13–16 los carriles son Comercializadora, Core y BD banquito. Cada rama de
+  error muestra su código HTTP. Si el flujo vuelve al cliente a mitad del caso (ECUD12), se cierra antes un bloque de
+  error. Los nombres de actividad no se pueden repetir en un modelo.
+- Secuencia: DS01–12 de la Comercializadora (el Core es una sola línea de vida, `CORE_BANQUITO`, a la que llama
+  `PASARELA_BANQUITO` con X-Api-Key) y DS13–16 del Core (actor Comercializadora, `FILTRO_CLAVE_API`, `SERVICIO_CREDITO`,
+  DAO y `BD_BANQUITO`). Los errores DS17–21 son AUTH-003, AUTH-004 → EXT-001, Core sin respuesta, CRE-001 y SYS-001.
+- Clases: un modelo por servidor en el mismo `04_CLASES.prj`.
+- Arquitectura: los 4 clientes, el dominio de Payara 7 con los dos servicios por capas y MySQL 26.7 con las dos BD. En
+  EAM tampoco se pueden repetir nombres de componentes.
 
 ## 5. Técnica de PowerDesigner (lecciones aprendidas)
 

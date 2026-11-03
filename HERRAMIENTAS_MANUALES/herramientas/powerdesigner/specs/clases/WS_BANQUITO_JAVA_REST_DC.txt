@@ -1,0 +1,280 @@
+PAQ|seguridad|ec.edu.monster.seguridad|0|0|1
+PAQ|controladores.recursos|ec.edu.monster.controladores.recursos|1|0|2
+PAQ|vista|ec.edu.monster.vista|1|1|2
+PAQ|servicios|ec.edu.monster.servicios|2|0|2
+PAQ|datos|ec.edu.monster.datos|3|0|1
+PAQ|modelo|ec.edu.monster.modelo|4|0|1
+CLASE|controladores.recursos|ClienteRecurso|Resource|C
+ATR|ClienteRecurso|-|servicioCredito|ServicioCredito|0|
+ATR|ClienteRecurso|-|mapeador|Mapeador|0|
+OP|ClienteRecurso|+|buscar|ClienteDto|String cedula||0
+OP|ClienteRecurso|+|evaluar|EvaluacionCreditoDto|String cedula||0
+OP|ClienteRecurso|+|montoMaximo|MontoMaximoDto|int codCliente||0
+OP|ClienteRecurso|+|creditos|List<CreditoDto>|int codCliente||0
+CLASE|controladores.recursos|ConfiguracionJaxRs|ApplicationPath|C
+CLASE|controladores.recursos|CreditoRecurso|Resource|C
+ATR|CreditoRecurso|-|servicioCredito|ServicioCredito|0|
+ATR|CreditoRecurso|-|mapeador|Mapeador|0|
+ATR|CreditoRecurso|-|uriInfo|UriInfo|0|
+OP|CreditoRecurso|+|otorgar|Response|SolicitudCreditoDto solicitud||0
+OP|CreditoRecurso|+|simular|List<CuotaDto>|String monto;String cuotas||0
+OP|CreditoRecurso|+|consultar|CreditoDto|int codCredito||0
+OP|CreditoRecurso|+|tabla|List<CuotaDto>|int codCredito||0
+CLASE|controladores.recursos|MapeadorExcepciones|Provider|C
+ATR|MapeadorExcepciones|-|uriInfo|UriInfo|0|
+OP|MapeadorExcepciones|+|toResponse|Response|Throwable error||0
+OP|MapeadorExcepciones|+|respuesta|Response|ExcepcionServicio error;String instancia||1
+OP|MapeadorExcepciones|-|construir|Response|ProblemaDto problema||1
+OP|MapeadorExcepciones|-|causadoPorJson|boolean|Throwable error||1
+CLASE|datos|ClienteDao|ApplicationScoped|C
+ATR|ClienteDao|-|COLUMNAS|String|1|
+ATR|ClienteDao|-|SQL_POR_CEDULA|String|1|
+ATR|ClienteDao|-|SQL_POR_CODIGO|String|1|
+ATR|ClienteDao|-|SQL_BLOQUEAR|String|1|
+ATR|ClienteDao|-|SQL_REGLAS|String|1|
+OP|ClienteDao|+|buscarPorCedula|Optional<Cliente>|Connection cn;String cedula||0
+OP|ClienteDao|+|buscar|Optional<Cliente>|Connection cn;int codigo||0
+OP|ClienteDao|+|bloquear|Optional<Cliente>|Connection cn;int codigo||0
+OP|ClienteDao|+|reglas|ReglasCredito|Connection cn;int codigo||0
+OP|ClienteDao|-|buscar|Optional<Cliente>|Connection cn;String sql;Parametros parametros||1
+CLASE|datos|ConexionBD||C
+ATR|ConexionBD|-|ARCHIVO|String|1|
+ATR|ConexionBD|-|url|String|0|
+ATR|ConexionBD|-|usuario|String|0|
+ATR|ConexionBD|-|clave|String|0|
+OP|ConexionBD|-|ConexionBD|||Constructor|0
+OP|ConexionBD|+|getInstancia|ConexionBD|||1
+OP|ConexionBD|+|obtenerConexion|Connection|||0
+CLASE|datos|CreditoDao|ApplicationScoped|C
+ATR|CreditoDao|-|COLUMNAS|String|1|
+ATR|CreditoDao|-|SQL_BUSCAR|String|1|
+ATR|CreditoDao|-|SQL_POR_CLIENTE|String|1|
+ATR|CreditoDao|-|SQL_INSERTAR|String|1|
+OP|CreditoDao|+|insertar|int|Connection cn;int codCliente;BigDecimal monto;int numCuotas;BigDecimal tasaAnual;BigDecimal valorCuota||0
+OP|CreditoDao|+|buscar|Optional<Credito>|Connection cn;int codigo||0
+OP|CreditoDao|+|listarPorCliente|List<Credito>|Connection cn;int codCliente||0
+OP|CreditoDao|-|leer|Credito|ResultSet rs||1
+CLASE|datos|CuotaDao|ApplicationScoped|C
+ATR|CuotaDao|-|SQL_INSERTAR|String|1|
+ATR|CuotaDao|-|SQL_LISTAR|String|1|
+OP|CuotaDao|+|insertar|void|Connection cn;int codCredito;List<Cuota> cuotas||0
+OP|CuotaDao|+|listar|List<Cuota>|Connection cn;int codCredito||0
+CLASE|datos|MovimientoDao|ApplicationScoped|C
+ATR|MovimientoDao|-|SQL_PROMEDIOS|String|1|
+OP|MovimientoDao|+|promedios|Promedios|Connection cn;int codCliente;int meses||0
+CLASE|datos|Promedios|record|C
+ATR|Promedios|+|depositos|BigDecimal|0|
+ATR|Promedios|+|retiros|BigDecimal|0|
+CLASE|modelo|Cliente|record|C
+ATR|Cliente|+|codigo|int|0|
+ATR|Cliente|+|cedula|String|0|
+ATR|Cliente|+|nombre|String|0|
+ATR|Cliente|+|genero|String|0|
+ATR|Cliente|+|fechaNacimiento|LocalDate|0|
+CLASE|modelo|CodigoError|Enum|C
+ATR|CodigoError|+|AUTH_004||0|EnumConstant
+ATR|CodigoError|+|DATA_001||0|EnumConstant
+ATR|CodigoError|+|CLI_001||0|EnumConstant
+ATR|CodigoError|+|CRE_001||0|EnumConstant
+ATR|CodigoError|+|CRE_002||0|EnumConstant
+ATR|CodigoError|+|CRE_003||0|EnumConstant
+ATR|CodigoError|+|CRE_004||0|EnumConstant
+ATR|CodigoError|+|CRE_005||0|EnumConstant
+ATR|CodigoError|+|SYS_001||0|EnumConstant
+ATR|CodigoError|-|codigo|String|0|
+ATR|CodigoError|-|estadoHttp|int|0|
+ATR|CodigoError|-|mensaje|String|0|
+OP|CodigoError|+|getCodigo|String|||0
+OP|CodigoError|+|getEstadoHttp|int|||0
+OP|CodigoError|+|getMensaje|String|||0
+CLASE|modelo|Credito|record|C
+ATR|Credito|+|codigo|int|0|
+ATR|Credito|+|codCliente|int|0|
+ATR|Credito|+|fecha|LocalDate|0|
+ATR|Credito|+|monto|BigDecimal|0|
+ATR|Credito|+|numCuotas|int|0|
+ATR|Credito|+|tasaAnual|BigDecimal|0|
+ATR|Credito|+|valorCuota|BigDecimal|0|
+ATR|Credito|+|estado|String|0|
+ATR|Credito|+|cuotas|List<Cuota>|0|
+CLASE|modelo|Cuota|record|C
+ATR|Cuota|+|numero|int|0|
+ATR|Cuota|+|valorCuota|BigDecimal|0|
+ATR|Cuota|+|interes|BigDecimal|0|
+ATR|Cuota|+|capital|BigDecimal|0|
+ATR|Cuota|+|saldo|BigDecimal|0|
+CLASE|modelo|EvaluacionCredito|record|C
+ATR|EvaluacionCredito|+|cedula|String|0|
+ATR|EvaluacionCredito|+|cliente|Cliente|0|
+ATR|EvaluacionCredito|+|motivos|List<MotivoRechazo>|0|
+OP|EvaluacionCredito|+|sujetoCredito|boolean|||0
+CLASE|modelo|MontoMaximo|record|C
+ATR|MontoMaximo|+|codCliente|int|0|
+ATR|MontoMaximo|+|promedioDepositos|BigDecimal|0|
+ATR|MontoMaximo|+|promedioRetiros|BigDecimal|0|
+ATR|MontoMaximo|+|porcentaje|BigDecimal|0|
+ATR|MontoMaximo|+|plazoMeses|int|0|
+ATR|MontoMaximo|+|montoMaximo|BigDecimal|0|
+CLASE|modelo|MotivoRechazo|Enum|C
+ATR|MotivoRechazo|+|NO_ES_CLIENTE||0|EnumConstant
+ATR|MotivoRechazo|+|SIN_DEPOSITO_ULTIMO_MES||0|EnumConstant
+ATR|MotivoRechazo|+|HOMBRE_MENOR_25||0|EnumConstant
+ATR|MotivoRechazo|+|CREDITO_ACTIVO||0|EnumConstant
+ATR|MotivoRechazo|-|descripcion|String|0|
+OP|MotivoRechazo|+|getDescripcion|String|||0
+CLASE|modelo|ReglasCredito|record|C
+ATR|ReglasCredito|+|depositoUltimoMes|boolean|0|
+ATR|ReglasCredito|+|hombreMenor25|boolean|0|
+ATR|ReglasCredito|+|creditoActivo|boolean|0|
+CLASE|seguridad|FiltroClaveApi|Provider|C
+ATR|FiltroClaveApi|+|CABECERA|String|1|
+ATR|FiltroClaveApi|-|ARCHIVO|String|1|
+ATR|FiltroClaveApi|-|claveEsperada|byte[]|0|
+OP|FiltroClaveApi|+|FiltroClaveApi|||Constructor|0
+OP|FiltroClaveApi|+|filter|void|ContainerRequestContext contexto||0
+CLASE|servicios|CalculadoraAmortizacion||C
+ATR|CalculadoraAmortizacion|-|PRECISION|MathContext|1|
+ATR|CalculadoraAmortizacion|-|MESES_POR_ANIO_POR_CIEN|BigDecimal|1|
+OP|CalculadoraAmortizacion|-|CalculadoraAmortizacion|||Constructor|0
+OP|CalculadoraAmortizacion|+|tasaMensual|BigDecimal|BigDecimal tasaAnual||1
+OP|CalculadoraAmortizacion|+|valorCuota|BigDecimal|BigDecimal monto;int numCuotas;BigDecimal tasaAnual||1
+OP|CalculadoraAmortizacion|+|tabla|List<Cuota>|BigDecimal monto;int numCuotas;BigDecimal tasaAnual||1
+CLASE|servicios|ExcepcionServicio||C
+ATR|ExcepcionServicio|-|codigoError|CodigoError|0|
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError;String detalle|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError;Throwable causa|Constructor|0
+OP|ExcepcionServicio|+|getCodigoError|CodigoError|||0
+CLASE|servicios|ServicioCredito|ApplicationScoped|C
+ATR|ServicioCredito|-|CIEN|BigDecimal|1|
+ATR|ServicioCredito|-|MESES_PROMEDIO|int|1|
+ATR|ServicioCredito|-|tasaAnual|BigDecimal|0|
+ATR|ServicioCredito|-|porcentajeMonto|BigDecimal|0|
+ATR|ServicioCredito|-|plazoMeses|int|0|
+ATR|ServicioCredito|-|validacion|ServicioValidacion|0|
+ATR|ServicioCredito|-|clienteDao|ClienteDao|0|
+ATR|ServicioCredito|-|movimientoDao|MovimientoDao|0|
+ATR|ServicioCredito|-|creditoDao|CreditoDao|0|
+ATR|ServicioCredito|-|cuotaDao|CuotaDao|0|
+OP|ServicioCredito|+|buscarCliente|Cliente|String cedula||0
+OP|ServicioCredito|+|evaluar|EvaluacionCredito|String cedula||0
+OP|ServicioCredito|+|montoMaximo|MontoMaximo|Integer codCliente||0
+OP|ServicioCredito|+|otorgar|Credito|Integer codCliente;BigDecimal monto;Integer numCuotas||0
+OP|ServicioCredito|+|tabla|List<Cuota>|Integer codCredito||0
+OP|ServicioCredito|+|consultarCredito|Credito|Integer codCredito||0
+OP|ServicioCredito|+|creditosDeCliente|List<Credito>|Integer codCliente||0
+OP|ServicioCredito|+|simular|List<Cuota>|String monto;String numCuotas||0
+OP|ServicioCredito|-|calcular|List<Cuota>|BigDecimal monto;int numCuotas||0
+OP|ServicioCredito|-|montoMaximo|MontoMaximo|Connection cn;int codCliente||0
+OP|ServicioCredito|-|motivos|List<MotivoRechazo>|ReglasCredito reglas||1
+OP|ServicioCredito|-|buscar|Cliente|Connection cn;int codigo||0
+OP|ServicioCredito|-|conConexion|T|String accion;OperacionBD<T> operacion||0
+OP|ServicioCredito|-|enTransaccion|T|OperacionBD<T> operacion||0
+OP|ServicioCredito|-|revertir|void|Connection cn||1
+CLASE|servicios|ServicioValidacion|ApplicationScoped|C
+ATR|ServicioValidacion|-|FORMATO_CEDULA|Pattern|1|
+ATR|ServicioValidacion|+|CUOTAS_MINIMO|int|1|
+ATR|ServicioValidacion|+|CUOTAS_MAXIMO|int|1|
+ATR|ServicioValidacion|+|MAXIMO|BigDecimal|1|
+OP|ServicioValidacion|+|validarCedula|String|String cedula||0
+OP|ServicioValidacion|+|validarCodigo|int|Integer codigo||0
+OP|ServicioValidacion|+|validarMonto|BigDecimal|BigDecimal monto||0
+OP|ServicioValidacion|+|validarMonto|BigDecimal|String monto||0
+OP|ServicioValidacion|+|validarCuotas|int|Integer cuotas||0
+OP|ServicioValidacion|+|validarCuotas|int|String cuotas||0
+CLASE|vista|ClienteDto||C
+ATR|ClienteDto|+|codCliente|int|0|
+ATR|ClienteDto|+|cedula|String|0|
+ATR|ClienteDto|+|nombre|String|0|
+CLASE|vista|CreditoDto||C
+ATR|CreditoDto|+|codCredito|int|0|
+ATR|CreditoDto|+|codCliente|int|0|
+ATR|CreditoDto|+|fecha|LocalDate|0|
+ATR|CreditoDto|+|monto|BigDecimal|0|
+ATR|CreditoDto|+|numCuotas|int|0|
+ATR|CreditoDto|+|tasaAnual|BigDecimal|0|
+ATR|CreditoDto|+|valorCuota|BigDecimal|0|
+ATR|CreditoDto|+|estado|String|0|
+ATR|CreditoDto|+|cuotas|List<CuotaDto>|0|
+CLASE|vista|CuotaDto||C
+ATR|CuotaDto|+|numero|int|0|
+ATR|CuotaDto|+|valorCuota|BigDecimal|0|
+ATR|CuotaDto|+|interes|BigDecimal|0|
+ATR|CuotaDto|+|capital|BigDecimal|0|
+ATR|CuotaDto|+|saldo|BigDecimal|0|
+CLASE|vista|EvaluacionCreditoDto||C
+ATR|EvaluacionCreditoDto|+|cedula|String|0|
+ATR|EvaluacionCreditoDto|+|codCliente|Integer|0|
+ATR|EvaluacionCreditoDto|+|nombre|String|0|
+ATR|EvaluacionCreditoDto|+|sujetoCredito|boolean|0|
+ATR|EvaluacionCreditoDto|+|motivos|List<MotivoDto>|0|
+CLASE|vista|MotivoDto||C
+ATR|MotivoDto|+|codigo|String|0|
+ATR|MotivoDto|+|descripcion|String|0|
+CLASE|vista|Mapeador|ApplicationScoped|C
+OP|Mapeador|+|deCliente|ClienteDto|Cliente cliente||0
+OP|Mapeador|+|deEvaluacion|EvaluacionCreditoDto|EvaluacionCredito evaluacion||0
+OP|Mapeador|+|deMontoMaximo|MontoMaximoDto|MontoMaximo monto||0
+OP|Mapeador|+|deCredito|CreditoDto|Credito credito;boolean conCuotas||0
+OP|Mapeador|+|deCreditos|List<CreditoDto>|List<Credito> creditos||0
+OP|Mapeador|+|deCuotas|List<CuotaDto>|List<Cuota> cuotas||0
+CLASE|vista|MontoMaximoDto||C
+ATR|MontoMaximoDto|+|codCliente|int|0|
+ATR|MontoMaximoDto|+|promedioDepositos|BigDecimal|0|
+ATR|MontoMaximoDto|+|promedioRetiros|BigDecimal|0|
+ATR|MontoMaximoDto|+|porcentaje|BigDecimal|0|
+ATR|MontoMaximoDto|+|plazoMeses|int|0|
+ATR|MontoMaximoDto|+|montoMaximo|BigDecimal|0|
+CLASE|vista|ProblemaDto||C
+ATR|ProblemaDto|+|TIPO_PROBLEMA|String|1|
+ATR|ProblemaDto|+|type|String|0|
+ATR|ProblemaDto|+|title|String|0|
+ATR|ProblemaDto|+|status|int|0|
+ATR|ProblemaDto|+|detail|String|0|
+ATR|ProblemaDto|+|instance|String|0|
+ATR|ProblemaDto|+|codigo|String|0|
+OP|ProblemaDto|+|ProblemaDto|||Constructor|0
+OP|ProblemaDto|+|ProblemaDto||String title;int status;String detail;String instance;String codigo|Constructor|0
+CLASE|vista|SolicitudCreditoDto||C
+ATR|SolicitudCreditoDto|+|codCliente|Integer|0|
+ATR|SolicitudCreditoDto|+|monto|BigDecimal|0|
+ATR|SolicitudCreditoDto|+|numCuotas|Integer|0|
+ASOC|ClienteRecurso|ServicioCredito|servicioCredito|1
+ASOC|ClienteRecurso|Mapeador|mapeador|1
+ASOC|CreditoRecurso|ServicioCredito|servicioCredito|1
+ASOC|CreditoRecurso|Mapeador|mapeador|1
+ASOC|Credito|Cuota|cuotas|0..*
+ASOC|EvaluacionCredito|Cliente|cliente|1
+ASOC|EvaluacionCredito|MotivoRechazo|motivos|0..*
+ASOC|ExcepcionServicio|CodigoError|codigoError|1
+ASOC|ServicioCredito|ServicioValidacion|validacion|1
+ASOC|ServicioCredito|ClienteDao|clienteDao|1
+ASOC|ServicioCredito|MovimientoDao|movimientoDao|1
+ASOC|ServicioCredito|CreditoDao|creditoDao|1
+ASOC|ServicioCredito|CuotaDao|cuotaDao|1
+ASOC|CreditoDto|CuotaDto|cuotas|0..*
+ASOC|EvaluacionCreditoDto|MotivoDto|motivos|0..*
+DEP|CreditoRecurso|SolicitudCreditoDto|create
+DEP|MapeadorExcepciones|ExcepcionServicio|create
+DEP|MapeadorExcepciones|ProblemaDto|create
+DEP|ClienteDao|ReglasCredito|create
+DEP|ClienteDao|Cliente|create
+DEP|ConexionBD|ExcepcionServicio|throw
+DEP|CreditoDao|Credito|create
+DEP|CuotaDao|Cuota|create
+DEP|MovimientoDao|Promedios|create
+DEP|FiltroClaveApi|ExcepcionServicio|create
+DEP|FiltroClaveApi|MapeadorExcepciones|use
+DEP|CalculadoraAmortizacion|Cuota|create
+DEP|ServicioCredito|ExcepcionServicio|create
+DEP|ServicioCredito|EvaluacionCredito|create
+DEP|ServicioCredito|Credito|create
+DEP|ServicioCredito|MontoMaximo|create
+DEP|ServicioCredito|CalculadoraAmortizacion|use
+DEP|ServicioCredito|ConexionBD|use
+DEP|ServicioValidacion|ExcepcionServicio|throw
+DEP|Mapeador|ClienteDto|create
+DEP|Mapeador|EvaluacionCreditoDto|create
+DEP|Mapeador|MontoMaximoDto|create
+DEP|Mapeador|CreditoDto|create
+DEP|Mapeador|CuotaDto|create

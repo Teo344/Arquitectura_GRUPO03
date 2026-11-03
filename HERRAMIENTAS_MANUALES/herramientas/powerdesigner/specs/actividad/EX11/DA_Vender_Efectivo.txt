@@ -1,0 +1,56 @@
+# DA9: Vender en efectivo
+AREA|15000|-80600
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Comercializadora (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD comercializadora (MySQL)|22000|39000
+CALLE|CORE|Core BanQuito (API REST)|39000|56000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Ingresar cédula, teléfonos y cantidades (efectivo)
+ACT|N3|CLI|-21000|1400|13000|3600|Enviar POST /api/v1/facturas {cedula, formaPago, detalles} con Bearer
+ACT|N4|SRV|10000|1400|15000|3600|ManejadorAutenticacion (filtro @Protegido) lee el token Bearer
+DEC|N5|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken, ECUD17)
+DEC|N6|SRV|10000|-9200|18000|4400|¿Cédula, forma de pago y líneas válidas?
+ACT|N7|SRV|10000|-14500|15000|3600|Armar el detalle con los precios del catálogo (TelefonoDao)
+ACT|N8|BD|30500|-14500|14000|3600|SELECT TELEFONO de cada línea
+DEC|N9|SRV|10000|-19800|18000|4400|¿Todos los teléfonos existen y están ACTIVOS?
+ACT|N10|SRV|10000|-25100|15000|3600|Calcular subtotal, descuento de 42 % y total (CalculadoraFactura)
+ACT|N11|SRV|10000|-30400|15000|3600|PasarelaBanquito busca al comprador en el Core
+ACT|N12|CORE|47500|-30400|14000|3600|GET /clientes?cedula= (X-Api-Key)
+DEC|N13|SRV|10000|-35700|18000|4400|¿El Core respondió a tiempo (5 s / 10 s) y sin error 5xx?
+DEC|N14|SRV|10000|-41000|18000|4400|¿El comprador es cliente del banco?
+ACT|N15|SRV|10000|-46300|15000|3600|Guardar la factura y su detalle en una transacción (commit)
+ACT|N16|BD|30500|-46300|14000|3600|INSERT FACTURA y DETALLE_FACTURA
+DEC|N17|SRV|10000|-51600|18000|4400|¿Base de datos disponible?
+ACT|N18|SRV|10000|-56900|15000|3600|Responder 201 Created con la factura
+ACT|N19|SRV|-4500|-62200|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N20|CLI|-21000|-62200|13000|3600|Mostrar el mensaje de error
+FIN|N21|CLI|-21000|-67500
+ACT|N22|CLI|-21000|-72800|13000|3600|Mostrar la factura
+FIN|N23|CLI|-21000|-78100
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5||
+FLU|N5|N6|Sí|
+FLU|N6|N7|Sí|
+FLU|N7|N8||
+FLU|N8|N9||30500,-17150;10000,-17150
+FLU|N9|N10|Sí|
+FLU|N10|N11||
+FLU|N11|N12||
+FLU|N12|N13||47500,-33050;10000,-33050
+FLU|N13|N14|Sí|
+FLU|N14|N15|Sí|
+FLU|N15|N16||
+FLU|N16|N17||30500,-48950;10000,-48950
+FLU|N17|N18|Sí|
+FLU|N5|N19|No: AUTH-003 · 401|-4500,-3900
+FLU|N6|N19|No: DATA-001 · 400|-4500,-9200
+FLU|N9|N19|No: TEL-001 · 404 / TEL-002 · 409|-4500,-19800
+FLU|N13|N19|No: EXT-001 · 502|-4500,-35700
+FLU|N14|N19|No: CLI-001 · 404|-4500,-41000
+FLU|N17|N19|No: SYS-001 · 503|-4500,-51600
+FLU|N19|N20||
+FLU|N20|N21||
+FLU|N18|N22||10000,-72800
+FLU|N22|N23||

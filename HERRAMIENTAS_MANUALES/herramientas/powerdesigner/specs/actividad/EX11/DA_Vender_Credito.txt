@@ -1,0 +1,73 @@
+# DA10: Vender con crédito directo
+AREA|15000|-107100
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Comercializadora (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD comercializadora (MySQL)|22000|39000
+CALLE|CORE|Core BanQuito (API REST)|39000|56000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Ingresar cédula, teléfonos y cantidades (crédito directo)
+ACT|N3|CLI|-21000|1400|13000|3600|Enviar POST /api/v1/facturas {cedula, formaPago, numCuotas, detalles} con Bearer
+ACT|N4|SRV|10000|1400|15000|3600|ManejadorAutenticacion (filtro @Protegido) lee el token Bearer
+DEC|N5|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken, ECUD17)
+DEC|N6|SRV|10000|-9200|18000|4400|¿Cédula, forma de pago y líneas válidas?
+DEC|N7|SRV|10000|-14500|18000|4400|¿Cuotas entre 3 y 18?
+ACT|N8|SRV|10000|-19800|15000|3600|Armar el detalle con los precios del catálogo (TelefonoDao)
+ACT|N9|BD|30500|-19800|14000|3600|SELECT TELEFONO de cada línea
+DEC|N10|SRV|10000|-25100|18000|4400|¿Todos los teléfonos existen y están ACTIVOS?
+ACT|N11|SRV|10000|-30400|15000|3600|Calcular subtotal y total (sin descuento)
+ACT|N12|SRV|10000|-35700|15000|3600|PasarelaBanquito pide la evaluación al Core
+ACT|N13|CORE|47500|-35700|14000|3600|Verificar sujeto de crédito (ECUD13)
+DEC|N14|SRV|10000|-41000|18000|4400|¿El Core respondió a tiempo (5 s / 10 s) y sin error 5xx?
+DEC|N15|SRV|10000|-46300|18000|4400|¿Es cliente del banco?
+DEC|N16|SRV|10000|-51600|18000|4400|¿Es sujeto de crédito?
+ACT|N17|SRV|10000|-56900|15000|3600|PasarelaBanquito pide el monto máximo
+ACT|N18|CORE|47500|-56900|14000|3600|Calcular monto máximo (ECUD14)
+DEC|N19|SRV|10000|-62200|18000|4400|¿El total no supera el monto máximo?
+ACT|N20|SRV|10000|-67500|15000|3600|PasarelaBanquito pide otorgar el crédito por el total
+ACT|N21|CORE|47500|-67500|14000|3600|Otorgar crédito (ECUD15)
+ACT|N22|SRV|10000|-72800|15000|3600|Guardar la factura con el código del crédito (commit); si falla, el crédito queda en el log SEVERE
+ACT|N23|BD|30500|-72800|14000|3600|INSERT FACTURA y DETALLE_FACTURA
+DEC|N24|SRV|10000|-78100|18000|4400|¿Se guardó la factura?
+ACT|N25|SRV|10000|-83400|15000|3600|Responder 201 Created con la factura y el crédito
+ACT|N26|SRV|-4500|-88700|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N27|CLI|-21000|-88700|13000|3600|Mostrar el mensaje de error
+FIN|N28|CLI|-21000|-94000
+ACT|N29|CLI|-21000|-99300|13000|3600|Mostrar la factura y la tabla del crédito
+FIN|N30|CLI|-21000|-104600
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5||
+FLU|N5|N6|Sí|
+FLU|N6|N7|Sí|
+FLU|N7|N8|Sí|
+FLU|N8|N9||
+FLU|N9|N10||30500,-22450;10000,-22450
+FLU|N10|N11|Sí|
+FLU|N11|N12||
+FLU|N12|N13||
+FLU|N13|N14||47500,-38350;10000,-38350
+FLU|N14|N15|Sí|
+FLU|N15|N16|Sí|
+FLU|N16|N17|Sí|
+FLU|N17|N18||
+FLU|N18|N19||47500,-59550;10000,-59550
+FLU|N19|N20|Sí|
+FLU|N20|N21||
+FLU|N21|N22||47500,-70150;10000,-70150
+FLU|N22|N23||
+FLU|N23|N24||30500,-75450;10000,-75450
+FLU|N24|N25|Sí|
+FLU|N5|N26|No: AUTH-003 · 401|-4500,-3900
+FLU|N6|N26|No: DATA-001 · 400|-4500,-9200
+FLU|N7|N26|No: FAC-002 · 400|-4500,-14500
+FLU|N10|N26|No: TEL-001 · 404 / TEL-002 · 409|-4500,-25100
+FLU|N14|N26|No: EXT-001 · 502|-4500,-41000
+FLU|N15|N26|No: CLI-001 · 404|-4500,-46300
+FLU|N16|N26|No: CRE-001 · 409|-4500,-51600
+FLU|N19|N26|No: CRE-002 · 409|-4500,-62200
+FLU|N24|N26|No: SYS-001 · 503|-4500,-78100
+FLU|N26|N27||
+FLU|N27|N28||
+FLU|N25|N29||10000,-99300
+FLU|N29|N30||

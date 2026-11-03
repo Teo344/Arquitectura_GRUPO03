@@ -1,68 +1,21 @@
 import sys,re,os
-"""Lee el script de creación de la BD (03. BDD/init/01_crea_bd.sql, MySQL o SQL Server) y genera
-specs/mer/<clave>.txt para mer_detalle.vbs: tablas, columnas, claves, checks y referencias. Los tres modelos usan los
-nombres del script; la descripción legible de cada tabla y columna va como comentario.
-uso: generar_specs_mer.py <01_crea_bd.sql> <clave>
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # python -I no agrega la carpeta del script
+from perfiles_mer import PERFILES
+"""Lee el script de creación de una BD (01_crea_bd.sql, MySQL o SQL Server) y genera specs/mer/<clave>.txt para
+mer_detalle.vbs: tablas, columnas, claves, índices, checks y referencias. Los tres modelos usan los nombres del script;
+la descripción legible de cada tabla y columna (perfiles_mer.py) va como comentario.
+uso: generar_specs_mer.py <01_crea_bd.sql> <clave> <perfil>
 
 Formato (separado por |):
   TABLA|codigo|nombre|comentario|columna|fila
   COL|tabla|codigo|nombre|tipo|obligatoria(1/0)|default|identidad(1/0)|comentario|restriccion_default (SQL Server)
-  PK|tabla|restriccion|col1,col2          UQ|tabla|restriccion|col1,col2
+  PK|tabla|restriccion|col1,col2          UQ|tabla|restriccion|col1,col2          IDX|tabla|indice|col1,col2
   LOV|tabla|columna|restriccion|valor1;valor2          CHK|tabla|columna|restriccion|expresion
+  TCHK|tabla|restriccion|expresion        (CHECK de varias columnas)
   REF|codigo|hija|padre|cols_hija|cols_padre|relacion|cardinalidad"""
 
-# nombre legible (solo para el comentario de la tabla), comentario y posición en el diagrama (columna, fila)
-TABLAS = {
-    'usuario':        ('Usuario', 'Credenciales de acceso del empleado (clave SHA-256).', 0, 0),
-    'empleado':       ('Empleado', 'Empleado (cajero) que opera en ventanilla.', 1, 0),
-    'asignado':       ('Asignado', 'Asignación vigente o histórica del empleado a una sucursal.', 2, 0),
-    'sucursal':       ('Sucursal', 'Sucursal del banco.', 3, 0),
-    'logsession':     ('Sesión', 'Registro de ingreso (RF-01) y salida (RF-02) de cada sesión.', 0, 1),
-    'movimiento':     ('Movimiento', 'Movimiento de una cuenta: depósito, retiro o transferencia.', 1, 1),
-    'cuenta':         ('Cuenta', 'Cuenta bancaria del cliente.', 2, 1),
-    'moneda':         ('Moneda', 'Catálogo de monedas.', 3, 1),
-    'tipomovimiento': ('Tipo de movimiento', 'Catálogo de tipos de movimiento (INGRESO o SALIDA).', 1, 2),
-    'cliente':        ('Cliente', 'Titular de las cuentas.', 2, 2),
-}
-# descripción de cada columna (comentario en los modelos)
-COLUMNAS = {
-    'chr_monecodigo': 'Código de moneda', 'vch_monedescripcion': 'Descripción de moneda',
-    'chr_tipocodigo': 'Código de tipo', 'vch_tipodescripcion': 'Descripción de tipo', 'vch_tipoaccion': 'Acción',
-    'vch_tipoestado': 'Estado de tipo',
-    'chr_sucucodigo': 'Código de sucursal', 'vch_sucunombre': 'Nombre de sucursal', 'vch_sucuciudad': 'Ciudad de sucursal',
-    'vch_sucudireccion': 'Dirección de sucursal', 'int_sucucontcuenta': 'Contador de cuentas',
-    'chr_emplcodigo': 'Código de empleado', 'vch_emplpaterno': 'Apellido paterno de empleado',
-    'vch_emplmaterno': 'Apellido materno de empleado', 'vch_emplnombre': 'Nombre de empleado',
-    'vch_emplciudad': 'Ciudad de empleado', 'vch_empldireccion': 'Dirección de empleado',
-    'vch_emplusuario': 'Usuario', 'vch_emplclave': 'Clave', 'vch_emplestado': 'Estado de usuario',
-    'chr_asigcodigo': 'Código de asignación', 'dtt_asigfechaalta': 'Fecha de alta', 'dtt_asigfechabaja': 'Fecha de baja',
-    'int_logid': 'Id de sesión', 'dtt_logingreso': 'Fecha de ingreso', 'dtt_logsalida': 'Fecha de salida',
-    'vch_logip': 'Dirección IP', 'vch_loghostname': 'Nombre del equipo',
-    'chr_cliecodigo': 'Código de cliente', 'vch_cliepaterno': 'Apellido paterno de cliente',
-    'vch_cliematerno': 'Apellido materno de cliente', 'vch_clienombre': 'Nombre de cliente', 'chr_cliedni': 'DNI',
-    'vch_clieciudad': 'Ciudad de cliente', 'vch_cliedireccion': 'Dirección de cliente', 'vch_clietelefono': 'Teléfono',
-    'vch_clieemail': 'Correo electrónico',
-    'chr_cuencodigo': 'Número de cuenta', 'chr_emplcreacuenta': 'Empleado que crea la cuenta', 'dec_cuensaldo': 'Saldo',
-    'dtt_cuenfechacreacion': 'Fecha de creación', 'vch_cuenestado': 'Estado de cuenta',
-    'int_cuencontmov': 'Contador de movimientos', 'chr_cuenclave': 'Clave de cuenta',
-    'int_movinumero': 'Número de movimiento', 'dtt_movifecha': 'Fecha de movimiento', 'dec_moviimporte': 'Importe',
-    'chr_cuenreferencia': 'Cuenta de referencia',
-}
-# relación del modelo conceptual/lógico para cada FK: nombre (verbo leído del padre a la hija) y cardinalidad
-RELACIONES = {
-    'fk_usuario_empleado':      ('Tiene', '0..1'),
-    'fk_asignado_empleado':     ('Es asignado', '0..*'),
-    'fk_asignado_sucursal':     ('Recibe', '0..*'),
-    'fk_logsession_empleado':   ('Inicia', '0..*'),
-    'fk_cuenta_moneda':         ('Denomina', '0..*'),
-    'fk_cuenta_sucursal':       ('Administra', '0..*'),
-    'fk_cuenta_empleado':       ('Crea', '0..*'),
-    'fk_cuenta_cliente':        ('Posee', '0..*'),
-    'fk_movimiento_cuenta':     ('Registra', '0..*'),
-    'fk_movimiento_empleado':   ('Realiza', '0..*'),
-    'fk_movimiento_tipo':       ('Clasifica', '0..*'),
-    'fk_movimiento_referencia': ('Es referencia de', '0..*'),
-}
+PALABRAS = {'AND', 'OR', 'NOT', 'NULL', 'IS', 'IN', 'BETWEEN', 'LIKE'}
+
 def partir(cuerpo):
     """Divide el cuerpo de un CREATE TABLE por las comas de primer nivel."""
     partes, nivel, act = [], 0, ''
@@ -82,16 +35,27 @@ def partir(cuerpo):
 def cols(s):
     return ','.join(c.strip().strip('[]') for c in s.split(','))
 
-sql_path, clave = sys.argv[1:3]
+def columnas_de(expr):
+    """Identificadores de una expresión CHECK, sin las cadenas, los números ni las palabras reservadas."""
+    sin_cadenas = re.sub(r"N?'[^']*'", '', expr)
+    return {i.strip('[]') for i in re.findall(r'\[?[A-Za-z_]\w*\]?', sin_cadenas) if i.strip('[]').upper() not in PALABRAS}
+
+sql_path, clave, perfil = sys.argv[1:4]
+TABLAS, COLUMNAS, RELACIONES = (PERFILES[perfil][k] for k in ('TABLAS', 'COLUMNAS', 'RELACIONES'))
 sql = open(sql_path, encoding='utf-8-sig').read()
 sql = re.sub(r'--[^\n]*', '', sql)
 lineas, refs, pend = [], [], []
 for m in re.finditer(r'CREATE\s+TABLE\s+(?:\w+\.)?\[?(\w+)\]?\s*\((.*?)\)\s*(?:ENGINE[^;]*)?;', sql, re.S | re.I):
-    tabla, cuerpo = m.group(1).lower(), m.group(2)
+    tabla, cuerpo = m.group(1), m.group(2)
     nombre, coment, x, y = TABLAS[tabla]
     lineas.append(f'TABLA|{tabla}|{tabla}|{nombre}: {coment}|{x}|{y}')
+    columnas = []
     for p in partir(cuerpo):
         p = ' '.join(p.split())
+        i = re.match(r'(?:INDEX|KEY)\s+(\w+)\s*\((.*)\)$', p, re.I)
+        if i:
+            pend.append(f'IDX|{tabla}|{i.group(1)}|{cols(i.group(2))}')
+            continue
         c = re.match(r'CONSTRAINT\s+(\w+)\s+(PRIMARY\s+KEY|UNIQUE|CHECK|FOREIGN\s+KEY)\s*(.*)', p, re.I)
         if c:
             nom, tipo, resto = c.group(1), c.group(2).upper(), c.group(3)
@@ -100,25 +64,30 @@ for m in re.finditer(r'CREATE\s+TABLE\s+(?:\w+\.)?\[?(\w+)\]?\s*\((.*?)\)\s*(?:E
                 pend.append(f'{"PK" if tipo.startswith("PRIMARY") else "UQ"}|{tabla}|{nom}|{cols(k)}')
             elif tipo == 'CHECK':
                 expr = resto.strip()[1:-1].strip()
-                lov = re.match(r'\[?(\w+)\]?\s+IN\s*\((.*)\)$', expr, re.I)
+                lov = re.match(r'\[?(\w+)\]?\s+IN\s*\(([^()]*)\)$', expr, re.I)
+                usadas = columnas_de(expr) & set(columnas)
                 if lov:
                     vals = ';'.join(v.strip().strip("'").replace("N'", '') for v in lov.group(2).split(','))
                     pend.append(f'LOV|{tabla}|{lov.group(1)}|{nom}|{vals}')
+                elif len(usadas) == 1:
+                    pend.append(f'CHK|{tabla}|{usadas.pop()}|{nom}|{expr}')
                 else:
-                    col = re.match(r'\[?(\w+)\]?', expr).group(1)
-                    pend.append(f'CHK|{tabla}|{col}|{nom}|{expr}')
+                    pend.append(f'TCHK|{tabla}|{nom}|{expr}')
             else:
                 f = re.match(r'\((.*?)\)\s*REFERENCES\s+(?:\w+\.)?\[?(\w+)\]?\s*\((.*?)\)', resto, re.I)
                 rel, card = RELACIONES[nom]
-                refs.append(f'REF|{nom}|{tabla}|{f.group(2).lower()}|{cols(f.group(1))}|{cols(f.group(3))}|{rel}|{card}')
+                refs.append(f'REF|{nom}|{tabla}|{f.group(2)}|{cols(f.group(1))}|{cols(f.group(3))}|{rel}|{card}')
             continue
         c = re.match(r'\[?(\w+)\]?\s+(\w+(?:\s*\([\d,\s]+\))?)\s*(.*)', p)
         col, tipo, resto = c.group(1), re.sub(r'\s+', '', c.group(2)).upper(), c.group(3)
+        columnas.append(col)
         obligatoria = '1' if re.search(r'\bNOT\s+NULL\b', resto, re.I) else '0'
         d = re.search(r"DEFAULT\s+\(?N?'?([^')\s]+)'?\)?", resto, re.I)
         ident = '1' if re.search(r'AUTO_INCREMENT|IDENTITY', resto, re.I) else '0'
         df = re.search(r'CONSTRAINT\s+(\w+)\s+DEFAULT', resto, re.I)
-        lineas.append(f'COL|{tabla}|{col}|{col}|{tipo}|{obligatoria}|{d.group(1) if d else ""}|{ident}|{COLUMNAS[col]}'
+        desc = COLUMNAS.get(f'{tabla}.{col}', COLUMNAS.get(col))
+        assert desc, f'falta la descripción de {tabla}.{col} en el perfil {perfil}'
+        lineas.append(f'COL|{tabla}|{col}|{col}|{tipo}|{obligatoria}|{d.group(1) if d else ""}|{ident}|{desc}'
                       + (f'|{df.group(1)}' if df else ''))
     lineas += pend; pend = []
 lineas += refs

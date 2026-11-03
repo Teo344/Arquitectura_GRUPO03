@@ -1,0 +1,39 @@
+# DA11: Consultar facturas
+AREA|15000|-54100
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Comercializadora (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD comercializadora (MySQL)|22000|39000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Ingresar el número de factura o la cédula del comprador
+ACT|N3|CLI|-21000|1400|13000|3600|Enviar GET /api/v1/facturas/{numFactura} o /facturas?cedula= con Bearer
+ACT|N4|SRV|10000|1400|15000|3600|ManejadorAutenticacion (filtro @Protegido) lee el token Bearer
+DEC|N5|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken, ECUD17)
+DEC|N6|SRV|10000|-9200|18000|4400|¿Número o cédula con formato válido?
+ACT|N7|SRV|10000|-14500|15000|3600|Buscar la factura con su detalle o listar las del comprador (FacturaDao)
+ACT|N8|BD|30500|-14500|14000|3600|SELECT FACTURA y DETALLE_FACTURA
+DEC|N9|SRV|10000|-19800|18000|4400|¿Base de datos disponible?
+DEC|N10|SRV|10000|-25100|18000|4400|¿La factura existe? (consulta por número)
+ACT|N11|SRV|10000|-30400|15000|3600|Responder 200 con la factura o la lista
+ACT|N12|SRV|-4500|-35700|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N13|CLI|-21000|-35700|13000|3600|Mostrar el mensaje de error
+FIN|N14|CLI|-21000|-41000
+ACT|N15|CLI|-21000|-46300|13000|3600|Mostrar la factura o la lista de facturas
+FIN|N16|CLI|-21000|-51600
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5||
+FLU|N5|N6|Sí|
+FLU|N6|N7|Sí|
+FLU|N7|N8||
+FLU|N8|N9||30500,-17150;10000,-17150
+FLU|N9|N10|Sí|
+FLU|N10|N11|Sí|
+FLU|N5|N12|No: AUTH-003 · 401|-4500,-3900
+FLU|N6|N12|No: DATA-001 · 400|-4500,-9200
+FLU|N9|N12|No: SYS-001 · 503|-4500,-19800
+FLU|N10|N12|No: FAC-001 · 404|-4500,-25100
+FLU|N12|N13||
+FLU|N13|N14||
+FLU|N11|N15||10000,-46300
+FLU|N15|N16||

@@ -1,0 +1,43 @@
+# DA7: Verificar al comprador
+AREA|15000|-59400
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Comercializadora (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|CORE|Core BanQuito (API REST)|22000|39000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Ingresar la cédula del comprador
+ACT|N3|CLI|-21000|1400|13000|3600|Enviar GET /api/v1/clientes/sujeto-credito?cedula= con Bearer
+ACT|N4|SRV|10000|1400|15000|3600|ManejadorAutenticacion (filtro @Protegido) lee el token Bearer
+DEC|N5|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken, ECUD17)
+DEC|N6|SRV|10000|-9200|18000|4400|¿Cédula de 10 dígitos?
+ACT|N7|SRV|10000|-14500|15000|3600|PasarelaBanquito pide la evaluación al Core (X-Api-Key)
+ACT|N8|CORE|30500|-14500|14000|3600|Verificar sujeto de crédito (ECUD13)
+DEC|N9|SRV|10000|-19800|18000|4400|¿El Core respondió a tiempo (5 s / 10 s) y sin error 5xx?
+DEC|N10|SRV|10000|-25100|18000|4400|¿La persona es cliente del banco?
+ACT|N11|SRV|10000|-30400|15000|3600|PasarelaBanquito pide el monto máximo al Core
+ACT|N12|CORE|30500|-30400|14000|3600|Calcular monto máximo (ECUD14)
+ACT|N13|SRV|10000|-35700|15000|3600|Responder 200 con sujetoCredito, motivos y monto máximo
+ACT|N14|SRV|-4500|-41000|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N15|CLI|-21000|-41000|13000|3600|Mostrar el mensaje de error
+FIN|N16|CLI|-21000|-46300
+ACT|N17|CLI|-21000|-51600|13000|3600|Mostrar si es sujeto de crédito, sus motivos y su monto máximo
+FIN|N18|CLI|-21000|-56900
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5||
+FLU|N5|N6|Sí|
+FLU|N6|N7|Sí|
+FLU|N7|N8||
+FLU|N8|N9||30500,-17150;10000,-17150
+FLU|N9|N10|Sí|
+FLU|N10|N11|Sí|
+FLU|N11|N12||
+FLU|N12|N13||30500,-33050;10000,-33050
+FLU|N5|N14|No: AUTH-003 · 401|-4500,-3900
+FLU|N6|N14|No: DATA-001 · 400|-4500,-9200
+FLU|N9|N14|No: EXT-001 · 502|-4500,-19800
+FLU|N14|N15||
+FLU|N15|N16||
+FLU|N13|N17||10000,-51600
+FLU|N17|N18||
+FLU|N10|N13|No: sin monto máximo|-1000,-25100;-1000,-35700

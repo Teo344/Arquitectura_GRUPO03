@@ -1,0 +1,491 @@
+PAQ|seguridad|ec.edu.monster.seguridad|0|0|1
+PAQ|controladores.recursos|ec.edu.monster.controladores.recursos|1|0|2
+PAQ|vista|ec.edu.monster.vista|1|1|2
+PAQ|servicios|ec.edu.monster.servicios|2|0|2
+PAQ|datos|ec.edu.monster.datos|3|0|1
+PAQ|modelo|ec.edu.monster.modelo|4|0|1
+CLASE|controladores.recursos|ClienteRecurso|Resource|C
+ATR|ClienteRecurso|-|servicioCliente|ServicioCliente|0|
+ATR|ClienteRecurso|-|mapeador|Mapeador|0|
+OP|ClienteRecurso|+|evaluar|EvaluacionClienteDto|String cedula||0
+OP|ClienteRecurso|+|creditos|List<CreditoDto>|String cedula||0
+CLASE|controladores.recursos|ConfiguracionJaxRs|ApplicationPath|C
+CLASE|controladores.recursos|CreditoRecurso|Resource|C
+ATR|CreditoRecurso|-|servicioCliente|ServicioCliente|0|
+ATR|CreditoRecurso|-|mapeador|Mapeador|0|
+OP|CreditoRecurso|+|simular|List<CuotaDto>|String monto;String cuotas||0
+OP|CreditoRecurso|+|cuotas|List<CuotaDto>|int codCredito||0
+CLASE|controladores.recursos|FacturaRecurso|Resource|C
+ATR|FacturaRecurso|-|servicioFacturacion|ServicioFacturacion|0|
+ATR|FacturaRecurso|-|mapeador|Mapeador|0|
+ATR|FacturaRecurso|-|peticion|HttpServletRequest|0|
+ATR|FacturaRecurso|-|uriInfo|UriInfo|0|
+OP|FacturaRecurso|+|facturar|Response|SolicitudFacturaDto solicitud||0
+OP|FacturaRecurso|+|buscar|FacturaDto|int numFactura||0
+OP|FacturaRecurso|+|listar|List<FacturaDto>|String cedula||0
+OP|FacturaRecurso|-|sesion|Sesion|||0
+CLASE|controladores.recursos|MapeadorExcepciones|Provider|C
+ATR|MapeadorExcepciones|-|uriInfo|UriInfo|0|
+OP|MapeadorExcepciones|+|toResponse|Response|Throwable error||0
+OP|MapeadorExcepciones|+|respuesta|Response|ExcepcionServicio error;String instancia||1
+OP|MapeadorExcepciones|-|construir|Response|ProblemaDto problema||1
+OP|MapeadorExcepciones|-|causadoPorJson|boolean|Throwable error||1
+CLASE|controladores.recursos|SesionRecurso|Resource|C
+ATR|SesionRecurso|-|servicioAutenticacion|ServicioAutenticacion|0|
+ATR|SesionRecurso|-|mapeador|Mapeador|0|
+ATR|SesionRecurso|-|uriInfo|UriInfo|0|
+OP|SesionRecurso|+|iniciar|Response|CredencialesDto credenciales||0
+OP|SesionRecurso|+|cerrar|Response|String autorizacion||0
+CLASE|controladores.recursos|TelefonoRecurso|Resource|C
+ATR|TelefonoRecurso|-|servicioTelefono|ServicioTelefono|0|
+ATR|TelefonoRecurso|-|mapeador|Mapeador|0|
+ATR|TelefonoRecurso|-|uriInfo|UriInfo|0|
+OP|TelefonoRecurso|+|listar|List<TelefonoDto>|||0
+OP|TelefonoRecurso|+|buscar|TelefonoDto|int codTelefono||0
+OP|TelefonoRecurso|+|crear|Response|SolicitudTelefonoDto solicitud||0
+OP|TelefonoRecurso|+|actualizar|TelefonoDto|int codTelefono;SolicitudTelefonoDto solicitud||0
+OP|TelefonoRecurso|+|eliminar|Response|int codTelefono||0
+CLASE|datos|ConexionBD||C
+ATR|ConexionBD|-|ARCHIVO|String|1|
+ATR|ConexionBD|-|url|String|0|
+ATR|ConexionBD|-|usuario|String|0|
+ATR|ConexionBD|-|clave|String|0|
+OP|ConexionBD|-|ConexionBD|||Constructor|0
+OP|ConexionBD|+|getInstancia|ConexionBD|||1
+OP|ConexionBD|+|obtenerConexion|Connection|||0
+CLASE|datos|DetalleFacturaDao|ApplicationScoped|C
+ATR|DetalleFacturaDao|-|SQL_INSERTAR|String|1|
+ATR|DetalleFacturaDao|-|SQL_LISTAR|String|1|
+OP|DetalleFacturaDao|+|insertar|void|Connection cn;int numFactura;List<DetalleFactura> detalles||0
+OP|DetalleFacturaDao|+|listar|List<DetalleFactura>|Connection cn;int numFactura||0
+CLASE|datos|FacturaDao|ApplicationScoped|C
+ATR|FacturaDao|-|LIMITE|int|1|
+ATR|FacturaDao|-|COLUMNAS|String|1|
+ATR|FacturaDao|-|SQL_BUSCAR|String|1|
+ATR|FacturaDao|-|SQL_TODAS|String|1|
+ATR|FacturaDao|-|SQL_POR_CEDULA|String|1|
+ATR|FacturaDao|-|SQL_INSERTAR|String|1|
+OP|FacturaDao|+|insertar|int|Connection cn;int codUsuario;Factura factura||0
+OP|FacturaDao|+|buscar|Optional<Factura>|Connection cn;int numero||0
+OP|FacturaDao|+|listar|List<Factura>|Connection cn;String cedula||0
+OP|FacturaDao|-|leer|Factura|ResultSet rs||1
+CLASE|datos|PasarelaBanquito|ApplicationScoped|C
+ATR|PasarelaBanquito|-|ARCHIVO|String|1|
+ATR|PasarelaBanquito|-|TIEMPO_CONEXION|Duration|1|
+ATR|PasarelaBanquito|-|TIEMPO_RESPUESTA|Duration|1|
+ATR|PasarelaBanquito|-|http|HttpClient|0|
+ATR|PasarelaBanquito|-|jsonb|Jsonb|0|
+ATR|PasarelaBanquito|-|url|String|0|
+ATR|PasarelaBanquito|-|clave|String|0|
+OP|PasarelaBanquito|*|configurar|void|||0
+OP|PasarelaBanquito|*|cerrar|void|||0
+OP|PasarelaBanquito|+|buscarCliente|ClienteBanco|String cedula||0
+OP|PasarelaBanquito|+|evaluar|EvaluacionBanco|String cedula||0
+OP|PasarelaBanquito|+|montoMaximo|MontoMaximoBanco|int codCliente||0
+OP|PasarelaBanquito|+|otorgarCredito|CreditoBanco|int codCliente;BigDecimal monto;int numCuotas||0
+OP|PasarelaBanquito|+|creditos|List<CreditoBanco>|int codCliente||0
+OP|PasarelaBanquito|+|cuotas|List<CuotaBanco>|int codCredito||0
+OP|PasarelaBanquito|+|simular|List<CuotaBanco>|String monto;String numCuotas||0
+OP|PasarelaBanquito|-|get|HttpRequest.Builder|String ruta||0
+OP|PasarelaBanquito|-|peticion|HttpRequest.Builder|String ruta||0
+OP|PasarelaBanquito|-|enviar|T|HttpRequest.Builder peticion;Class<T> tipo||0
+OP|PasarelaBanquito|-|error|ExcepcionServicio|HttpRequest solicitud;HttpResponse<String> respuesta||0
+OP|PasarelaBanquito|-|codificar|String|String valor||1
+CLASE|datos|ProblemaCore||C
+ATR|ProblemaCore|+|status|int|0|
+ATR|ProblemaCore|+|detail|String|0|
+ATR|ProblemaCore|+|codigo|String|0|
+CLASE|datos|TelefonoDao|ApplicationScoped|C
+ATR|TelefonoDao|-|COLUMNAS|String|1|
+ATR|TelefonoDao|-|SQL_ACTIVOS|String|1|
+ATR|TelefonoDao|-|SQL_BUSCAR|String|1|
+ATR|TelefonoDao|-|SQL_INSERTAR|String|1|
+ATR|TelefonoDao|-|SQL_ACTUALIZAR|String|1|
+ATR|TelefonoDao|-|SQL_INACTIVAR|String|1|
+OP|TelefonoDao|+|listarActivos|List<Telefono>|Connection cn||0
+OP|TelefonoDao|+|buscar|Optional<Telefono>|Connection cn;int codigo||0
+OP|TelefonoDao|+|insertar|int|Connection cn;String marca;String modelo;BigDecimal precio||0
+OP|TelefonoDao|+|actualizar|boolean|Connection cn;int codigo;String marca;String modelo;BigDecimal precio||0
+OP|TelefonoDao|+|inactivar|boolean|Connection cn;int codigo||0
+OP|TelefonoDao|-|leer|Telefono|ResultSet rs||1
+CLASE|datos|UsuarioDao|ApplicationScoped|C
+ATR|UsuarioDao|-|SQL_BUSCAR|String|1|
+OP|UsuarioDao|+|buscar|Optional<Usuario>|Connection cn;String usuario;String hashClave||0
+CLASE|modelo|ClienteBanco||C
+ATR|ClienteBanco|+|codCliente|int|0|
+ATR|ClienteBanco|+|cedula|String|0|
+ATR|ClienteBanco|+|nombre|String|0|
+CLASE|modelo|CodigoError|Enum|C
+ATR|CodigoError|+|AUTH_001||0|EnumConstant
+ATR|CodigoError|+|AUTH_002||0|EnumConstant
+ATR|CodigoError|+|AUTH_003||0|EnumConstant
+ATR|CodigoError|+|DATA_001||0|EnumConstant
+ATR|CodigoError|+|TEL_001||0|EnumConstant
+ATR|CodigoError|+|TEL_002||0|EnumConstant
+ATR|CodigoError|+|TEL_003||0|EnumConstant
+ATR|CodigoError|+|FAC_001||0|EnumConstant
+ATR|CodigoError|+|FAC_002||0|EnumConstant
+ATR|CodigoError|+|CLI_001||0|EnumConstant
+ATR|CodigoError|+|CRE_001||0|EnumConstant
+ATR|CodigoError|+|CRE_002||0|EnumConstant
+ATR|CodigoError|+|CRE_003||0|EnumConstant
+ATR|CodigoError|+|CRE_004||0|EnumConstant
+ATR|CodigoError|+|CRE_005||0|EnumConstant
+ATR|CodigoError|+|EXT_001||0|EnumConstant
+ATR|CodigoError|+|SYS_001||0|EnumConstant
+ATR|CodigoError|-|codigo|String|0|
+ATR|CodigoError|-|estadoHttp|int|0|
+ATR|CodigoError|-|mensaje|String|0|
+OP|CodigoError|+|delCore|CodigoError|String codigo||1
+OP|CodigoError|+|getCodigo|String|||0
+OP|CodigoError|+|getEstadoHttp|int|||0
+OP|CodigoError|+|getMensaje|String|||0
+CLASE|modelo|CreditoBanco||C
+ATR|CreditoBanco|+|codCredito|int|0|
+ATR|CreditoBanco|+|codCliente|int|0|
+ATR|CreditoBanco|+|fecha|LocalDate|0|
+ATR|CreditoBanco|+|monto|BigDecimal|0|
+ATR|CreditoBanco|+|numCuotas|int|0|
+ATR|CreditoBanco|+|tasaAnual|BigDecimal|0|
+ATR|CreditoBanco|+|valorCuota|BigDecimal|0|
+ATR|CreditoBanco|+|estado|String|0|
+ATR|CreditoBanco|+|cuotas|List<CuotaBanco>|0|
+CLASE|modelo|CuotaBanco||C
+ATR|CuotaBanco|+|numero|int|0|
+ATR|CuotaBanco|+|valorCuota|BigDecimal|0|
+ATR|CuotaBanco|+|interes|BigDecimal|0|
+ATR|CuotaBanco|+|capital|BigDecimal|0|
+ATR|CuotaBanco|+|saldo|BigDecimal|0|
+CLASE|modelo|DetalleFactura|record|C
+ATR|DetalleFactura|+|codTelefono|int|0|
+ATR|DetalleFactura|+|marca|String|0|
+ATR|DetalleFactura|+|modelo|String|0|
+ATR|DetalleFactura|+|cantidad|int|0|
+ATR|DetalleFactura|+|precioUnitario|BigDecimal|0|
+ATR|DetalleFactura|+|subtotal|BigDecimal|0|
+CLASE|modelo|EvaluacionBanco||C
+ATR|EvaluacionBanco|+|NO_ES_CLIENTE|String|1|
+ATR|EvaluacionBanco|+|cedula|String|0|
+ATR|EvaluacionBanco|+|codCliente|Integer|0|
+ATR|EvaluacionBanco|+|nombre|String|0|
+ATR|EvaluacionBanco|+|sujetoCredito|boolean|0|
+ATR|EvaluacionBanco|+|motivos|List<Motivo>|0|
+OP|EvaluacionBanco|+|esCliente|boolean|||0
+CLASE|modelo|Motivo||C
+ATR|Motivo|+|codigo|String|0|
+ATR|Motivo|+|descripcion|String|0|
+CLASE|modelo|EvaluacionCliente|record|C
+ATR|EvaluacionCliente|+|evaluacion|EvaluacionBanco|0|
+ATR|EvaluacionCliente|+|montoMaximo|BigDecimal|0|
+CLASE|modelo|Factura|record|C
+ATR|Factura|+|numero|int|0|
+ATR|Factura|+|fecha|LocalDateTime|0|
+ATR|Factura|+|usuario|String|0|
+ATR|Factura|+|cedula|String|0|
+ATR|Factura|+|codClienteBanco|int|0|
+ATR|Factura|+|nombreCliente|String|0|
+ATR|Factura|+|formaPago|FormaPago|0|
+ATR|Factura|+|subtotal|BigDecimal|0|
+ATR|Factura|+|descuento|BigDecimal|0|
+ATR|Factura|+|total|BigDecimal|0|
+ATR|Factura|+|codCreditoBanco|Integer|0|
+ATR|Factura|+|numCuotas|Integer|0|
+ATR|Factura|+|detalles|List<DetalleFactura>|0|
+CLASE|modelo|FormaPago|Enum|C
+CLASE|modelo|MontoMaximoBanco||C
+ATR|MontoMaximoBanco|+|codCliente|int|0|
+ATR|MontoMaximoBanco|+|promedioDepositos|BigDecimal|0|
+ATR|MontoMaximoBanco|+|promedioRetiros|BigDecimal|0|
+ATR|MontoMaximoBanco|+|porcentaje|BigDecimal|0|
+ATR|MontoMaximoBanco|+|plazoMeses|int|0|
+ATR|MontoMaximoBanco|+|montoMaximo|BigDecimal|0|
+CLASE|modelo|Telefono|record|C
+ATR|Telefono|+|codigo|int|0|
+ATR|Telefono|+|marca|String|0|
+ATR|Telefono|+|modelo|String|0|
+ATR|Telefono|+|precio|BigDecimal|0|
+ATR|Telefono|+|estado|String|0|
+OP|Telefono|+|activo|boolean|||0
+CLASE|modelo|Usuario|record|C
+ATR|Usuario|+|codigo|int|0|
+ATR|Usuario|+|usuario|String|0|
+ATR|Usuario|+|nombre|String|0|
+ATR|Usuario|+|estado|String|0|
+OP|Usuario|+|activo|boolean|||0
+CLASE|seguridad|FiltroCors|WebFilter|C
+ATR|FiltroCors|-|origenes|List<String>|0|
+OP|FiltroCors|+|init|void|FilterConfig configuracion||0
+OP|FiltroCors|+|doFilter|void|ServletRequest req;ServletResponse res;FilterChain cadena||0
+CLASE|seguridad|GestorToken|ApplicationScoped|C
+ATR|GestorToken|-|sesiones|Map<String,Entrada>|0|
+ATR|GestorToken|-|minutos|long|0|
+OP|GestorToken|+|generar|TokenEmitido|Sesion sesion||0
+OP|GestorToken|+|validar|Sesion|String token||0
+OP|GestorToken|+|invalidar|void|String token||0
+OP|GestorToken|-|vigente|Entrada|String token||0
+OP|GestorToken|-|vencida|boolean|Entrada entrada;Instant ahora||0
+OP|GestorToken|-|duracion|Duration|||0
+CLASE|seguridad|TokenEmitido|record|C
+ATR|TokenEmitido|+|token|String|0|
+ATR|TokenEmitido|+|expiraEn|Instant|0|
+CLASE|seguridad|ManejadorAutenticacion|Provider|C
+ATR|ManejadorAutenticacion|+|PROPIEDAD_SESION|String|1|
+ATR|ManejadorAutenticacion|-|PREFIJO|String|1|
+ATR|ManejadorAutenticacion|-|gestorToken|GestorToken|0|
+OP|ManejadorAutenticacion|+|filter|void|ContainerRequestContext contexto||0
+OP|ManejadorAutenticacion|+|leerToken|String|String cabecera||1
+CLASE|seguridad|Protegido|annotation|I
+CLASE|seguridad|Sesion|record|C
+ATR|Sesion|+|codUsuario|int|0|
+ATR|Sesion|+|usuario|String|0|
+ATR|Sesion|+|nombre|String|0|
+CLASE|seguridad|UtilHash||C
+OP|UtilHash|-|UtilHash|||Constructor|0
+OP|UtilHash|+|sha256|String|String texto||1
+CLASE|servicios|CalculadoraFactura||C
+ATR|CalculadoraFactura|-|CIEN|BigDecimal|1|
+OP|CalculadoraFactura|-|CalculadoraFactura|||Constructor|0
+OP|CalculadoraFactura|+|subtotalLinea|BigDecimal|BigDecimal precioUnitario;int cantidad||1
+OP|CalculadoraFactura|+|descuento|BigDecimal|BigDecimal subtotal;FormaPago formaPago;BigDecimal porcentaje||1
+OP|CalculadoraFactura|+|precioEfectivo|BigDecimal|BigDecimal precio;BigDecimal porcentaje||1
+CLASE|servicios|ExcepcionServicio||C
+ATR|ExcepcionServicio|-|codigoError|CodigoError|0|
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError;String detalle|Constructor|0
+OP|ExcepcionServicio|+|ExcepcionServicio||CodigoError codigoError;Throwable causa|Constructor|0
+OP|ExcepcionServicio|+|getCodigoError|CodigoError|||0
+CLASE|servicios|ServicioAutenticacion|ApplicationScoped|C
+ATR|ServicioAutenticacion|-|usuarioDao|UsuarioDao|0|
+ATR|ServicioAutenticacion|-|gestorToken|GestorToken|0|
+OP|ServicioAutenticacion|+|iniciarSesion|SesionIniciada|String usuario;String clave||0
+OP|ServicioAutenticacion|+|cerrarSesion|void|String token||0
+CLASE|servicios|SesionIniciada|record|C
+ATR|SesionIniciada|+|token|TokenEmitido|0|
+ATR|SesionIniciada|+|sesion|Sesion|0|
+CLASE|servicios|ServicioCliente|ApplicationScoped|C
+ATR|ServicioCliente|-|validacion|ServicioValidacion|0|
+ATR|ServicioCliente|-|pasarela|PasarelaBanquito|0|
+OP|ServicioCliente|+|evaluar|EvaluacionCliente|String cedula||0
+OP|ServicioCliente|+|creditos|List<CreditoBanco>|String cedula||0
+OP|ServicioCliente|+|cuotas|List<CuotaBanco>|Integer codCredito||0
+OP|ServicioCliente|+|simular|List<CuotaBanco>|String monto;String numCuotas||0
+CLASE|servicios|ServicioFacturacion|ApplicationScoped|C
+ATR|ServicioFacturacion|-|porcentajeDescuento|BigDecimal|0|
+ATR|ServicioFacturacion|-|validacion|ServicioValidacion|0|
+ATR|ServicioFacturacion|-|telefonoDao|TelefonoDao|0|
+ATR|ServicioFacturacion|-|facturaDao|FacturaDao|0|
+ATR|ServicioFacturacion|-|detalleFacturaDao|DetalleFacturaDao|0|
+ATR|ServicioFacturacion|-|pasarela|PasarelaBanquito|0|
+OP|ServicioFacturacion|+|facturar|Factura|Sesion sesion;String cedula;String formaPago;Integer numCuotas;List<Linea> lineas||0
+OP|ServicioFacturacion|+|buscar|Factura|Integer numero||0
+OP|ServicioFacturacion|+|listar|List<Factura>|String cedula||0
+OP|ServicioFacturacion|-|validarLineas|List<Linea>|List<Linea> lineas||0
+OP|ServicioFacturacion|-|armarDetalles|List<DetalleFactura>|Connection cn;List<Linea> lineas||0
+OP|ServicioFacturacion|-|comprador|Comprador|String cedula||0
+OP|ServicioFacturacion|-|venderACredito|Comprador|String cedula;BigDecimal total;int cuotas||0
+OP|ServicioFacturacion|-|guardar|Factura|int codUsuario;Factura factura||0
+OP|ServicioFacturacion|-|buscar|Factura|Connection cn;int numero||0
+OP|ServicioFacturacion|-|conConexion|T|String accion;OperacionBD<T> operacion||0
+OP|ServicioFacturacion|-|revertir|void|Connection cn||1
+CLASE|servicios|Linea|record|C
+ATR|Linea|+|codTelefono|Integer|0|
+ATR|Linea|+|cantidad|Integer|0|
+CLASE|servicios|ServicioTelefono|ApplicationScoped|C
+ATR|ServicioTelefono|-|LARGO_MARCA|int|1|
+ATR|ServicioTelefono|-|LARGO_MODELO|int|1|
+ATR|ServicioTelefono|-|validacion|ServicioValidacion|0|
+ATR|ServicioTelefono|-|telefonoDao|TelefonoDao|0|
+OP|ServicioTelefono|+|listar|List<Telefono>|||0
+OP|ServicioTelefono|+|buscar|Telefono|Integer codigo||0
+OP|ServicioTelefono|+|crear|Telefono|String marca;String modelo;BigDecimal precio||0
+OP|ServicioTelefono|+|actualizar|Telefono|Integer codigo;String marca;String modelo;BigDecimal precio||0
+OP|ServicioTelefono|+|eliminar|void|Integer codigo||0
+OP|ServicioTelefono|-|buscar|Telefono|Connection cn;int codigo||0
+OP|ServicioTelefono|-|conConexion|T|String accion;OperacionBD<T> operacion||0
+CLASE|servicios|ServicioValidacion|ApplicationScoped|C
+ATR|ServicioValidacion|-|FORMATO_CEDULA|Pattern|1|
+ATR|ServicioValidacion|+|CUOTAS_MINIMO|int|1|
+ATR|ServicioValidacion|+|CUOTAS_MAXIMO|int|1|
+ATR|ServicioValidacion|+|CANTIDAD_MAXIMA|int|1|
+ATR|ServicioValidacion|+|MAXIMO|BigDecimal|1|
+OP|ServicioValidacion|+|validarCedula|String|String cedula||0
+OP|ServicioValidacion|+|validarCodigo|int|Integer codigo||0
+OP|ServicioValidacion|+|validarTexto|String|String texto;String campo;int maximo||0
+OP|ServicioValidacion|+|validarPrecio|BigDecimal|BigDecimal precio||0
+OP|ServicioValidacion|+|validarCantidad|int|Integer cantidad||0
+OP|ServicioValidacion|+|validarFormaPago|FormaPago|String formaPago||0
+OP|ServicioValidacion|+|validarCuotas|int|Integer cuotas||0
+CLASE|vista|CredencialesDto||C
+ATR|CredencialesDto|+|usuario|String|0|
+ATR|CredencialesDto|+|clave|String|0|
+CLASE|vista|CreditoDto||C
+ATR|CreditoDto|+|codCredito|int|0|
+ATR|CreditoDto|+|codCliente|int|0|
+ATR|CreditoDto|+|fecha|LocalDate|0|
+ATR|CreditoDto|+|monto|BigDecimal|0|
+ATR|CreditoDto|+|numCuotas|int|0|
+ATR|CreditoDto|+|tasaAnual|BigDecimal|0|
+ATR|CreditoDto|+|valorCuota|BigDecimal|0|
+ATR|CreditoDto|+|estado|String|0|
+CLASE|vista|CuotaDto||C
+ATR|CuotaDto|+|numero|int|0|
+ATR|CuotaDto|+|valorCuota|BigDecimal|0|
+ATR|CuotaDto|+|interes|BigDecimal|0|
+ATR|CuotaDto|+|capital|BigDecimal|0|
+ATR|CuotaDto|+|saldo|BigDecimal|0|
+CLASE|vista|EvaluacionClienteDto||C
+ATR|EvaluacionClienteDto|+|cedula|String|0|
+ATR|EvaluacionClienteDto|+|codCliente|Integer|0|
+ATR|EvaluacionClienteDto|+|nombre|String|0|
+ATR|EvaluacionClienteDto|+|sujetoCredito|boolean|0|
+ATR|EvaluacionClienteDto|+|motivos|List<MotivoDto>|0|
+ATR|EvaluacionClienteDto|+|montoMaximo|BigDecimal|0|
+CLASE|vista|MotivoDto||C
+ATR|MotivoDto|+|codigo|String|0|
+ATR|MotivoDto|+|descripcion|String|0|
+CLASE|vista|FacturaDto||C
+ATR|FacturaDto|+|numFactura|int|0|
+ATR|FacturaDto|+|fecha|LocalDateTime|0|
+ATR|FacturaDto|+|usuario|String|0|
+ATR|FacturaDto|+|cedula|String|0|
+ATR|FacturaDto|+|codClienteBanco|int|0|
+ATR|FacturaDto|+|nombreCliente|String|0|
+ATR|FacturaDto|+|formaPago|String|0|
+ATR|FacturaDto|+|subtotal|BigDecimal|0|
+ATR|FacturaDto|+|descuento|BigDecimal|0|
+ATR|FacturaDto|+|total|BigDecimal|0|
+ATR|FacturaDto|+|codCreditoBanco|Integer|0|
+ATR|FacturaDto|+|numCuotas|Integer|0|
+ATR|FacturaDto|+|detalles|List<DetalleDto>|0|
+CLASE|vista|DetalleDto||C
+ATR|DetalleDto|+|codTelefono|int|0|
+ATR|DetalleDto|+|marca|String|0|
+ATR|DetalleDto|+|modelo|String|0|
+ATR|DetalleDto|+|cantidad|int|0|
+ATR|DetalleDto|+|precioUnitario|BigDecimal|0|
+ATR|DetalleDto|+|subtotal|BigDecimal|0|
+CLASE|vista|Mapeador|ApplicationScoped|C
+ATR|Mapeador|-|porcentajeDescuento|BigDecimal|0|
+OP|Mapeador|+|deSesion|SesionDto|SesionIniciada iniciada||0
+OP|Mapeador|+|deTelefono|TelefonoDto|Telefono telefono||0
+OP|Mapeador|+|deTelefonos|List<TelefonoDto>|List<Telefono> telefonos||0
+OP|Mapeador|+|deEvaluacion|EvaluacionClienteDto|EvaluacionCliente evaluacionCliente||0
+OP|Mapeador|+|deCreditos|List<CreditoDto>|List<CreditoBanco> creditos||0
+OP|Mapeador|+|deCuotas|List<CuotaDto>|List<CuotaBanco> cuotas||0
+OP|Mapeador|+|deFactura|FacturaDto|Factura factura;boolean conDetalle||0
+OP|Mapeador|+|deFacturas|List<FacturaDto>|List<Factura> facturas||0
+OP|Mapeador|-|deDetalle|FacturaDto.DetalleDto|DetalleFactura detalle||1
+CLASE|vista|ProblemaDto||C
+ATR|ProblemaDto|+|TIPO_PROBLEMA|String|1|
+ATR|ProblemaDto|+|type|String|0|
+ATR|ProblemaDto|+|title|String|0|
+ATR|ProblemaDto|+|status|int|0|
+ATR|ProblemaDto|+|detail|String|0|
+ATR|ProblemaDto|+|instance|String|0|
+ATR|ProblemaDto|+|codigo|String|0|
+OP|ProblemaDto|+|ProblemaDto|||Constructor|0
+OP|ProblemaDto|+|ProblemaDto||String title;int status;String detail;String instance;String codigo|Constructor|0
+CLASE|vista|SesionDto||C
+ATR|SesionDto|+|token|String|0|
+ATR|SesionDto|+|expiraEn|String|0|
+ATR|SesionDto|+|codUsuario|int|0|
+ATR|SesionDto|+|usuario|String|0|
+ATR|SesionDto|+|nombre|String|0|
+CLASE|vista|SolicitudFacturaDto||C
+ATR|SolicitudFacturaDto|+|cedula|String|0|
+ATR|SolicitudFacturaDto|+|formaPago|String|0|
+ATR|SolicitudFacturaDto|+|numCuotas|Integer|0|
+ATR|SolicitudFacturaDto|+|detalles|List<LineaDto>|0|
+CLASE|vista|LineaDto||C
+ATR|LineaDto|+|codTelefono|Integer|0|
+ATR|LineaDto|+|cantidad|Integer|0|
+CLASE|vista|SolicitudTelefonoDto||C
+ATR|SolicitudTelefonoDto|+|marca|String|0|
+ATR|SolicitudTelefonoDto|+|modelo|String|0|
+ATR|SolicitudTelefonoDto|+|precio|BigDecimal|0|
+CLASE|vista|TelefonoDto||C
+ATR|TelefonoDto|+|codTelefono|int|0|
+ATR|TelefonoDto|+|marca|String|0|
+ATR|TelefonoDto|+|modelo|String|0|
+ATR|TelefonoDto|+|precio|BigDecimal|0|
+ATR|TelefonoDto|+|precioEfectivo|BigDecimal|0|
+ATR|TelefonoDto|+|estado|String|0|
+ASOC|ClienteRecurso|ServicioCliente|servicioCliente|1
+ASOC|ClienteRecurso|Mapeador|mapeador|1
+ASOC|CreditoRecurso|ServicioCliente|servicioCliente|1
+ASOC|CreditoRecurso|Mapeador|mapeador|1
+ASOC|FacturaRecurso|ServicioFacturacion|servicioFacturacion|1
+ASOC|FacturaRecurso|Mapeador|mapeador|1
+ASOC|SesionRecurso|ServicioAutenticacion|servicioAutenticacion|1
+ASOC|SesionRecurso|Mapeador|mapeador|1
+ASOC|TelefonoRecurso|ServicioTelefono|servicioTelefono|1
+ASOC|TelefonoRecurso|Mapeador|mapeador|1
+ASOC|CreditoBanco|CuotaBanco|cuotas|0..*
+ASOC|EvaluacionBanco|Motivo|motivos|0..*
+ASOC|EvaluacionCliente|EvaluacionBanco|evaluacion|1
+ASOC|Factura|FormaPago|formaPago|1
+ASOC|Factura|DetalleFactura|detalles|0..*
+ASOC|ManejadorAutenticacion|GestorToken|gestorToken|1
+ASOC|ExcepcionServicio|CodigoError|codigoError|1
+ASOC|ServicioAutenticacion|UsuarioDao|usuarioDao|1
+ASOC|ServicioAutenticacion|GestorToken|gestorToken|1
+ASOC|SesionIniciada|TokenEmitido|token|1
+ASOC|SesionIniciada|Sesion|sesion|1
+ASOC|ServicioCliente|ServicioValidacion|validacion|1
+ASOC|ServicioCliente|PasarelaBanquito|pasarela|1
+ASOC|ServicioFacturacion|ServicioValidacion|validacion|1
+ASOC|ServicioFacturacion|TelefonoDao|telefonoDao|1
+ASOC|ServicioFacturacion|FacturaDao|facturaDao|1
+ASOC|ServicioFacturacion|DetalleFacturaDao|detalleFacturaDao|1
+ASOC|ServicioFacturacion|PasarelaBanquito|pasarela|1
+ASOC|ServicioTelefono|ServicioValidacion|validacion|1
+ASOC|ServicioTelefono|TelefonoDao|telefonoDao|1
+ASOC|EvaluacionClienteDto|MotivoDto|motivos|0..*
+ASOC|FacturaDto|DetalleDto|detalles|0..*
+ASOC|SolicitudFacturaDto|LineaDto|detalles|0..*
+DEP|ClienteRecurso|Protegido|Protegido
+DEP|CreditoRecurso|Protegido|Protegido
+DEP|FacturaRecurso|SolicitudFacturaDto|create
+DEP|FacturaRecurso|Linea|create
+DEP|FacturaRecurso|Protegido|Protegido
+DEP|MapeadorExcepciones|ExcepcionServicio|create
+DEP|MapeadorExcepciones|ProblemaDto|create
+DEP|SesionRecurso|CredencialesDto|create
+DEP|SesionRecurso|ManejadorAutenticacion|use
+DEP|TelefonoRecurso|SolicitudTelefonoDto|create
+DEP|TelefonoRecurso|Protegido|Protegido
+DEP|ConexionBD|ExcepcionServicio|throw
+DEP|DetalleFacturaDao|DetalleFactura|create
+DEP|FacturaDao|Factura|create
+DEP|FacturaDao|FormaPago|use
+DEP|PasarelaBanquito|ExcepcionServicio|throw
+DEP|PasarelaBanquito|CodigoError|use
+DEP|TelefonoDao|Telefono|create
+DEP|UsuarioDao|Usuario|create
+DEP|GestorToken|TokenEmitido|create
+DEP|GestorToken|ExcepcionServicio|throw
+DEP|ManejadorAutenticacion|MapeadorExcepciones|use
+DEP|ManejadorAutenticacion|Protegido|Protegido
+DEP|ServicioAutenticacion|ExcepcionServicio|throw
+DEP|ServicioAutenticacion|Sesion|create
+DEP|ServicioAutenticacion|SesionIniciada|create
+DEP|ServicioAutenticacion|ConexionBD|use
+DEP|ServicioAutenticacion|UtilHash|use
+DEP|ServicioCliente|EvaluacionCliente|create
+DEP|ServicioFacturacion|ExcepcionServicio|throw
+DEP|ServicioFacturacion|Factura|create
+DEP|ServicioFacturacion|Linea|create
+DEP|ServicioFacturacion|DetalleFactura|create
+DEP|ServicioFacturacion|CalculadoraFactura|use
+DEP|ServicioFacturacion|ConexionBD|use
+DEP|ServicioTelefono|ExcepcionServicio|throw
+DEP|ServicioTelefono|ConexionBD|use
+DEP|ServicioValidacion|ExcepcionServicio|throw
+DEP|ServicioValidacion|FormaPago|use
+DEP|Mapeador|SesionDto|create
+DEP|Mapeador|TelefonoDto|create
+DEP|Mapeador|EvaluacionClienteDto|create
+DEP|Mapeador|CreditoDto|create
+DEP|Mapeador|CuotaDto|create
+DEP|Mapeador|FacturaDto|create
+DEP|Mapeador|CalculadoraFactura|use

@@ -24,7 +24,8 @@ done
 python -I "$S/finalizar_dc.py" "$D/$A.oom" "$TMP/base_dc.oom" "$TMP/paquetes.txt"
 rm -f "${REV:?}/${A:?}.png"
 for intento in 1 2 3; do esperar; "$CSCRIPT" //nologo "$(w "$S/exportar_diagrama.vbs")" "$(w "$D/$A.oom")" "$(w "$REV/$A.png")" >/dev/null 2>&1; [ -f "$REV/$A.png" ] && break; done
-PID=$(python -I "$S/crear_prj.py" "$TPLD/04_CLASES.prj" "$D/04_CLASES.prj" "04_CLASES" "$D/$A.oom")
+# el proyecto incluye todos los modelos de la carpeta (EX.1.1 tiene un diagrama por servidor)
+PID=$(python -I "$S/crear_prj.py" "$TPLD/04_CLASES.prj" "$D/04_CLASES.prj" "04_CLASES" "$D"/*.oom)
 python -I "$S/agregar_sws.py" "$TG/$SWS.sws" 04_CLASES "$PID" "01. UML/03 DIAGRAMAS/04_CLASES/04_CLASES.prj" >/dev/null
 esperar
 "$CSCRIPT" //nologo "$(w "$S/verificar_prj.vbs")" "$(w "$D/04_CLASES.prj")" "$(w "$TG/$SWS.sws")" 2>&1 | iconv -f CP850 -t UTF-8 | grep -vE "^ - "

@@ -1,0 +1,36 @@
+# DA6: Eliminar teléfono
+AREA|15000|-48800
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Comercializadora (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD comercializadora (MySQL)|22000|39000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Elegir un teléfono y confirmar la baja
+ACT|N3|CLI|-21000|1400|13000|3600|Enviar DELETE /api/v1/telefonos/{codTelefono} con Bearer
+ACT|N4|SRV|10000|1400|15000|3600|ManejadorAutenticacion (filtro @Protegido) lee el token Bearer
+DEC|N5|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken, ECUD17)
+ACT|N6|SRV|10000|-9200|15000|3600|Dar de baja lógica el teléfono (TelefonoDao.inactivar)
+ACT|N7|BD|30500|-9200|14000|3600|UPDATE TELEFONO SET ESTADO = 'INACTIVO'
+DEC|N8|SRV|10000|-14500|18000|4400|¿Base de datos disponible?
+DEC|N9|SRV|10000|-19800|18000|4400|¿Se dio de baja el teléfono (existe)?
+ACT|N10|SRV|10000|-25100|15000|3600|Responder 204 No Content
+ACT|N11|SRV|-4500|-30400|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N12|CLI|-21000|-30400|13000|3600|Mostrar el mensaje de error
+FIN|N13|CLI|-21000|-35700
+ACT|N14|CLI|-21000|-41000|13000|3600|Quitar el teléfono del catálogo mostrado
+FIN|N15|CLI|-21000|-46300
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5||
+FLU|N5|N6|Sí|
+FLU|N6|N7||
+FLU|N7|N8||30500,-11850;10000,-11850
+FLU|N8|N9|Sí|
+FLU|N9|N10|Sí|
+FLU|N5|N11|No: AUTH-003 · 401|-4500,-3900
+FLU|N8|N11|No: SYS-001 · 503|-4500,-14500
+FLU|N9|N11|No: TEL-001 · 404|-4500,-19800
+FLU|N11|N12||
+FLU|N12|N13||
+FLU|N10|N14||10000,-41000
+FLU|N14|N15||

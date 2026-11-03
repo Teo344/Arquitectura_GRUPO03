@@ -1,0 +1,27 @@
+# DA2: Cerrar sesión
+AREA|15000|-38200
+CALLE|CLI|Cliente (Consola / Escritorio / Web / Móvil)|-30000|-12000
+CALLE|SRV|Comercializadora (Payara 7 / Jakarta REST)|-12000|22000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Seleccionar cerrar sesión
+ACT|N3|CLI|-21000|1400|13000|3600|Enviar DELETE /api/v1/sesiones/actual con Authorization: Bearer
+ACT|N4|SRV|10000|1400|15000|3600|ManejadorAutenticacion (filtro @Protegido) lee el token Bearer
+DEC|N5|SRV|10000|-3900|18000|4400|¿Token válido y vigente? (GestorToken, ECUD17)
+ACT|N6|SRV|10000|-9200|15000|3600|SesionRecurso.cerrar: GestorToken.invalidar(token)
+ACT|N7|SRV|10000|-14500|15000|3600|Responder 204 No Content
+ACT|N8|SRV|-4500|-19800|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N9|CLI|-21000|-19800|13000|3600|Borrar el token local y volver al inicio de sesión
+FIN|N10|CLI|-21000|-25100
+ACT|N11|CLI|-21000|-30400|13000|3600|Borrar el token y mostrar el inicio de sesión
+FIN|N12|CLI|-21000|-35700
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5||
+FLU|N5|N6|Sí|
+FLU|N6|N7||
+FLU|N5|N8|No: AUTH-003 · 401|-4500,-3900
+FLU|N8|N9||
+FLU|N9|N10||
+FLU|N7|N11||10000,-30400
+FLU|N11|N12||

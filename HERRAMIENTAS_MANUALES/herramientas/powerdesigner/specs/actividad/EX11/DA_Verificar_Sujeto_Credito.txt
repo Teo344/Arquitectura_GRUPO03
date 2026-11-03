@@ -1,0 +1,43 @@
+# DA13: Verificar sujeto de crédito
+AREA|15000|-59400
+CALLE|CLI|Comercializadora (cliente del servicio)|-30000|-12000
+CALLE|SRV|Core BanQuito (Payara 7 / Jakarta REST)|-12000|22000
+CALLE|BD|BD banquito (MySQL)|22000|39000
+INI|N1|CLI|-21000|12000
+ACT|N2|CLI|-21000|6700|13000|3600|Enviar GET /api/v1/clientes/sujeto-credito?cedula= con X-Api-Key
+ACT|N3|SRV|10000|6700|15000|3600|FiltroClaveApi compara la cabecera X-Api-Key con api.clave
+DEC|N4|SRV|10000|1400|18000|4400|¿Clave de API válida? (ECUD18)
+DEC|N5|SRV|10000|-3900|18000|4400|¿Cédula de 10 dígitos?
+ACT|N6|SRV|10000|-9200|15000|3600|Buscar al cliente por cédula (ClienteDao.buscarPorCedula)
+ACT|N7|BD|30500|-9200|14000|3600|SELECT CLIENTE WHERE CEDULA
+DEC|N8|SRV|10000|-14500|18000|4400|¿Base de datos disponible?
+DEC|N9|SRV|10000|-19800|18000|4400|¿Es cliente del banco?
+ACT|N10|SRV|10000|-25100|15000|3600|Evaluar las reglas RN-02 a RN-04 (ClienteDao.reglas)
+ACT|N11|BD|30500|-25100|14000|3600|Depósito en el último mes, hombre menor de 25, crédito activo
+ACT|N12|SRV|10000|-30400|15000|3600|Agregar los motivos de rechazo que se cumplan (pueden ser varios)
+ACT|N13|SRV|10000|-35700|15000|3600|Responder 200 con sujetoCredito y motivos (un "no" no es error)
+ACT|N14|SRV|-4500|-41000|12000|3600|MapeadorExcepciones responde problem+json con código y estado
+ACT|N15|CLI|-21000|-41000|13000|3600|PasarelaBanquito recibe el problem+json (código del Core o EXT-001)
+FIN|N16|CLI|-21000|-46300
+ACT|N17|CLI|-21000|-51600|13000|3600|Recibir la evaluación
+FIN|N18|CLI|-21000|-56900
+FLU|N1|N2||
+FLU|N2|N3||
+FLU|N3|N4||
+FLU|N4|N5|Sí|
+FLU|N5|N6|Sí|
+FLU|N6|N7||
+FLU|N7|N8||30500,-11850;10000,-11850
+FLU|N8|N9|Sí|
+FLU|N9|N10|Sí|
+FLU|N10|N11||
+FLU|N11|N12||30500,-27750;10000,-27750
+FLU|N12|N13||
+FLU|N4|N14|No: AUTH-004 · 401|-4500,1400
+FLU|N5|N14|No: DATA-001 · 400|-4500,-3900
+FLU|N8|N14|No: SYS-001 · 503|-4500,-14500
+FLU|N14|N15||
+FLU|N15|N16||
+FLU|N13|N17||10000,-51600
+FLU|N17|N18||
+FLU|N9|N13|No: NO_ES_CLIENTE|-1000,-19800;-1000,-35700
