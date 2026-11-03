@@ -1,4 +1,7 @@
 <Solution>
   <Project Path="EurekaBank.Desktop/EurekaBank.Desktop.csproj" />
   <Project Path="EurekaBank.Shared/EurekaBank.Shared.csproj" />
+  <Project Path="../04. CLIMOV/EurekaBank.Mobile/EurekaBank.Mobile.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>
