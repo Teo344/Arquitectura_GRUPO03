@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Funciones EL de la vista: los formatos de pantalla (vista/Formato). -->
+<taglib xmlns="https://jakarta.ee/xml/ns/jakartaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-jsptaglibrary_3_0.xsd"
+        version="3.0">
+    <tlib-version>1.0</tlib-version>
+    <short-name>m</short-name>
+    <uri>http://monster.edu.ec/monstercell</uri>
+
+    <function>
+        <description>Importe con separador de miles y dos decimales: 6,900.00</description>
+        <name>importe</name>
+        <function-class>ec.edu.monster.vista.Formato</function-class>
+        <function-signature>java.lang.String importe(java.math.BigDecimal)</function-signature>
+    </function>
+    <function>
+        <description>Hora local (HH:mm) de un instante</description>
+        <name>hora</name>
+        <function-class>ec.edu.monster.vista.Formato</function-class>
+        <function-signature>java.lang.String hora(java.time.Instant)</function-signature>
+    </function>
+    <function>
+        <description>Fecha ISO-8601 de la API como dd/MM/yyyy (y HH:mm si trae hora)</description>
+        <name>fecha</name>
+        <function-class>ec.edu.monster.vista.Formato</function-class>
+        <function-signature>java.lang.String fecha(java.lang.String)</function-signature>
+    </function>
+    <function>
+        <description>El valor, o "-" si no hay</description>
+        <name>valorO</name>
+        <function-class>ec.edu.monster.vista.Formato</function-class>
+        <function-signature>java.lang.String valorO(java.lang.String)</function-signature>
+    </function>
+    <function>
+        <description>Hasta dos iniciales del nombre, para el avatar</description>
+        <name>iniciales</name>
+        <function-class>ec.edu.monster.vista.Formato</function-class>
+        <function-signature>java.lang.String iniciales(java.lang.String)</function-signature>
+    </function>
+</taglib>
