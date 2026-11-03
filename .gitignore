@@ -57,6 +57,7 @@
 
 # Credenciales locales de la base de datos (se suben solo los .example)
 **/db.properties
+**/.env
 **/conexion.config
 **/conexion.json
 
