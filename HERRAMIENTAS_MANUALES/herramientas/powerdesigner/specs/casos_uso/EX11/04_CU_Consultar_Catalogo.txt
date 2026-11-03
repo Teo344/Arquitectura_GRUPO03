@@ -1,0 +1,8 @@
+#|CU_Consultar_Catalogo|Caso de uso Consultar catálogo de teléfonos|ECUD3: CONSULTAR CATÁLOGO DE TELÉFONOS – COMERCIALIZADORA
+ACTOR|Empleado (vendedor)|Empleado|-36000|0
+CU|ECUD3: Consultar catálogo de teléfonos|ECUD3|0|0|28000
+ASOC|Empleado|ECUD3
+CU|ECUD17: Validar token de sesión|ECUD17|40000|15000|28000
+DEP|ECUD3|ECUD17|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500

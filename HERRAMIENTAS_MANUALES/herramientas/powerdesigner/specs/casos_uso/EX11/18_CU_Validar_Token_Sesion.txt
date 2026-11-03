@@ -1,0 +1,26 @@
+#|CU_Validar_Token_Sesion|Caso de uso Validar token de sesión|ECUD17: VALIDAR TOKEN DE SESIÓN – COMERCIALIZADORA
+CU|ECUD17: Validar token de sesión|ECUD17|0|0|28000
+CU|ECUD2: Cerrar sesión|ECUD2|-29583|63441|32000
+DEP|ECUD2|ECUD17|include
+CU|ECUD3: Consultar catálogo de teléfonos|ECUD3|-43096|55160|32000
+DEP|ECUD3|ECUD17|include
+CU|ECUD4: Registrar teléfono|ECUD4|-54400|44052|32000
+DEP|ECUD4|ECUD17|include
+CU|ECUD5: Editar teléfono|ECUD5|-62915|30685|32000
+DEP|ECUD5|ECUD17|include
+CU|ECUD6: Eliminar teléfono|ECUD6|-68205|15746|32000
+DEP|ECUD6|ECUD17|include
+CU|ECUD7: Verificar al comprador|ECUD7|-70000|0|32000
+DEP|ECUD7|ECUD17|include
+CU|ECUD8: Simular tabla de amortización|ECUD8|-68205|-15746|32000
+DEP|ECUD8|ECUD17|include
+CU|ECUD9: Vender en efectivo|ECUD9|-62915|-30685|32000
+DEP|ECUD9|ECUD17|include
+CU|ECUD10: Vender con crédito directo|ECUD10|-54400|-44052|32000
+DEP|ECUD10|ECUD17|include
+CU|ECUD11: Consultar facturas|ECUD11|-43096|-55160|32000
+DEP|ECUD11|ECUD17|include
+CU|ECUD12: Consultar créditos de un comprador|ECUD12|-29583|-63441|32000
+DEP|ECUD12|ECUD17|include
+RECT|-90000|75000|18000|-70000
+TITULO|-88000|74500|16000|70500

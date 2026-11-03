@@ -1,0 +1,42 @@
+#|CU_General_Comercializadora|Casos de uso de la Comercializadora|COMERCIALIZADORA DE TELÉFONOS CELULARES
+ACTOR|Empleado (vendedor)|Empleado|0|0
+ACTOR|Cliente Consola|ClienteConsola|-28000|33000
+GEN|ClienteConsola|Empleado
+ACTOR|Cliente Escritorio|ClienteEscritorio|-28000|11000
+GEN|ClienteEscritorio|Empleado
+ACTOR|Cliente Web|ClienteWeb|-28000|-11000
+GEN|ClienteWeb|Empleado
+ACTOR|Cliente Móvil Android|ClienteMovil|-28000|-33000
+GEN|ClienteMovil|Empleado
+CU|ECUD1: Iniciar sesión|ECUD1|25651|70476|32000
+ASOC|Empleado|ECUD1
+CU|ECUD2: Cerrar sesión|ECUD2|40548|63094|32000
+ASOC|Empleado|ECUD2
+CU|ECUD3: Consultar catálogo de teléfonos|ECUD3|53452|52610|32000
+ASOC|Empleado|ECUD3
+CU|ECUD4: Registrar teléfono|ECUD4|63729|39541|32000
+ASOC|Empleado|ECUD4
+CU|ECUD5: Editar teléfono|ECUD5|70875|24530|32000
+ASOC|Empleado|ECUD5
+CU|ECUD6: Eliminar teléfono|ECUD6|74537|8312|32000
+ASOC|Empleado|ECUD6
+CU|ECUD7: Verificar al comprador|ECUD7|74537|-8312|32000
+ASOC|Empleado|ECUD7
+CU|ECUD8: Simular tabla de amortización|ECUD8|70875|-24530|32000
+ASOC|Empleado|ECUD8
+CU|ECUD9: Vender en efectivo|ECUD9|63729|-39541|32000
+ASOC|Empleado|ECUD9
+CU|ECUD10: Vender con crédito directo|ECUD10|53452|-52610|32000
+ASOC|Empleado|ECUD10
+CU|ECUD11: Consultar facturas|ECUD11|40548|-63094|32000
+ASOC|Empleado|ECUD11
+CU|ECUD12: Consultar créditos de un comprador|ECUD12|25651|-70476|32000
+ASOC|Empleado|ECUD12
+ACTOR|Core BanQuito|CoreBanQuito|120000|-56250|sistema
+ASOC|CoreBanQuito|ECUD7
+ASOC|CoreBanQuito|ECUD8
+ASOC|CoreBanQuito|ECUD9
+ASOC|CoreBanQuito|ECUD10
+ASOC|CoreBanQuito|ECUD12
+RECT|4000|83000|100000|-78000
+TITULO|6000|82500|98000|78500

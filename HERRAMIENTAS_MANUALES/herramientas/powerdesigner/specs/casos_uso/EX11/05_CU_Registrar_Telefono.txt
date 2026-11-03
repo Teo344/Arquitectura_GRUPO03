@@ -1,0 +1,8 @@
+#|CU_Registrar_Telefono|Caso de uso Registrar teléfono|ECUD4: REGISTRAR TELÉFONO – COMERCIALIZADORA
+ACTOR|Empleado (vendedor)|Empleado|-36000|0
+CU|ECUD4: Registrar teléfono|ECUD4|0|0|28000
+ASOC|Empleado|ECUD4
+CU|ECUD17: Validar token de sesión|ECUD17|40000|15000|28000
+DEP|ECUD4|ECUD17|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500

@@ -1,0 +1,8 @@
+#|CU_Consultar_Tabla_Amortizacion|Caso de uso Consultar tabla de amortización|ECUD16: CONSULTAR TABLA DE AMORTIZACIÓN – CORE BANQUITO
+ACTOR|Comercializadora|Comercializadora|-36000|0|sistema
+CU|ECUD16: Consultar tabla de amortización|ECUD16|0|0|28000
+ASOC|Comercializadora|ECUD16
+CU|ECUD18: Validar clave de API|ECUD18|40000|15000|28000
+DEP|ECUD16|ECUD18|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500

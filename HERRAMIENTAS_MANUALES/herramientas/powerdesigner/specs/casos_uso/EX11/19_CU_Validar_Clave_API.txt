@@ -1,0 +1,17 @@
+#|CU_Validar_Clave_API|Caso de uso Validar clave de API|ECUD18: VALIDAR CLAVE DE API – CORE BANQUITO
+ACTOR|Comercializadora|Comercializadora|-90000|0|sistema
+CU|ECUD18: Validar clave de API|ECUD18|0|0|26000
+CU|ECUD13: Verificar sujeto de crédito|ECUD13|-46000|21000|32000
+ASOC|Comercializadora|ECUD13
+DEP|ECUD13|ECUD18|include
+CU|ECUD14: Calcular monto máximo|ECUD14|-46000|7000|32000
+ASOC|Comercializadora|ECUD14
+DEP|ECUD14|ECUD18|include
+CU|ECUD15: Otorgar crédito|ECUD15|-46000|-7000|32000
+ASOC|Comercializadora|ECUD15
+DEP|ECUD15|ECUD18|include
+CU|ECUD16: Consultar tabla de amortización|ECUD16|-46000|-21000|32000
+ASOC|Comercializadora|ECUD16
+DEP|ECUD16|ECUD18|include
+RECT|-66000|33000|18000|-29000
+TITULO|-64000|32500|16000|28500

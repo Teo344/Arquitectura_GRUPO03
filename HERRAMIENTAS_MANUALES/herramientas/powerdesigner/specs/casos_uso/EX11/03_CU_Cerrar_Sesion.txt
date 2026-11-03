@@ -1,0 +1,8 @@
+#|CU_Cerrar_Sesion|Caso de uso Cerrar sesión|ECUD2: CERRAR SESIÓN – COMERCIALIZADORA
+ACTOR|Empleado (vendedor)|Empleado|-36000|0
+CU|ECUD2: Cerrar sesión|ECUD2|0|0|28000
+ASOC|Empleado|ECUD2
+CU|ECUD17: Validar token de sesión|ECUD17|40000|15000|28000
+DEP|ECUD2|ECUD17|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500

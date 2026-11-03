@@ -1,0 +1,17 @@
+#|CU_General_Core_BanQuito|Casos de uso del Core BanQuito|CORE BANQUITO – MÓDULO DE CRÉDITO
+ACTOR|Comercializadora|Comercializadora|-40000|0|sistema
+CU|ECUD18: Validar clave de API|ECUD18|44000|0|26000
+CU|ECUD13: Verificar sujeto de crédito|ECUD13|0|21000|30000
+ASOC|Comercializadora|ECUD13
+DEP|ECUD13|ECUD18|include
+CU|ECUD14: Calcular monto máximo|ECUD14|0|7000|30000
+ASOC|Comercializadora|ECUD14
+DEP|ECUD14|ECUD18|include
+CU|ECUD15: Otorgar crédito|ECUD15|0|-7000|30000
+ASOC|Comercializadora|ECUD15
+DEP|ECUD15|ECUD18|include
+CU|ECUD16: Consultar tabla de amortización|ECUD16|0|-21000|30000
+ASOC|Comercializadora|ECUD16
+DEP|ECUD16|ECUD18|include
+RECT|-20000|33000|62000|-29000
+TITULO|-18000|32500|60000|28500

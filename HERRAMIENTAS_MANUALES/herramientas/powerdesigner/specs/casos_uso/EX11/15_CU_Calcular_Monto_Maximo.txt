@@ -1,0 +1,8 @@
+#|CU_Calcular_Monto_Maximo|Caso de uso Calcular monto máximo|ECUD14: CALCULAR MONTO MÁXIMO – CORE BANQUITO
+ACTOR|Comercializadora|Comercializadora|-36000|0|sistema
+CU|ECUD14: Calcular monto máximo|ECUD14|0|0|28000
+ASOC|Comercializadora|ECUD14
+CU|ECUD18: Validar clave de API|ECUD18|40000|15000|28000
+DEP|ECUD14|ECUD18|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500

@@ -1,0 +1,13 @@
+#|CU_Consultar_Creditos|Caso de uso Consultar créditos de un comprador|ECUD12: CONSULTAR CRÉDITOS DE UN COMPRADOR – COMERCIALIZADORA
+ACTOR|Empleado (vendedor)|Empleado|-36000|0
+CU|ECUD12: Consultar créditos de un comprador|ECUD12|0|0|28000
+ASOC|Empleado|ECUD12
+CU|ECUD17: Validar token de sesión|ECUD17|40000|15000|28000
+DEP|ECUD12|ECUD17|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500
+CU|ECUD16: Consultar tabla de amortización|ECUD16|100000|6000|32000
+DEP|ECUD12|ECUD16|include
+CAJA|78000|17000|122000|0|CORE BANQUITO
+ACTOR|Core BanQuito|CoreBanQuito|100000|-9000|sistema
+ASOC|CoreBanQuito|ECUD12

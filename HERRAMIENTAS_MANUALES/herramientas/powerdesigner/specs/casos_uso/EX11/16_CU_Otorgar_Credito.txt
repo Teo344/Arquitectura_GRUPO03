@@ -1,0 +1,8 @@
+#|CU_Otorgar_Credito|Caso de uso Otorgar crédito|ECUD15: OTORGAR CRÉDITO – CORE BANQUITO
+ACTOR|Comercializadora|Comercializadora|-36000|0|sistema
+CU|ECUD15: Otorgar crédito|ECUD15|0|0|28000
+ASOC|Comercializadora|ECUD15
+CU|ECUD18: Validar clave de API|ECUD18|40000|15000|28000
+DEP|ECUD15|ECUD18|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500

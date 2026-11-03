@@ -230,6 +230,39 @@ nombre.
 - Cada ejecución hace que PowerDesigner guarde al cerrar el último `.sws` que cargó: revisar `git status` y restaurar
   los `.sws` de otros TG que aparezcan modificados.
 
+### EX.1.1 (BanQuito y Comercializadora de celulares, REST Java) — casos de uso hechos
+
+Otro dominio: dos aplicaciones REST, el Core BanQuito (módulo de crédito) y la Comercializadora de celulares.
+Los diagramas salen del ERS y del ECUD de EX.1.1, contrastados con el código de los dos servidores.
+`generar_specs_cu_ex.py` crea 20 specs en `specs/casos_uso/EX11`: dos diagramas generales (ilustraciones 1 y 2 del
+ECUD) y uno por cada ECUD1–ECUD18. `gen_cu_specs.sh` los genera, sin PNG en el proyecto, y crea `01_CASOS_USO.prj` y
+`BANQUITO_CELULARES_RESTFUL_JAVA.sws`.
+
+```bash
+python -I generar_specs_cu_ex.py && python -I verificar_cruces_cu.py specs/casos_uso/EX11/*.txt
+bash gen_cu_specs.sh "EX.1.1. PAO202651_BANQUITO_CELULARES_RESTFUL_JAVA_NRC36884_GR03" BANQUITO_CELULARES_RESTFUL_JAVA EX11 [modelo ...]
+```
+
+Decisiones de construcción:
+- Actores (ERS 8.2.3):
+  - Empleado (ACT-001), con los 4 clientes como especializaciones (ACT-002 a 005).
+  - Comercializadora `<<sistema>>` (ACT-006), único actor del Core en ECUD13–16.
+  - Core BanQuito `<<sistema>>` (ACT-007), actor secundario de RF-07, 08, 09, 10 y 12.
+- Solo `<<include>>`. El ECUD no define casos extendidos: los errores son flujos alternativos. El campo "extendidos"
+  de ECUD13–18 solo anota quién los incluye.
+- ECUD17 (token) lo incluyen ECUD2–12 y ECUD18 (clave de API) lo incluyen ECUD13–16.
+- Las inclusiones entre sistemas (ECUD7 → 13 y 14; ECUD10 → 13, 14 y 15; ECUD12 → 16) se dibujan dentro de un
+  segundo límite, "CORE BANQUITO" (líneas `CAJA` del spec, que agrega `finalizar_cu.py`).
+- En ECUD8, 9 y 12 el Core aparece como actor secundario. Esos casos usan operaciones de apoyo del Core que no son
+  casos de uso del ECUD: simulación, buscar cliente por cédula y créditos del cliente (`PasarelaBanquito`).
+- ECUD17 no está en el diagrama general (lo incluyen 11 casos). Se muestra en cada detalle y en su propio diagrama.
+- Las disposiciones en arco (diagrama general y ECUD17) se eligieron con `verificar_cruces_cu.py`, para que ninguna
+  línea cruce otra elipse.
+- `cu_detalle.vbs` acepta `GEN|hijo|padre` y un estereotipo opcional en `ACTOR`.
+
+Inconsistencia del ECUD: en ECUD2 los incluidos dicen "N/A". Pero ECUD17 dice que lo incluyen ECUD2 a ECUD12, y el
+código protege `DELETE /sesiones/actual` con `@Protegido`. El diagrama sigue a ECUD17 y al código.
+
 ## 5. Técnica de PowerDesigner (lecciones aprendidas)
 
 - PowerDesigner 16.1 está en `C:\Program Files (x86)\Sybase\PowerDesigner 16`. Se automatiza con **VBScript** usando el

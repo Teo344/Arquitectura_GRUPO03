@@ -1,0 +1,6 @@
+#|CU_Iniciar_Sesion|Caso de uso Iniciar sesión|ECUD1: INICIAR SESIÓN – COMERCIALIZADORA
+ACTOR|Empleado (vendedor)|Empleado|-36000|0
+CU|ECUD1: Iniciar sesión|ECUD1|0|0|28000
+ASOC|Empleado|ECUD1
+RECT|-18000|26000|20000|-14000
+TITULO|-16000|25500|18000|21500

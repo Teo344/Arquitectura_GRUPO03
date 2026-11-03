@@ -1,0 +1,10 @@
+#|CU_Vender_Efectivo|Caso de uso Vender en efectivo|ECUD9: VENDER EN EFECTIVO – COMERCIALIZADORA
+ACTOR|Empleado (vendedor)|Empleado|-36000|0
+CU|ECUD9: Vender en efectivo|ECUD9|0|0|28000
+ASOC|Empleado|ECUD9
+CU|ECUD17: Validar token de sesión|ECUD17|40000|15000|28000
+DEP|ECUD9|ECUD17|include
+RECT|-18000|26000|60000|-14000
+TITULO|-16000|25500|58000|21500
+ACTOR|Core BanQuito|CoreBanQuito|80000|0|sistema
+ASOC|CoreBanQuito|ECUD9
