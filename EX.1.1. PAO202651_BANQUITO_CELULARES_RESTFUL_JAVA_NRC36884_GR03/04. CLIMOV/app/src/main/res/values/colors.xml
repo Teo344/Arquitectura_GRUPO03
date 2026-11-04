@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Colores de la identidad visual "Azul" (template.txt) usados fuera de Compose -->
+<resources>
+    <color name="blanco">#FFFFFFFF</color>
+</resources>
