@@ -1,0 +1,5 @@
+target/
+# Contiene credenciales de la base de datos y la API key
+src/main/resources/config.properties
+nbactions.xml
+nb-configuration.xml

@@ -1,0 +1,16 @@
+# Configuracion de ApiPaisesMVC.
+# Copiar este archivo como config.properties (no se sube al repositorio) en esta
+# misma carpeta y completar las claves.
+
+# --- Base de datos (usuario creado con bdd/00_usuario_local.sql) ---
+db.url=jdbc:mysql://localhost:3306/api_paises?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guayaquil
+db.usuario=paises
+db.clave=cambiar_paises
+
+# --- API publica REST Countries (v5) ---
+# La v3.1 que cita el enunciado del taller fue retirada. La v5 exige una API key
+# (plan gratuito: 1000 solicitudes/mes). Clave del Grupo 03 incluida a proposito.
+# La clave demo "rc_live_demo" no consume cuota, pero solo devuelve un pais de muestra.
+api.url.base=https://api.restcountries.com/countries/v5
+api.clave=rc_live_75ad9e25e9524f1e918536e349587511
+api.timeout.segundos=15
