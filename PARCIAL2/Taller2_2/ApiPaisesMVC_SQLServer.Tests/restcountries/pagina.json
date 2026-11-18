@@ -1,0 +1,50 @@
+{
+  "data": {
+    "objects": [
+      {
+        "names": { "common": "Ecuador" },
+        "codes": { "alpha_3": "ECU" },
+        "capitals": [ { "name": "Quito", "attributes": { "primary": true } } ],
+        "region": "Americas",
+        "subregion": "South America",
+        "area": { "kilometers": 276841 },
+        "population": 18001000,
+        "currencies": [ { "code": "USD", "name": "United States dollar", "symbol": "$" } ]
+      },
+      {
+        "names": { "common": "Bolivia" },
+        "codes": { "alpha_3": "BOL" },
+        "capitals": [
+          { "name": "Sucre", "attributes": { "primary": false, "constitutional": true } },
+          { "name": "La Paz", "attributes": { "primary": true } }
+        ],
+        "region": "Americas",
+        "subregion": "South America",
+        "area": { "kilometers": 1098581 },
+        "population": 12000000,
+        "currencies": [ { "code": "BOB", "name": "Bolivian boliviano" } ]
+      },
+      {
+        "names": { "common": "Antarctica" },
+        "codes": { "alpha_3": "ATA" },
+        "capitals": [],
+        "region": "Antarctic",
+        "area": { "kilometers": 14000000 },
+        "population": 1000
+      },
+      {
+        "names": { "common": "Sin codigo" },
+        "codes": {},
+        "region": "Europe",
+        "population": 5
+      },
+      {
+        "names": { "common": "Region desconocida" },
+        "codes": { "alpha_3": "XRD" },
+        "region": "Atlantis",
+        "population": 5
+      }
+    ],
+    "meta": { "total": 249, "count": 5, "limit": 5, "offset": 0, "more": true }
+  }
+}

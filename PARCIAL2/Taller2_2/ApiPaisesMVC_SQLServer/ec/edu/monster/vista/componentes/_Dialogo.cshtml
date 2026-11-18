@@ -1,0 +1,18 @@
+@model Dialogo
+<dialog class="ap-dialogo" id="@Model.Id" aria-labelledby="@(Model.Id)-titulo">
+    <h2 class="ap-h4" id="@(Model.Id)-titulo">@Model.Titulo</h2>
+    <p class="ap-dialogo__texto">@Model.Texto</p>
+    @if (Model.Filas.Count > 0)
+    {
+        <dl class="ap-dialogo__filas">
+            @foreach (KeyValuePair<string, string> fila in Model.Filas)
+            {
+                <div><dt>@fila.Key</dt><dd>@fila.Value</dd></div>
+            }
+        </dl>
+    }
+    <div class="ap-dialogo__acciones">
+        <button type="button" class="ap-boton ap-boton--texto" data-cerrar>Cancelar</button>
+        <button type="button" class="ap-boton @(Model.Peligro ? "ap-boton--peligro" : "ap-boton--primario")" data-aceptar>@Model.TextoAceptar</button>
+    </div>
+</dialog>

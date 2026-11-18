@@ -1,0 +1,120 @@
+@*
+    Búsqueda por nombre en la API (Actividad 1). Solo busca al pulsar "Buscar" (cada consulta gasta
+    cuota de la clave); si la API falla, el servicio responde con la base local y aquí se avisa.
+*@
+@using System.Globalization
+@model BusquedaVistaModelo
+@{
+    ViewData["Titulo"] = "Buscar en la API";
+    ViewData["Seccion"] = "busqueda";
+    EstadoVacio inicial = new EstadoVacio(NombreIcono.Buscar, "Busca un país en la API",
+        "Los resultados aparecerán aquí. Podrás guardar en la base de datos los que necesites.");
+}
+
+<header class="ap-encabezado">
+    <div class="ap-encabezado__textos">
+        <span class="ap-sobretitulo">Actividad 1</span>
+        <h1 class="ap-h3">Buscar en la API</h1>
+        <p class="ap-texto-secundario">Consulta REST Countries por nombre común, oficial o nativo y guarda los países que necesites.</p>
+    </div>
+</header>
+
+<section class="ap-tarjeta" aria-label="Buscar país por nombre">
+    <form method="get" asp-controller="PaisControlador" asp-action="Busqueda" class="ap-busqueda" style="grid-template-columns:minmax(0,1fr) auto">
+        <div class="ap-campo">
+            <label class="ap-campo__etiqueta" for="consulta">Nombre del país</label>
+            <input class="ap-campo__entrada" id="consulta" name="consulta" type="search" value="@Model.Nombre" maxlength="100"
+                   placeholder="Ej. ecuador" autocomplete="off" autofocus="@(Model.Resultado == null)" />
+        </div>
+        <button type="submit" class="ap-boton ap-boton--primario" data-cargando="Buscando…">
+            @Iconos.Svg(NombreIcono.Buscar)<span>Buscar</span>
+        </button>
+    </form>
+    <p class="ap-campo__ayuda" style="margin-top:8px">
+        Escribe el nombre en inglés o en su idioma oficial, por ejemplo «ecuador», «germany» o «españa». Cada
+        búsqueda usa una de las solicitudes mensuales de tu clave.
+    </p>
+</section>
+
+@if (Model.Error != null)
+{
+    <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml" model="new Alerta(TipoAlerta.Info, Model.Error)" />
+}
+
+@if (Model.Resultado == null)
+{
+    <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="inicial" />
+}
+else
+{
+    ResultadoBusqueda resultado = Model.Resultado;
+    string texto = Model.Nombre?.Trim() ?? "";
+    if (!Model.DesdeApi && resultado.Aviso != null)
+    {
+        <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml" model="new Alerta(TipoAlerta.Advertencia, resultado.Aviso)" />
+    }
+
+    if (resultado.EstaVacio)
+    {
+        EstadoVacio sinResultados = new EstadoVacio(NombreIcono.Buscar, "Sin coincidencias",
+            (Model.DesdeApi ? "La API" : "La base local") + " no tiene países con «" + texto
+            + "». Prueba con el nombre en inglés o en su idioma oficial.");
+        <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="sinResultados" />
+    }
+    else
+    {
+        <section aria-labelledby="titulo-resultados">
+            <h2 class="ap-h4" id="titulo-resultados">
+                @(resultado.Paises.Count == 1 ? "1 resultado" : resultado.Paises.Count + " resultados")
+                <span class="ap-texto-secundario ap-cuerpo-grande" style="font-weight:500">
+                    · @(Model.DesdeApi ? "desde REST Countries" : "desde la base local")
+                </span>
+            </h2>
+            <div class="ap-resultados" style="margin-top:12px">
+                @foreach (Pais pais in resultado.Paises)
+                {
+                    string detalle = "Capital: " + Formato.Texto(pais.Capital) + "  ·  " + pais.Region?.Nombre()
+                        + (pais.SubRegion != null ? " (" + pais.SubRegion + ")" : "")
+                        + "  ·  " + Formato.Entero(pais.Poblacion) + " habitantes  ·  " + Formato.Area(pais.Area)
+                        + "  ·  Moneda: " + Formato.Texto(pais.Moneda);
+                    <article class="ap-resultado" aria-label="@pais.Nombre">
+                        <span class="ap-icono-caja ap-icono-caja--azul" style="width:44px;height:44px">@Iconos.Svg(NombreIcono.Publico, 22)</span>
+                        <div class="ap-resultado__datos">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                <span class="ap-resultado__nombre">@pais.Nombre</span>
+                                <span class="ap-chip" style="background:var(--fondo-seccion);color:var(--texto-secundario)">@pais.Codigo</span>
+                            </div>
+                            <p class="ap-resultado__detalle">@detalle</p>
+                        </div>
+                        @if (!Model.DesdeApi)
+                        {
+                            <partial name="~/ec/edu/monster/vista/componentes/_ChipEstado.cshtml" model='new ChipEstado(TipoAlerta.Info, "En la base local")' />
+                        }
+                        else if (Model.CodigoGuardado == pais.Codigo)
+                        {
+                            <partial name="~/ec/edu/monster/vista/componentes/_ChipEstado.cshtml" model='new ChipEstado(TipoAlerta.Exito, "Guardado")' />
+                        }
+                        else
+                        {
+                            <form method="post" asp-controller="PaisControlador" asp-action="GuardarResultado">
+                                <input type="hidden" name="consulta" value="@texto" />
+                                <input type="hidden" name="Codigo" value="@pais.Codigo" />
+                                <input type="hidden" name="Nombre" value="@pais.Nombre" />
+                                <input type="hidden" name="Capital" value="@pais.Capital" />
+                                <input type="hidden" name="Region" value="@pais.Region" />
+                                <input type="hidden" name="SubRegion" value="@pais.SubRegion" />
+                                <input type="hidden" name="Poblacion" value="@pais.Poblacion.ToString(CultureInfo.InvariantCulture)" />
+                                <input type="hidden" name="Area" value="@pais.Area.ToString(CultureInfo.InvariantCulture)" />
+                                <input type="hidden" name="Moneda" value="@pais.Moneda" />
+                                <button type="submit" class="ap-boton ap-boton--secundario" data-cargando="Guardando…"
+                                        aria-label="Guardar @pais.Nombre en la base de datos">
+                                    @Iconos.Svg(NombreIcono.Guardar)<span>Guardar</span>
+                                </button>
+                            </form>
+                        }
+                    </article>
+                }
+            </div>
+        </section>
+    }
+}

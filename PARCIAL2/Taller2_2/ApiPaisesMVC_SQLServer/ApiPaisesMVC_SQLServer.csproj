@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Taller 2.2 (Grupo 03): ASP.NET Core MVC que consume la API pública REST Countries, guarda los
+    países en SQL Server con Entity Framework Core y aplica el patrón MVC. Es la versión .NET del
+    Taller 2.1 (Java): mismos paquetes ec.edu.monster.{vista, controlador, servicio, modelo}.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ec.edu.monster</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Paquetes que pide el enunciado (sección 6) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.34" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.34" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.34">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Las pruebas usan los métodos internal (conversión del formulario, mensajes HTTP) -->
+    <InternalsVisibleTo Include="ApiPaisesMVC_SQLServer.Tests" />
+  </ItemGroup>
+
+</Project>

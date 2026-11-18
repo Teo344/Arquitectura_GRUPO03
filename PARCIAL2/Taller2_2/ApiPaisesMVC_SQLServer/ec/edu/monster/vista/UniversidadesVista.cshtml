@@ -1,0 +1,123 @@
+@*
+    Actividad avanzada: consume la API pública de universidades (Hipolabs) y guarda Nombre, Dominio,
+    Sitio web y País en SQL Server con la entidad Universidad.
+*@
+@model UniversidadesVistaModelo
+@{
+    ViewData["Titulo"] = "Universidades";
+    ViewData["Seccion"] = "universidades";
+    string resumen = Model.ErrorCarga != null
+        ? "No se pudieron cargar las universidades."
+        : Model.TotalGuardadas == 0
+            ? "Aún no hay universidades guardadas en SQL Server."
+            : Model.PaisFiltro == null
+                ? Formato.Universidades(Model.TotalGuardadas) + " guardadas en SQL Server."
+                : "Mostrando " + Formato.Universidades(Model.Universidades.Count) + " de " + Model.PaisFiltro + ".";
+}
+
+<header class="ap-encabezado">
+    <div class="ap-encabezado__textos">
+        <span class="ap-sobretitulo">Actividad avanzada</span>
+        <h1 class="ap-h3">Universidades</h1>
+        <p class="ap-texto-secundario">@resumen</p>
+    </div>
+</header>
+
+<section class="ap-tarjeta" aria-labelledby="titulo-importar">
+    <h2 class="ap-h4" id="titulo-importar">Importar desde la API de universidades</h2>
+    <p class="ap-texto-secundario" style="margin-top:4px">
+        Consulta universities.hipolabs.com por país y guarda cada universidad una sola vez (nombre + país).
+    </p>
+    <form method="post" asp-controller="UniversidadControlador" asp-action="Importar" class="ap-busqueda"
+          style="grid-template-columns:minmax(0,1fr) auto;margin-top:16px">
+        <div class="ap-campo">
+            <label class="ap-campo__etiqueta" for="pais">País (en inglés)</label>
+            <input class="ap-campo__entrada" id="pais" name="pais" value="@Model.PaisImportar" maxlength="100"
+                   placeholder="Ej. Ecuador" autocomplete="off" aria-describedby="ayuda-pais" />
+        </div>
+        <button type="submit" class="ap-boton ap-boton--primario" data-cargando="Importando…">
+            @Iconos.Svg(NombreIcono.Descargar)<span>Importar universidades</span>
+        </button>
+    </form>
+    <p class="ap-campo__ayuda" id="ayuda-pais" style="margin-top:8px">Por ejemplo «Ecuador», «Peru», «Colombia» o «Spain».</p>
+
+    @if (Model.ConteoPorPais.Count > 0)
+    {
+        <p class="ap-sobretitulo" style="margin-top:24px;color:var(--texto-secundario)" id="titulo-filtros">Filtrar por país</p>
+        <nav class="ap-filtros" style="margin-top:8px" aria-labelledby="titulo-filtros">
+            <a class="ap-filtro @(Model.PaisFiltro == null ? "ap-filtro--elegido" : "")" aria-current="@(Model.PaisFiltro == null ? "true" : null)"
+               asp-controller="UniversidadControlador" asp-action="Index">
+                Todos <span class="ap-filtro__conteo">@Formato.Entero(Model.TotalGuardadas)</span>
+            </a>
+            @foreach (KeyValuePair<string, long> conteo in Model.ConteoPorPais)
+            {
+                bool elegido = string.Equals(Model.PaisFiltro, conteo.Key, StringComparison.OrdinalIgnoreCase);
+                <a class="ap-filtro @(elegido ? "ap-filtro--elegido" : "")" aria-current="@(elegido ? "true" : null)"
+                   asp-controller="UniversidadControlador" asp-action="Index" asp-route-pais="@conteo.Key">
+                    @conteo.Key <span class="ap-filtro__conteo">@Formato.Entero(conteo.Value)</span>
+                </a>
+            }
+        </nav>
+    }
+</section>
+
+<section class="ap-tarjeta" aria-labelledby="titulo-universidades">
+    <h2 class="ap-h4" id="titulo-universidades">Universidades registradas</h2>
+    <div style="margin-top:16px">
+        @if (Model.ErrorCarga != null)
+        {
+            EstadoVacio sinBase = new EstadoVacio(NombreIcono.BaseDatos, "No se pudo cargar la lista", Model.ErrorCarga,
+                "Reintentar", "/universidades");
+            <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="sinBase" />
+        }
+        else if (Model.Universidades.Count == 0)
+        {
+            EstadoVacio vacio = Model.PaisFiltro == null
+                ? new EstadoVacio(NombreIcono.Escuela, "Aún no hay universidades",
+                    "Importa las universidades de un país con el formulario de arriba.")
+                : new EstadoVacio(NombreIcono.Escuela, "No hay universidades de " + Model.PaisFiltro,
+                    "Impórtalas con el formulario de arriba o elige otro país.", "Ver todos los países", "/universidades");
+            <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="vacio" />
+        }
+        else
+        {
+            <div class="ap-tabla-caja">
+                <table class="ap-tabla">
+                    <caption class="ap-oculto">Universidades registradas, ordenadas por país y nombre</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Dominio</th>
+                            <th scope="col">Sitio web</th>
+                            <th scope="col">País</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Universidad universidad in Model.Universidades)
+                        {
+                            <tr>
+                                <td style="font-weight:600">@universidad.Nombre</td>
+                                <td><span class="ap-codigo">@Formato.Texto(universidad.Dominio)</span></td>
+                                <td>
+                                    @if (universidad.SitioWeb != null && Uri.TryCreate(universidad.SitioWeb, UriKind.Absolute, out Uri? sitio)
+                                         && (sitio.Scheme == Uri.UriSchemeHttp || sitio.Scheme == Uri.UriSchemeHttps))
+                                    {
+                                        <a class="ap-tabla__enlace" href="@sitio" target="_blank" rel="noopener noreferrer"
+                                           style="display:inline-flex;align-items:center;gap:4px">
+                                            <span>@sitio.Host</span>@Iconos.Svg(NombreIcono.Enlace, 14)<span class="ap-oculto">(se abre en otra pestaña)</span>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @Formato.Texto(universidad.SitioWeb)
+                                    }
+                                </td>
+                                <td>@universidad.Pais</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

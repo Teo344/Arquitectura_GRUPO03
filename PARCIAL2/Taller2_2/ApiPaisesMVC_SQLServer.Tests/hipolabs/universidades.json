@@ -1,0 +1,25 @@
+[
+  {
+    "domains": [ "epn.edu.ec" ],
+    "web_pages": [ "http://www.epn.edu.ec/" ],
+    "state-province": null,
+    "alpha_two_code": "EC",
+    "name": "Escuela Politécnica Nacional",
+    "country": "Ecuador"
+  },
+  {
+    "domains": [],
+    "web_pages": [],
+    "state-province": null,
+    "alpha_two_code": "EC",
+    "name": "Universidad sin sitio",
+    "country": "Ecuador"
+  },
+  {
+    "domains": [ "sin-nombre.edu.ec" ],
+    "web_pages": [ "http://sin-nombre.edu.ec/" ],
+    "alpha_two_code": "EC",
+    "name": " ",
+    "country": "Ecuador"
+  }
+]

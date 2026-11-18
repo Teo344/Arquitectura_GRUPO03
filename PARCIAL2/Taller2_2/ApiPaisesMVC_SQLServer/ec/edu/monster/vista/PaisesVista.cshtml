@@ -1,0 +1,280 @@
+@*
+    Gestión de países (lista-detalle): tabla con búsqueda (Actividad 3) y filtros por región
+    (Actividad 4) a la izquierda; formulario siempre visible para registrar, editar o eliminar
+    (Actividad 2) a la derecha.
+*@
+@model PaisesVistaModelo
+@{
+    ViewData["Titulo"] = "Países";
+    ViewData["Seccion"] = "paises";
+    Dictionary<string, string?> ruta = Model.RutaFiltro();
+    FiltroPaises filtro = Model.Filtro;
+    FormularioPais formulario = Model.Formulario;
+
+    string resumen;
+    if (Model.ErrorCarga != null)
+    {
+        resumen = "No se pudieron cargar los países.";
+    }
+    else if (filtro.EstaVacio)
+    {
+        resumen = Model.TotalGuardados == 0
+            ? "Aún no hay países guardados en SQL Server."
+            : Formato.Paises(Model.TotalGuardados) + " guardados en SQL Server.";
+    }
+    else
+    {
+        resumen = "Mostrando " + Formato.Paises(Model.Paises.Count) + " de " + Formato.Entero(Model.TotalGuardados) + ".";
+    }
+
+    Region? regionFormulario = null;
+    if (!string.IsNullOrWhiteSpace(formulario.Region))
+    {
+        try { regionFormulario = RegionExtensiones.DesdeTexto(formulario.Region); } catch { regionFormulario = null; }
+    }
+
+    Dictionary<string, string?> rutaEdicion = new Dictionary<string, string?>(ruta);
+    if (Model.IdEditando != null)
+    {
+        rutaEdicion["id"] = Model.IdEditando.ToString();
+    }
+}
+
+<header class="ap-encabezado">
+    <div class="ap-encabezado__textos">
+        <span class="ap-sobretitulo">Gestión</span>
+        <h1 class="ap-h3">Países</h1>
+        <p class="ap-texto-secundario">@resumen</p>
+    </div>
+    <div class="ap-encabezado__acciones">
+        <form method="post" asp-controller="PaisControlador" asp-action="Importar"
+              data-confirmar="@(Model.TotalGuardados > 0 ? "#dialogo-importar" : null)">
+            <button type="submit" class="ap-boton ap-boton--secundario" data-cargando="Importando…">
+                @Iconos.Svg(NombreIcono.Descargar)<span>Importar desde la API</span>
+            </button>
+        </form>
+        <a class="ap-boton ap-boton--secundario" asp-controller="PaisControlador" asp-action="Index"
+           asp-all-route-data="ruta" data-proteger>
+            @Iconos.Svg(NombreIcono.Agregar)<span>Nuevo país</span>
+        </a>
+    </div>
+</header>
+
+@* Actividad 3: búsquedas por nombre, capital o región *@
+<section class="ap-tarjeta" aria-labelledby="titulo-busqueda">
+    <h2 class="ap-h4" id="titulo-busqueda">Buscar países</h2>
+    <form method="get" asp-controller="PaisControlador" asp-action="Index" class="ap-busqueda" style="margin-top:16px">
+        <div class="ap-campo">
+            <label class="ap-campo__etiqueta" for="campo">Buscar por</label>
+            <select class="ap-campo__entrada" id="campo" name="campo">
+                @foreach (CampoBusqueda campo in Enum.GetValues<CampoBusqueda>())
+                {
+                    <option value="@campo.ToString().ToLowerInvariant()" selected="@(campo == filtro.Campo)">@campo.Nombre()</option>
+                }
+            </select>
+        </div>
+        <div class="ap-campo">
+            <label class="ap-campo__etiqueta" for="texto">Texto</label>
+            <input class="ap-campo__entrada" id="texto" name="texto" type="search" value="@filtro.Texto" maxlength="100"
+                   placeholder="Ej. ecuador, ECU, Quito o South America" autocomplete="off" />
+        </div>
+        @if (filtro.Region != null)
+        {
+            <input type="hidden" name="region" value="@filtro.Region.Value.ToString().ToLowerInvariant()" />
+        }
+        <div style="display:flex;gap:8px">
+            <button type="submit" class="ap-boton ap-boton--secundario">@Iconos.Svg(NombreIcono.Buscar)<span>Buscar</span></button>
+            @if (!filtro.EstaVacio)
+            {
+                <a class="ap-boton ap-boton--texto" asp-controller="PaisControlador" asp-action="Index" data-proteger>Limpiar</a>
+            }
+        </div>
+    </form>
+
+    @* Actividad 4: filtros dinámicos, generados con los países guardados en cada región *@
+    <p class="ap-sobretitulo" style="margin-top:24px;color:var(--texto-secundario)" id="titulo-filtros">Filtrar por región</p>
+    <nav class="ap-filtros" style="margin-top:8px" aria-labelledby="titulo-filtros">
+        <a class="ap-filtro @(filtro.Region == null ? "ap-filtro--elegido" : "")" aria-current="@(filtro.Region == null ? "true" : null)"
+           asp-controller="PaisControlador" asp-action="Index" asp-all-route-data="Model.RutaFiltro(null, true)" data-proteger>
+            Todas <span class="ap-filtro__conteo">@Formato.Entero(Model.TotalGuardados)</span>
+        </a>
+        @foreach (KeyValuePair<Region, long> conteo in Model.ConteoRegiones)
+        {
+            bool elegida = filtro.Region == conteo.Key;
+            <a class="ap-filtro @(elegida ? "ap-filtro--elegido" : "") @(conteo.Value == 0 ? "ap-filtro--vacio" : "")"
+               aria-current="@(elegida ? "true" : null)"
+               asp-controller="PaisControlador" asp-action="Index" asp-all-route-data="Model.RutaFiltro(conteo.Key, true)" data-proteger>
+                @conteo.Key.Nombre() <span class="ap-filtro__conteo">@Formato.Entero(conteo.Value)</span>
+            </a>
+        }
+    </nav>
+</section>
+
+<div class="ap-lista-detalle">
+    <section class="ap-tarjeta" aria-labelledby="titulo-lista">
+        <h2 class="ap-h4" id="titulo-lista">Países registrados</h2>
+        <div style="margin-top:16px">
+            @if (Model.ErrorCarga != null)
+            {
+                <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml"
+                         model='new EstadoVacio(NombreIcono.BaseDatos, "No se pudo cargar la lista", Model.ErrorCarga, "Reintentar", Context.Request.Path + Context.Request.QueryString)' />
+            }
+            else if (Model.TotalGuardados == 0)
+            {
+                <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml"
+                         model='new EstadoVacio(NombreIcono.Descargar, "Aún no hay países", "Importa todos los países desde la API REST Countries o registra uno con el formulario.")' />
+            }
+            else if (Model.Paises.Count == 0 && filtro.TieneTexto)
+            {
+                <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml"
+                         model='new EstadoVacio(NombreIcono.Buscar, "Sin coincidencias", "Ningún país coincide con «" + filtro.Texto + "» en " + filtro.Campo.Nombre().ToLowerInvariant() + (filtro.Region != null ? " dentro de " + filtro.Region.Value.Nombre() : "") + ".", "Limpiar búsqueda", Url.Action("Index", "PaisControlador", new { region = filtro.Region?.ToString().ToLowerInvariant() }))' />
+            }
+            else if (Model.Paises.Count == 0)
+            {
+                <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml"
+                         model='new EstadoVacio(NombreIcono.Ubicacion, "No hay países en " + filtro.Region?.Nombre(), "Elige otra región o importa los países desde la API.", "Ver todas las regiones", Url.Action("Index", "PaisControlador"))' />
+            }
+            else
+            {
+                <div class="ap-tabla-caja">
+                    <table class="ap-tabla">
+                        <caption class="ap-oculto">Países registrados, ordenados por nombre</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Código</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Capital</th>
+                                <th scope="col">Región</th>
+                                <th scope="col">Subregión</th>
+                                <th scope="col" class="ap-derecha">Población</th>
+                                <th scope="col" class="ap-derecha">Área</th>
+                                <th scope="col">Moneda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Pais pais in Model.Paises)
+                            {
+                                Dictionary<string, string?> rutaPais = new Dictionary<string, string?>(ruta) { ["id"] = pais.Id.ToString() };
+                                bool elegido = pais.Id == Model.IdEditando;
+                                <tr class="@(elegido ? "ap-fila--elegida" : "")">
+                                    <td><span class="ap-codigo">@pais.Codigo</span></td>
+                                    <td>
+                                        <a class="ap-tabla__enlace" asp-controller="PaisControlador" asp-action="Editar" asp-all-route-data="rutaPais"
+                                           aria-current="@(elegido ? "true" : null)" title="Editar @pais.Nombre" data-proteger>@pais.Nombre</a>
+                                    </td>
+                                    <td>@Formato.Texto(pais.Capital)</td>
+                                    <td>@Formato.Texto(pais.Region?.Nombre())</td>
+                                    <td>@Formato.Texto(pais.SubRegion)</td>
+                                    <td class="ap-derecha ap-numero">@Formato.Entero(pais.Poblacion)</td>
+                                    <td class="ap-derecha ap-numero">@Formato.Area(pais.Area)</td>
+                                    <td>@Formato.Texto(pais.Moneda)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="ap-pie-tabla">Pulsa el nombre de un país para editarlo o eliminarlo. Área en kilómetros cuadrados.</p>
+            }
+        </div>
+    </section>
+
+    @* Actividad 2: CRUD. Un solo botón primario en la pantalla: registrar o guardar *@
+    <aside class="ap-tarjeta ap-lista-detalle__formulario" aria-labelledby="titulo-formulario">
+        <p class="ap-sobretitulo">@(Model.Editando ? "Editando · " + Model.CodigoEditando : "Nuevo país")</p>
+        <h2 class="ap-h4" id="titulo-formulario" style="margin-top:4px">@(Model.Editando ? "Editar país" : "Registrar país")</h2>
+
+        @if (Model.ErrorGeneral != null)
+        {
+            <div style="margin-top:16px">
+                <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml" model="new Alerta(TipoAlerta.Error, Model.ErrorGeneral)" />
+            </div>
+        }
+        @if (Model.ErroresFormulario.Count > 0)
+        {
+            <div style="margin-top:16px">
+                <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml"
+                         model='new Alerta(TipoAlerta.Error, "Revisa estos datos:", Model.ErroresFormulario)' />
+            </div>
+        }
+
+        <form method="post" class="ap-formulario" style="margin-top:16px" data-vigilar-cambios
+              data-con-errores="@(Model.ErroresFormulario.Count > 0 ? "si" : "no")"
+              asp-controller="PaisControlador" asp-action="@(Model.Editando ? "Actualizar" : "Registrar")"
+              asp-all-route-data="rutaEdicion">
+            <div class="ap-campo">
+                <label class="ap-campo__etiqueta" for="Codigo">Código ISO</label>
+                <input class="ap-campo__entrada" id="Codigo" name="Codigo" value="@formulario.Codigo" maxlength="3"
+                       placeholder="Ej. ECU" autocomplete="off" aria-describedby="ayuda-codigo" />
+                <span class="ap-campo__ayuda" id="ayuda-codigo">3 letras (ISO 3166 alfa-3).</span>
+            </div>
+            <div class="ap-campo">
+                <label class="ap-campo__etiqueta" for="Nombre">Nombre</label>
+                <input class="ap-campo__entrada" id="Nombre" name="Nombre" value="@formulario.Nombre" maxlength="100" placeholder="Ej. Ecuador" />
+            </div>
+            <div class="ap-campo">
+                <label class="ap-campo__etiqueta" for="Capital">Capital (opcional)</label>
+                <input class="ap-campo__entrada" id="Capital" name="Capital" value="@formulario.Capital" maxlength="100" placeholder="Ej. Quito" />
+            </div>
+            <div class="ap-formulario__fila">
+                <div class="ap-campo">
+                    <label class="ap-campo__etiqueta" for="Region">Región</label>
+                    <select class="ap-campo__entrada" id="Region" name="Region">
+                        <option value="" selected="@(regionFormulario == null)">Selecciona una región</option>
+                        @foreach (Region region in PaisControlador.Regiones())
+                        {
+                            <option value="@region" selected="@(regionFormulario == region)">@region.Nombre()</option>
+                        }
+                    </select>
+                </div>
+                <div class="ap-campo">
+                    <label class="ap-campo__etiqueta" for="SubRegion">Subregión</label>
+                    <input class="ap-campo__entrada" id="SubRegion" name="SubRegion" value="@formulario.SubRegion" maxlength="100" placeholder="Opcional" />
+                </div>
+            </div>
+            <div class="ap-campo">
+                <label class="ap-campo__etiqueta" for="Poblacion">Población</label>
+                <input class="ap-campo__entrada" id="Poblacion" name="Poblacion" value="@formulario.Poblacion" inputmode="numeric"
+                       placeholder="Ej. 18.001.000" aria-describedby="ayuda-poblacion" />
+                <span class="ap-campo__ayuda" id="ayuda-poblacion">Número entero de habitantes.</span>
+            </div>
+            <div class="ap-campo">
+                <label class="ap-campo__etiqueta" for="Area">Área territorial (opcional)</label>
+                <input class="ap-campo__entrada" id="Area" name="Area" value="@formulario.Area" inputmode="decimal"
+                       placeholder="Ej. 276841" aria-describedby="ayuda-area" />
+                <span class="ap-campo__ayuda" id="ayuda-area">Kilómetros cuadrados, sin separador de miles.</span>
+            </div>
+            <div class="ap-campo">
+                <label class="ap-campo__etiqueta" for="Moneda">Moneda (opcional)</label>
+                <input class="ap-campo__entrada" id="Moneda" name="Moneda" value="@formulario.Moneda" maxlength="100" placeholder="Ej. Dólar estadounidense" />
+            </div>
+
+            <button type="submit" class="ap-boton ap-boton--primario ap-boton--ancho" data-cargando="Guardando…">
+                @Iconos.Svg(NombreIcono.Guardar)<span>@(Model.Editando ? "Guardar cambios" : "Registrar país")</span>
+            </button>
+        </form>
+
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <a class="ap-boton ap-boton--texto" asp-controller="PaisControlador" asp-action="Index" asp-all-route-data="ruta" data-proteger>
+                @(Model.Editando ? "Descartar cambios" : "Limpiar")
+            </a>
+            @if (Model.Editando)
+            {
+                <form method="post" asp-controller="PaisControlador" asp-action="Eliminar" asp-all-route-data="rutaEdicion"
+                      data-confirmar="#dialogo-eliminar" style="margin-left:auto">
+                    <button type="submit" class="ap-boton ap-boton--peligro" data-cargando="Eliminando…">
+                        @Iconos.Svg(NombreIcono.Eliminar)<span>Eliminar</span>
+                    </button>
+                </form>
+            }
+        </div>
+    </aside>
+</div>
+
+@section Dialogos {
+    <partial name="~/ec/edu/monster/vista/componentes/_Dialogo.cshtml"
+             model='new Dialogo("dialogo-importar", "Importar desde la API", "Se descargarán todos los países de REST Countries. Los que ya existen (mismo código) se actualizarán con los datos de la API y se perderán los cambios manuales hechos en ellos.", new[] { new KeyValuePair<string, string>("Países en la lista", Formato.Entero(Model.TotalGuardados)) }, "Importar", false)' />
+    <partial name="~/ec/edu/monster/vista/componentes/_Dialogo.cshtml"
+             model='new Dialogo("dialogo-eliminar", "Eliminar país", "Esta acción no se puede deshacer. Si el país viene de la API, volverá a aparecer en la próxima importación.", new[] { new KeyValuePair<string, string>("Código", Model.CodigoEditando ?? ""), new KeyValuePair<string, string>("Nombre", formulario.Nombre ?? "") }, "Eliminar", true)' />
+    <partial name="~/ec/edu/monster/vista/componentes/_Dialogo.cshtml"
+             model='new Dialogo("dialogo-descartar", "Descartar cambios", "Hay cambios sin guardar en el formulario. Si continúas, se perderán.", Array.Empty<KeyValuePair<string, string>>(), "Descartar", true)' />
+}

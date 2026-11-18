@@ -1,0 +1,114 @@
+@*
+    Pantalla de inicio con la foto del grupo. La aplicación no maneja usuarios, así que en lugar de
+    pedir credenciales (que no protegerían nada) muestra si SQL Server responde y cómo está configurada
+    la API, para que el usuario sepa qué esperar antes de entrar.
+*@
+@model EstadoSistema
+@{
+    Layout = null;
+    ChipEstado chipBase = Model.BaseDisponible
+        ? new ChipEstado(TipoAlerta.Exito, "Conectada")
+        : new ChipEstado(TipoAlerta.Error, "Sin conexión");
+    string detalleBase = Model.BaseDisponible
+        ? (Model.TotalPaises == 0
+            ? "Aún no hay países guardados: impórtalos desde la API al entrar."
+            : Formato.Paises(Model.TotalPaises) + " guardados en ApiPaisesDB.")
+        : Model.DetalleBase ?? "La base de datos no respondió.";
+    ChipEstado chipApi = Model.ApiDemostracion
+        ? new ChipEstado(TipoAlerta.Advertencia, "Clave demo")
+        : new ChipEstado(TipoAlerta.Exito, "Clave propia");
+    string detalleApi = Model.ApiDemostracion
+        ? "La API solo devolverá un país de muestra. Configura tu clave en RestCountries:Clave (appsettings.json)."
+        : "Datos completos. El plan gratuito permite 1.000 consultas al mes.";
+    Alerta avisoBase = new Alerta(TipoAlerta.Advertencia,
+        "Puedes entrar, pero no podrás consultar ni guardar países hasta que SQL Server responda.");
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inicio · Países API</title>
+    <link rel="stylesheet" href="~/css/paises.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="ap-inicio">
+        <section class="ap-inicio__marca" aria-label="Foto del Grupo 03">
+            <img class="ap-inicio__foto" src="~/imagenes/fotoLogin.jpg" alt="" />
+            <div class="ap-inicio__marca-contenido">
+                <div class="ap-marca">
+                    <span class="ap-icono-caja ap-icono-caja--accion">@Iconos.Svg(NombreIcono.Publico, 20)</span>
+                    <span class="ap-marca__nombre">PAÍSES API</span>
+                </div>
+                <div>
+                    <p class="ap-inicio__lema">Los países del mundo, en tu base de datos</p>
+                    <p class="ap-inicio__detalle">
+                        Consume la API pública REST Countries, guarda los datos en SQL Server y analízalos con el patrón MVC.
+                    </p>
+                    <div class="ap-inicio__chips">
+                        <span class="ap-chip ap-chip--cian">REST</span>
+                        <span class="ap-chip ap-chip--azul">.NET 8</span>
+                        <span class="ap-chip ap-chip--azul">SQL Server</span>
+                        <span class="ap-chip ap-chip--azul">MVC</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <main class="ap-inicio__lado">
+            <div class="ap-inicio__columna">
+                <div class="ap-tarjeta">
+                    <p class="ap-sobretitulo">Taller 2.2 · Grupo 03</p>
+                    <h1 class="ap-h3" style="margin-top:8px">Países del mundo</h1>
+                    <p class="ap-texto-secundario" style="margin-top:4px">
+                        Importa países desde la API REST Countries, gestiónalos en SQL Server y genera reportes estadísticos.
+                    </p>
+
+                    <p class="ap-sobretitulo ap-texto-secundario" style="margin-top:24px;color:var(--texto-secundario)">Estado del sistema</p>
+
+                    <div class="ap-estado" style="margin-top:12px">
+                        <span class="ap-icono-caja @(Model.BaseDisponible ? "ap-icono-caja--azul" : "ap-icono-caja--error")">@Iconos.Svg(NombreIcono.BaseDatos)</span>
+                        <div class="ap-estado__datos">
+                            <div class="ap-estado__cabecera">
+                                <span class="ap-estado__titulo">Base de datos SQL Server</span>
+                                <partial name="~/ec/edu/monster/vista/componentes/_ChipEstado.cshtml" model="chipBase" />
+                            </div>
+                            <p class="ap-estado__detalle">@detalleBase</p>
+                        </div>
+                    </div>
+                    <hr class="ap-divisor" />
+                    <div class="ap-estado">
+                        <span class="ap-icono-caja @(Model.ApiDemostracion ? "ap-icono-caja--advertencia" : "ap-icono-caja--azul")">@Iconos.Svg(NombreIcono.Llave)</span>
+                        <div class="ap-estado__datos">
+                            <div class="ap-estado__cabecera">
+                                <span class="ap-estado__titulo">API REST Countries v5</span>
+                                <partial name="~/ec/edu/monster/vista/componentes/_ChipEstado.cshtml" model="chipApi" />
+                            </div>
+                            <p class="ap-estado__detalle">@detalleApi</p>
+                        </div>
+                    </div>
+
+                    @if (!Model.BaseDisponible)
+                    {
+                        <div style="margin-top:16px">
+                            <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml"
+                                     model="avisoBase" />
+                        </div>
+                    }
+
+                    <a class="ap-boton ap-boton--primario ap-boton--ancho" style="margin-top:24px" href="/paises">
+                        @Iconos.Svg(NombreIcono.Entrar)<span>Entrar</span>
+                    </a>
+                    @if (!Model.BaseDisponible)
+                    {
+                        <a class="ap-boton ap-boton--secundario ap-boton--ancho" style="margin-top:8px" href="/">
+                            @Iconos.Svg(NombreIcono.Actualizar)<span>Reintentar</span>
+                        </a>
+                    }
+                </div>
+                <p class="ap-inicio__pie">Fuente de datos: restcountries.com · Base local: SQL Server ApiPaisesDB</p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

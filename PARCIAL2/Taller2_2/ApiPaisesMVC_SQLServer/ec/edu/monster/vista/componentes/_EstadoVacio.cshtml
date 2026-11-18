@@ -1,0 +1,10 @@
+@model EstadoVacio
+<div class="ap-vacio">
+    <span class="ap-icono-caja ap-icono-caja--azul">@Iconos.Svg(Model.Icono, 22)</span>
+    <h2 class="ap-vacio__titulo">@Model.Titulo</h2>
+    <p class="ap-vacio__texto">@Model.Texto</p>
+    @if (Model.TextoAccion != null && Model.UrlAccion != null)
+    {
+        <a class="ap-boton ap-boton--secundario ap-vacio__accion" href="@Model.UrlAccion">@Model.TextoAccion</a>
+    }
+</div>

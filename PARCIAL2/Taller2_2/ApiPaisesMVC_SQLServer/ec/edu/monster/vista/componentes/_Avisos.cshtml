@@ -1,0 +1,13 @@
+@* Avisos que dejó el controlador antes de redirigir (patrón Post-Redirect-Get) *@
+@if (TempData[ControladorBase.ClaveExito] is string exito)
+{
+    <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml" model="new Alerta(TipoAlerta.Exito, exito)" />
+}
+@if (TempData[ControladorBase.ClaveAdvertencia] is string advertencia)
+{
+    <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml" model="new Alerta(TipoAlerta.Advertencia, advertencia)" />
+}
+@if (TempData[ControladorBase.ClaveError] is string error)
+{
+    <partial name="~/ec/edu/monster/vista/componentes/_Alerta.cshtml" model="new Alerta(TipoAlerta.Error, error)" />
+}

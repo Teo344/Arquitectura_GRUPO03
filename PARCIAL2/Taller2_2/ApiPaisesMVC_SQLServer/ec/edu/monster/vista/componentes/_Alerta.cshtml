@@ -1,0 +1,16 @@
+@model Alerta
+<div class="ap-alerta ap-alerta--@Model.Tipo.Clase()" role="@(Model.Tipo == TipoAlerta.Error ? "alert" : "status")">
+    @Iconos.Svg(Model.Tipo.Icono())
+    <div>
+        <p>@Model.Mensaje</p>
+        @if (Model.Detalles is { Count: > 0 })
+        {
+            <ul>
+                @foreach (string detalle in Model.Detalles)
+                {
+                    <li>@detalle</li>
+                }
+            </ul>
+        }
+    </div>
+</div>
