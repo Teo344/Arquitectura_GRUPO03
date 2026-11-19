@@ -1,7 +1,10 @@
 @*
-    Pantalla principal (layout): menú lateral fijo y el contenido de la sección elegida. Cada sección
-    es una vista independiente que solo conoce los datos que le entrega su controlador.
+    Pantalla principal (layout): barra superior azul oscuro con la marca, las pestañas de cada
+    sección, el estado de SQL Server y el regreso al inicio; debajo, el contenido de la sección
+    elegida a todo el ancho. Cada sección es una vista independiente que solo conoce los datos que
+    le entrega su controlador.
 *@
+@inject ec.edu.monster.servicio.PaisServicio Servicio
 @{
     string seccion = ViewData["Seccion"] as string ?? "";
     (string Clave, string Titulo, NombreIcono Icono, string Url)[] secciones =
@@ -11,6 +14,11 @@
         ("reportes", "Reportes", NombreIcono.Grafico, "/reportes"),
         ("universidades", "Universidades", NombreIcono.Escuela, "/universidades")
     };
+    // Solo cuenta filas (no consulta la API): la barra informa si SQL Server responde
+    EstadoSistema estado = await Servicio.VerificarEstadoAsync();
+    string textoEstado = estado.BaseDisponible ? "SQL Server conectado" : "SQL Server sin conexión";
+    string detalleEstado = estado.BaseDisponible ? Formato.Paises(estado.TotalPaises) + " en ApiPaisesDB"
+        : estado.DetalleBase ?? "La base de datos no respondió.";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -21,47 +29,43 @@
     <link rel="stylesheet" href="~/css/paises.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="ap-app">
-        <aside class="ap-menu">
-            <div class="ap-menu__navegacion">
-                <a class="ap-marca" href="/" aria-label="Países API, volver al inicio">
-                    <span class="ap-icono-caja ap-icono-caja--accion">@Iconos.Svg(NombreIcono.Publico, 22)</span>
-                    <span>
-                        <span class="ap-marca__nombre">PAÍSES API</span>
-                        <span class="ap-marca__detalle" style="display:block">Taller 2.2 · Grupo 03</span>
-                    </span>
-                </a>
-                <p class="ap-menu__titulo" id="menu-titulo">Menú</p>
-                <nav aria-labelledby="menu-titulo">
-                    <ul class="ap-menu__lista">
-                        @foreach (var opcion in secciones)
-                        {
-                            bool elegida = opcion.Clave == seccion;
-                            <li>
-                                <a class="ap-menu__item @(elegida ? "ap-menu__item--elegido" : "")" href="@opcion.Url"
-                                   aria-current="@(elegida ? "page" : null)" data-proteger>
-                                    @Iconos.Svg(opcion.Icono)
-                                    <span>@opcion.Titulo</span>
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                </nav>
-            </div>
-            <a class="ap-menu__item" href="/" data-proteger>
-                @Iconos.Svg(NombreIcono.Salir)
-                <span>Volver al inicio</span>
+    <header class="ap-barra-superior">
+        <a class="ap-marca" href="/" aria-label="Países API, volver al inicio" data-proteger>
+            <span class="ap-icono-caja ap-icono-caja--accion">@Iconos.Svg(NombreIcono.Publico, 20)</span>
+            <span class="ap-marca__nombre">PAÍSES API</span>
+        </a>
+        <nav aria-label="Secciones" style="align-self:stretch;min-width:0;display:flex">
+            <ul class="ap-pestanas">
+                @foreach (var opcion in secciones)
+                {
+                    bool elegida = opcion.Clave == seccion;
+                    <li>
+                        <a class="ap-pestana @(elegida ? "ap-pestana--elegida" : "")" href="@opcion.Url"
+                           aria-current="@(elegida ? "page" : null)" data-proteger>
+                            @Iconos.Svg(opcion.Icono, 18)
+                            <span>@opcion.Titulo</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+        <div class="ap-barra-superior__derecha">
+            <span class="ap-estado-base @(estado.BaseDisponible ? "" : "ap-estado-base--error")" title="@detalleEstado">
+                <span class="ap-estado-base__punto" aria-hidden="true"></span>
+                <span>@textoEstado</span>
+            </span>
+            <a class="ap-boton-claro" href="/" title="Volver a la pantalla de inicio" data-proteger>
+                @Iconos.Svg(NombreIcono.Anterior, 18)<span>Inicio</span>
             </a>
-        </aside>
+        </div>
+    </header>
 
-        <main class="ap-principal">
-            <div class="ap-centrado">
-                <partial name="~/ec/edu/monster/vista/componentes/_Avisos.cshtml" />
-                @RenderBody()
-            </div>
-        </main>
-    </div>
+    <main class="ap-principal">
+        <partial name="~/ec/edu/monster/vista/componentes/_Avisos.cshtml" />
+        @RenderBody()
+    </main>
 
+    @RenderSection("Panel", required: false)
     @RenderSection("Dialogos", required: false)
     <script src="~/js/paises.js" asp-append-version="true"></script>
 </body>

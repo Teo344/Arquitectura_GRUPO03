@@ -1,0 +1,77 @@
+@* Pie de una tabla paginada: rango visible, filas por página y botones de página *@
+@model Paginacion
+<div class="ap-paginador">
+    <div class="ap-paginador__izquierda">
+        <span aria-live="polite">
+            @if (Model.Total == 0)
+            {
+                @:Sin resultados
+            }
+            else
+            {
+                @:Mostrando @Formato.Entero(Model.Desde)–@Formato.Entero(Model.Hasta) de @Formato.Entero(Model.Total) @Model.Sustantivo
+            }
+        </span>
+        <span class="ap-tamanos">
+            <span id="filas-por-pagina">Filas por página</span>
+            <span class="ap-tamanos__grupo" role="group" aria-labelledby="filas-por-pagina">
+                @foreach (EnlaceTamano opcion in Model.Tamanos)
+                {
+                    <a class="ap-tamano @(opcion.Actual ? "ap-tamano--actual" : "")" href="@opcion.Url"
+                       aria-current="@(opcion.Actual ? "true" : null)" aria-label="@opcion.Tamano filas por página" data-proteger>@opcion.Tamano</a>
+                }
+            </span>
+        </span>
+    </div>
+    <nav aria-label="Paginación">
+        <ul class="ap-paginas">
+            <li>@BotonFlecha(Model.UrlPrimera, NombreIcono.Primera, "Primera página")</li>
+            <li>@BotonFlecha(Model.UrlAnterior, NombreIcono.Anterior, "Página anterior")</li>
+            @foreach (EnlacePagina pagina in Model.Paginas)
+            {
+                <li>
+                    @if (pagina.Numero == null)
+                    {
+                        <span class="ap-pagina ap-pagina--puntos" aria-hidden="true">…</span>
+                    }
+                    else if (pagina.Actual)
+                    {
+                        <span class="ap-pagina ap-pagina--actual" aria-current="page"><span class="ap-oculto">Página </span>@pagina.Numero</span>
+                    }
+                    else
+                    {
+                        <a class="ap-pagina" href="@pagina.Url" aria-label="Página @pagina.Numero" data-proteger>@pagina.Numero</a>
+                    }
+                </li>
+            }
+            <li>@BotonFlecha(Model.UrlSiguiente, NombreIcono.Siguiente, "Página siguiente")</li>
+            <li>@BotonFlecha(Model.UrlUltima, NombreIcono.Ultima, "Última página")</li>
+        </ul>
+    </nav>
+</div>
+
+@functions {
+    private Microsoft.AspNetCore.Html.IHtmlContent BotonFlecha(string? url, NombreIcono icono, string texto)
+    {
+        Microsoft.AspNetCore.Html.HtmlContentBuilder html = new Microsoft.AspNetCore.Html.HtmlContentBuilder();
+        if (url == null)
+        {
+            html.AppendHtml("<span class=\"ap-pagina ap-pagina--deshabilitada\" aria-disabled=\"true\" title=\"");
+            html.Append(texto);
+            html.AppendHtml("\">").AppendHtml(Iconos.Svg(icono, 18)).AppendHtml("<span class=\"ap-oculto\">");
+            html.Append(texto);
+            html.AppendHtml("</span></span>");
+        }
+        else
+        {
+            html.AppendHtml("<a class=\"ap-pagina\" data-proteger href=\"");
+            html.Append(url);
+            html.AppendHtml("\" title=\"");
+            html.Append(texto);
+            html.AppendHtml("\">").AppendHtml(Iconos.Svg(icono, 18)).AppendHtml("<span class=\"ap-oculto\">");
+            html.Append(texto);
+            html.AppendHtml("</span></a>");
+        }
+        return html;
+    }
+}

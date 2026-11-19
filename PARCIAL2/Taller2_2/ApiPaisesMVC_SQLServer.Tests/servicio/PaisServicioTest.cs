@@ -266,9 +266,26 @@ namespace ec.edu.monster.servicio
             Assert.Equal(2L, estadisticas.PaisesPorRegion[0].Value);
             Assert.Equal(Region.AMERICAS, estadisticas.RegionConMasPaises);
             Assert.Equal("ESP", estadisticas.PaisMasPoblado!.Codigo);
+            Assert.Equal(new[] { "ESP", "PER", "ECU" }, estadisticas.MasPoblados.Select(p => p.Codigo));
             // Reporte 3: Europa 48 M; América (18 M + 34 M) / 2 = 26 M
             Assert.Equal(new[] { Region.EUROPA, Region.AMERICAS }, estadisticas.PromedioPorRegion.Select(e => e.Key));
             Assert.Equal(26_000_000d, estadisticas.PromedioPorRegion[1].Value);
+        }
+
+        [Fact]
+        public async Task RankingDeMasPobladosSeLimitaACinco()
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                await servicio.RegistrarAsync(Pais.Nuevo("AA" + (char)('A' + i), "País " + i, null, Region.ASIA,
+                    1000L * (i + 1), null, null, 0));
+            }
+
+            IReadOnlyList<Pais> ranking = (await servicio.GenerarEstadisticasAsync()).MasPoblados;
+
+            Assert.Equal(PaisServicio.TopPoblados, ranking.Count);
+            Assert.Equal("AAG", ranking[0].Codigo);
+            Assert.Equal("AAC", ranking[4].Codigo);
         }
 
         [Fact]

@@ -26,7 +26,14 @@ namespace ec.edu.monster.vista
         Info,
         Error,
         Exito,
-        Advertencia
+        Advertencia,
+        Editar,
+        Anterior,
+        Siguiente,
+        Primera,
+        Ultima,
+        Subir,
+        Bajar
     }
 
     /// <summary>
@@ -61,6 +68,13 @@ namespace ec.edu.monster.vista
                 NombreIcono.Error => "M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13,17h-2v-2h2v2zM13,13h-2L11,7h2v6z",
                 NombreIcono.Exito => "M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM10,17l-5,-5 1.41,-1.41L10,14.17l7.59,-7.59L19,8l-9,9z",
                 NombreIcono.Advertencia => "M1,21h22L12,2 1,21zM13,18h-2v-2h2v2zM13,14h-2v-4h2v4z",
+                NombreIcono.Editar => "M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z",
+                NombreIcono.Anterior => "M15.41,7.41L14,6l-6,6 6,6 1.41,-1.41L10.83,12z",
+                NombreIcono.Siguiente => "M10,6L8.59,7.41 13.17,12l-4.58,4.59L10,18l6,-6z",
+                NombreIcono.Primera => "M18.41,16.59L13.82,12l4.59,-4.59L17,6l-6,6 6,6zM6,6h2v12H6z",
+                NombreIcono.Ultima => "M5.59,7.41L10.18,12l-4.59,4.59L7,18l6,-6 -6,-6zM16,6h2v12h-2z",
+                NombreIcono.Subir => "M4,12l1.41,1.41L11,7.83V20h2V7.83l5.58,5.59L20,12l-8,-8 -8,8z",
+                NombreIcono.Bajar => "M20,12l-1.41,-1.41L13,16.17V4h-2v12.17l-5.58,-5.59L4,12l8,8 8,-8z",
                 _ => ""
             };
         }

@@ -58,7 +58,7 @@ namespace ec.edu.monster.modelo.dao
             });
         }
 
-        public Task<IReadOnlyList<Universidad>> ListarAsync(string? pais)
+        public Task<IReadOnlyList<Universidad>> ListarAsync(string? pais, string? texto)
         {
             return ErroresBD.EjecutarAsync(log, "listar las universidades", async () =>
             {
@@ -67,6 +67,14 @@ namespace ec.edu.monster.modelo.dao
                 {
                     string buscado = pais.Trim();
                     consulta = consulta.Where(u => u.Pais == buscado);
+                }
+                if (!string.IsNullOrWhiteSpace(texto))
+                {
+                    // WHERE Nombre LIKE @t OR Dominio LIKE @t OR SitioWeb LIKE @t (parametrizado por EF)
+                    string fragmento = texto.Trim();
+                    consulta = consulta.Where(u => (u.Nombre != null && u.Nombre.Contains(fragmento))
+                        || (u.Dominio != null && u.Dominio.Contains(fragmento))
+                        || (u.SitioWeb != null && u.SitioWeb.Contains(fragmento)));
                 }
                 return (IReadOnlyList<Universidad>)await consulta.OrderBy(u => u.Pais).ThenBy(u => u.Nombre)
                     .ToListAsync();

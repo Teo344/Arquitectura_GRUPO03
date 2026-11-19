@@ -121,10 +121,11 @@ namespace ec.edu.monster.servicio
             return Task.FromResult(conteo);
         }
 
-        public virtual Task<Pais?> ObtenerMasPobladoAsync()
+        public virtual Task<IReadOnlyList<Pais>> ListarMasPobladosAsync(int limite)
         {
-            return Task.FromResult(paises.Values.OrderByDescending(p => p.Poblacion).ThenBy(p => p.Nombre)
-                .FirstOrDefault()?.Copiar());
+            IReadOnlyList<Pais> ranking = paises.Values.OrderByDescending(p => p.Poblacion).ThenBy(p => p.Nombre)
+                .Take(Math.Max(0, limite)).Select(p => p.Copiar()).ToList();
+            return Task.FromResult(ranking);
         }
 
         public virtual Task<IReadOnlyDictionary<Region, double>> PromedioPoblacionPorRegionAsync()

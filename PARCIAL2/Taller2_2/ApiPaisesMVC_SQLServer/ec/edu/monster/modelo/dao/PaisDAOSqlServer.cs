@@ -178,11 +178,12 @@ namespace ec.edu.monster.modelo.dao
             });
         }
 
-        public Task<Pais?> ObtenerMasPobladoAsync()
+        public Task<IReadOnlyList<Pais>> ListarMasPobladosAsync(int limite)
         {
-            // SELECT TOP 1 * FROM Paises ORDER BY Poblacion DESC
-            return ErroresBD.EjecutarAsync(log, "obtener el país más poblado",
-                () => Consulta.OrderByDescending(p => p.Poblacion).ThenBy(p => p.Nombre).FirstOrDefaultAsync());
+            // SELECT TOP (@limite) * FROM Paises ORDER BY Poblacion DESC
+            return ErroresBD.EjecutarAsync(log, "obtener los países más poblados", async () =>
+                (IReadOnlyList<Pais>)await Consulta.OrderByDescending(p => p.Poblacion).ThenBy(p => p.Nombre)
+                    .Take(Math.Max(0, limite)).ToListAsync());
         }
 
         public Task<IReadOnlyDictionary<Region, double>> PromedioPoblacionPorRegionAsync()

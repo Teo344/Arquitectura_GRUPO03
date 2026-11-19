@@ -20,6 +20,7 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.net.URL;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -41,7 +42,7 @@ public class InicioVista extends JPanel {
     private final FilaEstado filaApi = new FilaEstado(Iconos.Nombre.LLAVE, "API REST Countries v5");
     private final Alerta aviso = new Alerta(false);
     private final Boton entrar = new Boton("Entrar", EstiloBoton.PRIMARIO, Iconos.Nombre.ENTRAR);
-    private final Boton reintentar = new Boton("Reintentar", EstiloBoton.SECUNDARIO, Iconos.Nombre.ACTUALIZAR);
+    private final JButton verificar = Componentes.enlace("Verificar", Iconos.Nombre.ACTUALIZAR, AZUL_ACCION);
 
     public InicioVista(InicioControlador controlador, Runnable alEntrar) {
         super(new BorderLayout());
@@ -49,8 +50,10 @@ public class InicioVista extends JPanel {
         setBackground(SUPERFICIE);
 
         entrar.addActionListener(e -> alEntrar.run());
-        reintentar.addActionListener(e -> verificar());
-        reintentar.setVisible(false);
+        // La flecha va después del texto: indica que se avanza a la siguiente pantalla
+        entrar.setHorizontalTextPosition(SwingConstants.LEFT);
+        verificar.addActionListener(e -> verificar());
+        verificar.setToolTipText("Volver a comprobar MySQL");
 
         Pila derecha = new Pila()
                 .agregar(tarjetaBienvenida())
@@ -73,15 +76,11 @@ public class InicioVista extends JPanel {
         filaBase.verificando();
         filaApi.verificando();
         aviso.ocultar();
-        reintentar.setVisible(false);
-        reintentar.setCargando(true);
+        verificar.setEnabled(false);
         Tarea.de(controlador::verificarEstado)
-                .siempre(() -> reintentar.setCargando(false))
+                .siempre(() -> verificar.setEnabled(true))
                 .alTerminar(this::mostrarEstado)
-                .alFallar(mensaje -> {
-                    filaBase.mostrar("Sin conexión", mensaje, TipoAlerta.ERROR);
-                    reintentar.setVisible(true);
-                })
+                .alFallar(mensaje -> filaBase.mostrar("Sin conexión", mensaje, TipoAlerta.ERROR))
                 .iniciar();
     }
 
@@ -92,9 +91,8 @@ public class InicioVista extends JPanel {
                     : Formato.paises(estado.totalPaises()) + " guardados en api_paises.", TipoAlerta.EXITO);
         } else {
             filaBase.mostrar("Sin conexión", estado.detalleBase(), TipoAlerta.ERROR);
-            aviso.mostrar("Puedes entrar, pero no podrás consultar ni guardar países hasta que MySQL responda.",
-                    TipoAlerta.ADVERTENCIA);
-            reintentar.setVisible(true);
+            aviso.mostrar("Puedes entrar, pero no podrás consultar ni guardar países hasta que MySQL responda. "
+                    + "Usa «Verificar» para comprobarlo de nuevo.", TipoAlerta.ADVERTENCIA);
         }
         if (estado.apiDemostracion()) {
             filaApi.mostrar("Clave demo", "La API solo devolverá un país de muestra. Configura tu clave en "
@@ -112,13 +110,23 @@ public class InicioVista extends JPanel {
         tarjeta.agregar(Componentes.etiqueta("Países del mundo", TITULAR_PEQUENO, TEXTO), XS);
         tarjeta.agregar(new Texto("Importa países desde la API REST Countries, gestiónalos en MySQL y genera "
                 + "reportes estadísticos.", CUERPO, TEXTO_SECUNDARIO), XXS);
-        tarjeta.agregar(Componentes.sobretitulo("Estado del sistema", TEXTO_SECUNDARIO), L);
-        tarjeta.agregar(filaBase, S);
-        tarjeta.agregar(Componentes.lineaDivisoria(), S);
-        tarjeta.agregar(filaApi, S);
+        JPanel cabeceraEstado = new JPanel(new BorderLayout());
+        cabeceraEstado.setOpaque(false);
+        cabeceraEstado.add(Componentes.enCentro(Componentes.sobretitulo("Estado del sistema", TEXTO_SECUNDARIO)),
+                BorderLayout.WEST);
+        cabeceraEstado.add(verificar, BorderLayout.EAST);
+        tarjeta.agregar(cabeceraEstado, M);
+
+        // Las dos dependencias, agrupadas en un solo recuadro
+        Caja estados = new Caja(SUPERFICIE, DIVISOR, 12, 0, 0, 0);
+        estados.setRelleno(14, M, 14, M);
+        estados.agregar(filaBase);
+        estados.agregar(Componentes.lineaDivisoria(), 14);
+        estados.agregar(filaApi, 14);
+        tarjeta.agregar(estados, XXS);
         tarjeta.agregar(aviso, M);
         tarjeta.agregar(entrar, L);
-        tarjeta.agregar(reintentar, XS);
+        tarjeta.agregar(new Texto("o presiona Enter", LEYENDA, TEXTO_SECUNDARIO, SwingConstants.CENTER), XS);
         return tarjeta;
     }
 
@@ -127,14 +135,14 @@ public class InicioVista extends JPanel {
 
         private final IconoEnCaja icono;
         private final Iconos.Nombre nombreIcono;
-        private final Texto detalle = new Texto("", CUERPO, TEXTO_SECUNDARIO);
+        private final Texto detalle = new Texto("", PEQUENO, TEXTO_SECUNDARIO);
         private final JPanel contenedorChip = new JPanel(new BorderLayout());
 
         FilaEstado(Iconos.Nombre nombreIcono, String titulo) {
             super(new BorderLayout(S, 0));
             this.nombreIcono = nombreIcono;
             setOpaque(false);
-            icono = new IconoEnCaja(nombreIcono, AZUL_SUAVE, AZUL_ACCION, 40, 20);
+            icono = new IconoEnCaja(nombreIcono, AZUL_SUAVE, AZUL_ACCION, 36, 18);
             JPanel columnaIcono = new JPanel(new BorderLayout());
             columnaIcono.setOpaque(false);
             columnaIcono.add(icono, BorderLayout.NORTH);
@@ -142,7 +150,7 @@ public class InicioVista extends JPanel {
 
             JPanel cabecera = new JPanel(new BorderLayout(XS, 0));
             cabecera.setOpaque(false);
-            cabecera.add(Componentes.etiqueta(titulo, CUERPO_GRANDE_SEMINEGRITA, TEXTO), BorderLayout.CENTER);
+            cabecera.add(Componentes.etiqueta(titulo, CUERPO_SEMINEGRITA, TEXTO), BorderLayout.CENTER);
             contenedorChip.setOpaque(false);
             cabecera.add(contenedorChip, BorderLayout.EAST);
             add(new Pila().agregar(cabecera).agregar(detalle, 2), BorderLayout.CENTER);
@@ -157,9 +165,12 @@ public class InicioVista extends JPanel {
             contenedorChip.removeAll();
             contenedorChip.add(Componentes.chipEstado(estado, tipo), BorderLayout.NORTH);
             detalle.setTexto(texto);
-            boolean problema = tipo == TipoAlerta.ERROR || tipo == TipoAlerta.ADVERTENCIA;
-            icono.cambiar(nombreIcono, problema ? (tipo == TipoAlerta.ERROR ? ERROR_FONDO : ADVERTENCIA_FONDO)
-                    : AZUL_SUAVE, problema ? (tipo == TipoAlerta.ERROR ? ERROR_RELLENO : ADVERTENCIA_TEXTO) : AZUL_ACCION);
+            switch (tipo) {
+                case EXITO -> icono.cambiar(nombreIcono, EXITO_FONDO, EXITO_RELLENO);
+                case ERROR -> icono.cambiar(nombreIcono, ERROR_FONDO, ERROR_RELLENO);
+                case ADVERTENCIA -> icono.cambiar(nombreIcono, ADVERTENCIA_FONDO, ADVERTENCIA_TEXTO);
+                default -> icono.cambiar(nombreIcono, AZUL_SUAVE, AZUL_ACCION);
+            }
             getAccessibleContext().setAccessibleDescription(estado + ". " + texto);
             revalidate();
             repaint();
@@ -184,14 +195,18 @@ public class InicioVista extends JPanel {
             Pila textos = new Pila()
                     .agregar(new Texto("Los países del mundo,\nen tu base de datos", TITULAR_MEDIANO, BLANCO))
                     .agregar(new Texto("Consume la API pública REST Countries, guarda los datos en MySQL y "
-                            + "analízalos con el patrón MVC.", CUERPO, BORDE_SUAVE), XS)
-                    .agregar(Componentes.fila(XS,
-                            Componentes.chip("REST", CIAN_SUAVE, CIAN_TEXTO_OSCURO),
-                            Componentes.chip("Java 21", AZUL_SUAVE, AZUL_HOVER),
-                            Componentes.chip("MySQL", AZUL_SUAVE, AZUL_HOVER),
-                            Componentes.chip("MVC", AZUL_SUAVE, AZUL_HOVER)), M);
+                            + "analízalos con el patrón MVC.", CUERPO_GRANDE, TEXTO_SOBRE_OSCURO), S)
+                    .agregar(Componentes.fila(XS, chipClaro("REST"), chipClaro("Java 21"), chipClaro("MySQL"),
+                            chipClaro("MVC")), M);
             add(textos, BorderLayout.SOUTH);
             getAccessibleContext().setAccessibleName("Foto del Grupo 03");
+        }
+
+        private static Caja chipClaro(String texto) {
+            Caja chip = new Caja(new Color(255, 255, 255, 36), new Color(255, 255, 255, 72), RADIO_CHIP, 0, 0, 0);
+            chip.setRelleno(XXS, 10, XXS, 10);
+            chip.agregar(Componentes.etiqueta(texto, LEYENDA_NEGRITA, BLANCO));
+            return chip;
         }
 
         @Override

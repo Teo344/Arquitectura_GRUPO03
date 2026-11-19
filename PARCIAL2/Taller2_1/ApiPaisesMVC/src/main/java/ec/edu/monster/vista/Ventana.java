@@ -54,7 +54,7 @@ public class Ventana extends JFrame {
     }
 
     public void abrirPrincipal() {
-        mostrar(new PrincipalVista(paisControlador, reporteControlador, this::abrirInicio));
+        mostrar(new PrincipalVista(inicioControlador, paisControlador, reporteControlador, this::abrirInicio));
     }
 
     private void mostrar(JComponent pantalla) {

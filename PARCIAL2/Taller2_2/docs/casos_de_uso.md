@@ -210,7 +210,7 @@ flowchart LR
 1. El usuario abre **Reportes**.
 2. El sistema calcula con la base de datos:
    - Reporte 1: número de países por región (de mayor a menor), con gráfico de barras.
-   - Reporte 2: país más poblado.
+   - Reporte 2: los cinco países más poblados (el primero es el país más poblado).
    - Reporte 3: promedio poblacional por región, con gráfico de barras.
    - Además: total de países y región con más países (informa empates).
 3. El sistema muestra el reporte y la consulta SQL equivalente de cada uno.

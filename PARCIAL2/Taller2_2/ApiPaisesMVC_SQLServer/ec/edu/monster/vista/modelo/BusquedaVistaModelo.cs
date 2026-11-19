@@ -17,6 +17,13 @@ namespace ec.edu.monster.vista.modelo
         /// <summary>Código del país que se acaba de guardar (muestra el chip "Guardado").</summary>
         public string? CodigoGuardado { get; set; }
 
+        /// <summary>Códigos ya guardados en SQL Server; null si la base no respondió.</summary>
+        public ISet<string>? CodigosGuardados { get; set; }
+
+        /// <summary>El país ya está en la base (por el código o porque se acaba de guardar).</summary>
+        public bool EstaGuardado(Pais pais) =>
+            CodigoGuardado == pais.Codigo || (CodigosGuardados?.Contains(pais.Codigo) ?? false);
+
         public bool DesdeApi => Resultado?.Origen == OrigenDatos.API_EXTERNA;
     }
 }

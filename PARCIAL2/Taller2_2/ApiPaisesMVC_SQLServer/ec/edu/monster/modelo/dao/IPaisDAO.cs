@@ -49,8 +49,12 @@ namespace ec.edu.monster.modelo.dao
         /// </summary>
         Task<IReadOnlyDictionary<Region, long>> ContarPorRegionAsync();
 
-        /// <summary>Reporte 2: país más poblado.</summary>
-        Task<Pais?> ObtenerMasPobladoAsync();
+        /// <summary>
+        /// Reporte 2: los países con más habitantes, de mayor a menor (ante empate, por nombre). El
+        /// primero es el país más poblado.
+        /// </summary>
+        /// <param name="limite">cuántos países devolver como máximo</param>
+        Task<IReadOnlyList<Pais>> ListarMasPobladosAsync(int limite);
 
         /// <summary>Reporte 3: promedio poblacional por región.</summary>
         Task<IReadOnlyDictionary<Region, double>> PromedioPoblacionPorRegionAsync();

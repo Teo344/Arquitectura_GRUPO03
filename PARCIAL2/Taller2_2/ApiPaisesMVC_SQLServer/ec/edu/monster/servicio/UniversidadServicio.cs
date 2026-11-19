@@ -46,10 +46,18 @@ namespace ec.edu.monster.servicio
             return await dao.GuardarOActualizarAsync(unicas);
         }
 
-        /// <summary>CU-10: universidades guardadas, de un país o de todos.</summary>
-        public Task<IReadOnlyList<Universidad>> ListarAsync(string? pais)
+        /// <summary>
+        /// CU-10: universidades guardadas, de un país o de todos, opcionalmente filtradas por un texto
+        /// que aparezca en el nombre, el dominio o el sitio web.
+        /// </summary>
+        public Task<IReadOnlyList<Universidad>> ListarAsync(string? pais, string? texto = null)
         {
-            return dao.ListarAsync(string.IsNullOrWhiteSpace(pais) ? null : pais.Trim());
+            string? buscado = string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
+            if (buscado != null && buscado.Length > 100)
+            {
+                throw new ExcepcionValidacion("El texto a buscar no puede superar 100 caracteres.");
+            }
+            return dao.ListarAsync(string.IsNullOrWhiteSpace(pais) ? null : pais.Trim(), buscado);
         }
 
         /// <summary>Países con universidades guardadas, para los filtros.</summary>

@@ -9,6 +9,7 @@ import ec.edu.monster.modelo.entidad.Region;
 import ec.edu.monster.modelo.entidad.ResultadoImportacion;
 import ec.edu.monster.vista.Componentes.Alerta;
 import ec.edu.monster.vista.Componentes.Boton;
+import ec.edu.monster.vista.Componentes.BotonIcono;
 import ec.edu.monster.vista.Componentes.Caja;
 import ec.edu.monster.vista.Componentes.CampoSeleccion;
 import ec.edu.monster.vista.Componentes.CampoTexto;
@@ -17,11 +18,14 @@ import ec.edu.monster.vista.Componentes.Pila;
 import ec.edu.monster.vista.Componentes.Texto;
 import ec.edu.monster.vista.Componentes.TipoAlerta;
 import ec.edu.monster.vista.Tabla.Columna;
+import ec.edu.monster.vista.Tabla.Estilo;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -35,9 +39,11 @@ import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
 /**
- * Gestión de países (CU-01, CU-03 a CU-07) con el patrón lista-detalle: la
- * tabla a la izquierda y el formulario siempre visible a la derecha. Solo
- * muestra datos y delega cada acción en {@link PaisControlador}.
+ * Gestión de países (CU-01, CU-03 a CU-07). La tabla paginada ocupa todo el
+ * ancho; arriba, la búsqueda y los chips de región. Registrar y editar se
+ * hace en un panel lateral que se abre sobre la tabla, así la lista no pierde
+ * espacio mientras no se edita. Solo muestra datos y delega cada acción en
+ * {@link PaisControlador}.
  *
  * @author carlo
  */
@@ -49,28 +55,35 @@ public class PaisesVista extends JPanel {
         static final OpcionRegion TODAS = new OpcionRegion(null);
 
         String texto() {
-            return region == null ? "Todas las regiones" : region.getNombre();
+            return region == null ? "Todas" : region.getNombre();
         }
+    }
+
+    /** Lo que trae cada carga: todos los países (para los conteos) y los de la región elegida. */
+    private record Carga(List<Pais> todos, List<Pais> lista) {
     }
 
     private static final String VISTA_TABLA = "tabla";
     private static final String VISTA_VACIA = "vacia";
 
     private final PaisControlador controlador;
+    private final PanelLateral panelLateral;
 
-    // ---- Encabezado y lista ----
+    // ---- Encabezado, filtros y lista ----
     private final Texto resumen = new Texto("Cargando países…", CUERPO, TEXTO_SECUNDARIO);
     private final Boton importar = new Boton("Importar desde la API", EstiloBoton.SECUNDARIO, Iconos.Nombre.DESCARGAR);
-    private final Boton nuevo = new Boton("Nuevo país", EstiloBoton.SECUNDARIO, Iconos.Nombre.AGREGAR);
+    private final Boton nuevo = new Boton("Nuevo país", EstiloBoton.PRIMARIO, Iconos.Nombre.AGREGAR);
     private final Alerta alertaGeneral = new Alerta(true);
-    private final CampoTexto filtro = new CampoTexto("Filtrar en la tabla", "Ej. ecuador, ECU o Quito", null);
-    private final CampoSeleccion<OpcionRegion> region;
+    private final CampoTexto filtro = new CampoTexto(null, "Nombre, código ISO o capital", null)
+            .conIcono(Iconos.Nombre.BUSCAR);
+    private final GrupoChips<OpcionRegion> chipsRegion;
     private final Tabla<Pais> tabla;
     private final CardLayout cartasLista = new CardLayout();
     private final JPanel contenedorLista = new JPanel(cartasLista);
     private final Pila contenedorVacio = new Pila();
 
-    // ---- Formulario ----
+    // ---- Panel lateral (formulario) ----
+    private final JPanel formulario = new JPanel(new BorderLayout());
     private final JLabel sobretituloFormulario = Componentes.sobretitulo("Nuevo país");
     private final JLabel tituloFormulario = Componentes.etiqueta("Registrar país", TITULO, TEXTO);
     private final CampoTexto codigo = new CampoTexto("Código ISO", "Ej. ECU", "3 letras (ISO 3166 alfa-3).");
@@ -79,48 +92,57 @@ public class PaisesVista extends JPanel {
     private final CampoSeleccion<Region> regionPais;
     private final CampoTexto poblacion = new CampoTexto("Población", "Ej. 18.001.000", "Número entero de habitantes.");
     private final CampoTexto moneda = new CampoTexto("Moneda (opcional)", "Ej. Dólar estadounidense", null);
+    private final Alerta avisoApi = new Alerta(false);
     private final Alerta alertaFormulario = new Alerta(true);
     private final Boton guardar = new Boton("Registrar país", EstiloBoton.PRIMARIO, Iconos.Nombre.GUARDAR);
-    private final Boton descartar = new Boton("Limpiar", EstiloBoton.TEXTO, null);
-    private final Boton eliminar = new Boton("Eliminar", EstiloBoton.PELIGRO, Iconos.Nombre.ELIMINAR);
+    private final Boton cancelar = new Boton("Cancelar", EstiloBoton.TEXTO, null);
+    private final Boton eliminar = new Boton("Eliminar", EstiloBoton.CONTORNO_PELIGRO, null);
 
     private Region filtroRegion;
     private Pais enEdicion;
+    private Integer idPorSeleccionar;
     private boolean modificado;
     private boolean rellenando;
 
     public PaisesVista(PaisControlador controlador) {
-        super(new BorderLayout(0, M));
+        super(new BorderLayout());
         this.controlador = controlador;
         setBackground(SUPERFICIE);
-        setBorder(new EmptyBorder(L, L, M, L));
 
         List<OpcionRegion> opciones = new ArrayList<>();
         opciones.add(OpcionRegion.TODAS);
         controlador.regiones().forEach(r -> opciones.add(new OpcionRegion(r)));
-        region = new CampoSeleccion<>("Región", opciones, OpcionRegion::texto, null);
-        region.setSeleccion(OpcionRegion.TODAS);
-        regionPais = new CampoSeleccion<>("Región", controlador.regiones(), Region::getNombre, "Selecciona una región");
+        chipsRegion = new GrupoChips<>("Filtrar por región", opciones, OpcionRegion::texto);
+        chipsRegion.setSeleccion(OpcionRegion.TODAS);
+        regionPais = new CampoSeleccion<>("Región", controlador.regiones(), Region::getNombre, "Selecciona");
 
-        tabla = new Tabla<>("Países registrados", List.of(
-                Columna.texto("ISO", Pais::codigo, 64, 64, false),
-                Columna.texto("Nombre", Pais::nombre, 170, 120, true),
-                Columna.texto("Capital", Pais::capital, 130, 96, false),
-                Columna.texto("Región", Pais::region, 100, 92, false),
-                Columna.numero("Población", Pais::poblacion, Formato::entero, 136),
-                Columna.texto("Moneda", Pais::moneda, 150, 96, false)));
-        tabla.ordenarPor(1);
+        tabla = new Tabla<>("Países registrados", "países", List.of(
+                Columna.texto("ISO", Pais::codigo, 84, 84, Estilo.CODIGO),
+                Columna.texto("Nombre", Pais::nombre, 200, 140, Estilo.DESTACADA),
+                Columna.texto("Capital", Pais::capital, 150, 100, Estilo.SECUNDARIA),
+                Columna.texto("Región", p -> p.region().getNombre(), 130, 120, Estilo.ETIQUETA),
+                Columna.numero("Población", Pais::poblacion, 150),
+                Columna.texto("Moneda", Pais::moneda, 180, 110, Estilo.SECUNDARIA)));
+        tabla.ordenarPor(1, true);
+        tabla.conAcciones(this::abrirEdicion, this::eliminar);
+        tabla.alActivar(this::abrirEdicion);
 
-        add(encabezado(), BorderLayout.NORTH);
-        JPanel cuerpo = new JPanel(new BorderLayout(L, 0));
-        cuerpo.setOpaque(false);
-        cuerpo.add(panelLista(), BorderLayout.CENTER);
-        cuerpo.add(panelFormulario(), BorderLayout.EAST);
-        add(cuerpo, BorderLayout.CENTER);
+        JPanel contenido = new JPanel(new BorderLayout(0, M));
+        contenido.setBackground(SUPERFICIE);
+        contenido.setBorder(new EmptyBorder(M, XL, L, XL));
+        contenido.add(new Pila()
+                .agregar(Componentes.encabezadoPagina("Gestión", "Países", resumen, importar, nuevo))
+                .agregar(alertaGeneral, M)
+                .agregar(barraFiltros(), S), BorderLayout.NORTH);
+        contenido.add(marcoTabla(), BorderLayout.CENTER);
+
+        construirFormulario();
+        panelLateral = new PanelLateral(contenido);
+        panelLateral.alPedirCierre(this::cerrarPanel);
+        add(panelLateral, BorderLayout.CENTER);
 
         conectarEventos();
         registrarAtajos();
-        limpiarFormulario();
     }
 
     /** La sección se muestra: se refresca la lista, porque otra sección pudo guardar países. */
@@ -131,107 +153,120 @@ public class PaisesVista extends JPanel {
 
     // ================================================================ Estructura
 
-    private JComponent encabezado() {
-        return new Pila()
-                .agregar(Componentes.encabezadoPagina("Gestión", "Países", resumen, importar, nuevo))
-                .agregar(alertaGeneral, M);
-    }
-
-    private JComponent panelLista() {
-        JPanel filtros = new JPanel(new GridBagLayout());
-        filtros.setOpaque(false);
+    private JComponent barraFiltros() {
+        JPanel barra = new JPanel(new GridBagLayout());
+        barra.setOpaque(false);
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = 0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.SOUTH;
+        c.anchor = GridBagConstraints.WEST;
+        filtro.setPreferredSize(new Dimension(320, filtro.getPreferredSize().height));
+        filtro.getCampo().getAccessibleContext().setAccessibleName("Buscar en la tabla");
+        filtro.getCampo().setToolTipText("Buscar en la tabla (Ctrl+F)");
+        barra.add(filtro, c);
         c.weightx = 1;
-        filtros.add(filtro, c);
-        c.weightx = 0;
         c.insets = new Insets(0, M, 0, 0);
-        region.setPreferredSize(new Dimension(220, region.getPreferredSize().height));
-        filtros.add(region, c);
+        barra.add(chipsRegion, c);
+        return barra;
+    }
 
-        Caja marcoTabla = new Caja(BLANCO, DIVISOR, RADIO_TARJETA, 2, Componentes.MARGEN_SOMBRA, 0);
-        marcoTabla.setLayout(new BorderLayout());
-        marcoTabla.setRelleno(XS, XXS, XS, XXS);
+    private JComponent marcoTabla() {
+        Caja marco = new Caja(BLANCO, DIVISOR, RADIO_TARJETA, 2, Componentes.MARGEN_SOMBRA, 0);
+        marco.setLayout(new BorderLayout());
+        marco.setRelleno(2, 2, 2, 2);
         contenedorLista.setOpaque(false);
         contenedorLista.add(tabla, VISTA_TABLA);
         contenedorLista.add(Componentes.enCentro(contenedorVacio), VISTA_VACIA);
-        marcoTabla.add(contenedorLista, BorderLayout.CENTER);
-
-        JPanel lista = new JPanel(new BorderLayout(0, S));
-        lista.setOpaque(false);
-        lista.add(filtros, BorderLayout.NORTH);
-        lista.add(marcoTabla, BorderLayout.CENTER);
-        lista.add(new Texto("Atajos: Ctrl+F filtrar · Ctrl+N nuevo · Ctrl+S guardar · Supr eliminar · "
-                + "clic en un encabezado para ordenar", LEYENDA, TEXTO_SECUNDARIO), BorderLayout.SOUTH);
-        return lista;
+        marco.add(contenedorLista, BorderLayout.CENTER);
+        return marco;
     }
 
     /**
-     * Tarjeta del formulario: encabezado y acciones fijos, campos desplazables.
-     * Así el botón de guardar y los mensajes de error siempre quedan a la vista,
-     * aunque la ventana sea baja.
+     * Panel lateral: encabezado y acciones fijos, campos desplazables. Así el
+     * botón de guardar y los errores siempre quedan a la vista.
      */
-    private JComponent panelFormulario() {
+    private void construirFormulario() {
+        BotonIcono cerrar = new BotonIcono(Iconos.Nombre.CERRAR, TEXTO_SECUNDARIO, 20, AZUL_SUAVE, "Cerrar (Esc)");
+        cerrar.addActionListener(e -> cerrarPanel());
+        JPanel cabecera = new JPanel(new BorderLayout(S, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(FONDO_SECCION);
+                g.fillRect(0, getHeight() - 1, getWidth(), 1);
+            }
+        };
+        cabecera.setOpaque(false);
+        cabecera.setBorder(new EmptyBorder(L, L, M, M));
+        cabecera.add(new Pila().agregar(sobretituloFormulario).agregar(tituloFormulario, XXS), BorderLayout.CENTER);
+        JPanel columnaCerrar = new JPanel(new BorderLayout());
+        columnaCerrar.setOpaque(false);
+        columnaCerrar.add(cerrar, BorderLayout.NORTH);
+        cabecera.add(columnaCerrar, BorderLayout.EAST);
+
+        JPanel codigoYRegion = new JPanel(new GridLayout(1, 2, S, 0));
+        codigoYRegion.setOpaque(false);
+        codigoYRegion.add(codigo);
+        codigoYRegion.add(regionPais);
+        avisoApi.mostrar("Si vuelves a importar desde la API, estos cambios se sobrescribirán con los datos de "
+                + "REST Countries.", TipoAlerta.ADVERTENCIA);
         Pila campos = new Pila()
-                .agregar(codigo)
+                .agregar(codigoYRegion)
                 .agregar(nombre, M)
                 .agregar(capital, M)
-                .agregar(regionPais, M)
                 .agregar(poblacion, M)
-                .agregar(moneda, M);
-        // Margen para que el anillo de foco de 2 px no quede recortado y la barra no tape los campos
-        campos.setBorder(new EmptyBorder(2, 2, 2, S));
+                .agregar(moneda, M)
+                .agregar(avisoApi, M);
+        // Margen para que el anillo de foco de 2 px no quede recortado
+        campos.setBorder(new EmptyBorder(M + 2, L, M, L));
 
-        JPanel secundarias = new JPanel(new BorderLayout());
+        JPanel secundarias = new JPanel(new BorderLayout(XS, 0));
         secundarias.setOpaque(false);
-        secundarias.add(descartar, BorderLayout.WEST);
-        secundarias.add(eliminar, BorderLayout.EAST);
+        secundarias.add(eliminar, BorderLayout.WEST);
+        secundarias.add(Componentes.fila(XS, cancelar, guardar), BorderLayout.EAST);
         Pila acciones = new Pila()
-                .agregar(Componentes.lineaDivisoria())
-                .agregar(alertaFormulario, M)
-                .agregar(guardar, M)
-                .agregar(secundarias, XS);
+                .agregar(alertaFormulario)
+                .agregar(secundarias, S);
+        JPanel pie = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(FONDO_SECCION);
+                g.fillRect(0, 0, getWidth(), 1);
+            }
+        };
+        pie.setOpaque(false);
+        pie.setBorder(new EmptyBorder(M, L, M, L));
+        pie.add(acciones, BorderLayout.CENTER);
 
-        Caja tarjeta = Componentes.tarjeta();
-        tarjeta.setLayout(new BorderLayout(0, M));
-        tarjeta.add(new Pila().agregar(sobretituloFormulario).agregar(tituloFormulario, XXS), BorderLayout.NORTH);
-        tarjeta.add(Componentes.desplazable(Componentes.centrado(campos, Integer.MAX_VALUE, 0, false)),
+        formulario.setBackground(BLANCO);
+        formulario.add(cabecera, BorderLayout.NORTH);
+        formulario.add(Componentes.desplazable(Componentes.centrado(campos, Integer.MAX_VALUE, 0, false)),
                 BorderLayout.CENTER);
-        tarjeta.add(acciones, BorderLayout.SOUTH);
-        tarjeta.setPreferredSize(new Dimension(ANCHO_FORMULARIO_LATERAL, 0));
-        return tarjeta;
+        formulario.add(pie, BorderLayout.SOUTH);
+        formulario.getAccessibleContext().setAccessibleName("Formulario de país");
     }
 
     // ================================================================ Eventos
 
     private void conectarEventos() {
         importar.addActionListener(e -> importar());
-        nuevo.addActionListener(e -> nuevo());
+        nuevo.addActionListener(e -> abrirNuevo());
+        nuevo.setToolTipText("Nuevo país (Ctrl+N)");
         guardar.addActionListener(e -> guardar());
-        descartar.addActionListener(e -> descartar());
-        eliminar.addActionListener(e -> eliminar());
+        guardar.setToolTipText("Guardar (Ctrl+S)");
+        cancelar.addActionListener(e -> cerrarPanel());
+        eliminar.addActionListener(e -> {
+            if (enEdicion != null) {
+                eliminar(enEdicion);
+            }
+        });
 
         filtro.alCambiar(() -> {
             tabla.setFiltro(filtro.getTexto());
             actualizarResumenYVacio();
         });
-        region.alCambiar(opcion -> {
-            Region elegida = opcion == null ? null : opcion.region();
-            if (elegida != filtroRegion) {
-                filtroRegion = elegida;
-                cargar();
-            }
+        chipsRegion.alCambiar(opcion -> {
+            filtroRegion = opcion == null ? null : opcion.region();
+            cargar();
         });
-
-        tabla.setPuedeCambiarSeleccion(nueva -> !modificado || confirmarDescarte());
-        tabla.alSeleccionar(pais -> {
-            if (pais != null) {
-                editar(pais);
-            }
-        });
-        tabla.alSuprimir(this::eliminar);
 
         for (CampoTexto campo : List.of(codigo, nombre, capital, poblacion, moneda)) {
             campo.alCambiar(this::marcarModificado);
@@ -241,9 +276,17 @@ public class PaisesVista extends JPanel {
     }
 
     private void registrarAtajos() {
-        atajo(KeyEvent.VK_F, "filtrar", filtro::enfocar);
-        atajo(KeyEvent.VK_N, "nuevo", this::nuevo);
-        atajo(KeyEvent.VK_S, "guardar", this::guardar);
+        atajo(KeyEvent.VK_F, "filtrar", () -> {
+            if (!panelLateral.estaAbierto()) {
+                filtro.enfocar();
+            }
+        });
+        atajo(KeyEvent.VK_N, "nuevo", this::abrirNuevo);
+        atajo(KeyEvent.VK_S, "guardar", () -> {
+            if (panelLateral.estaAbierto()) {
+                guardar();
+            }
+        });
     }
 
     private void atajo(int tecla, String nombreAccion, Runnable accion) {
@@ -262,7 +305,10 @@ public class PaisesVista extends JPanel {
     private void cargar() {
         resumen.setTexto("Cargando países…");
         Region filtroActual = filtroRegion;
-        Tarea.de(() -> filtroActual == null ? controlador.listarPaises() : controlador.buscarPorRegion(filtroActual))
+        Tarea.de(() -> {
+            List<Pais> todos = controlador.listarPaises();
+            return new Carga(todos, filtroActual == null ? todos : controlador.buscarPorRegion(filtroActual));
+        })
                 .alTerminar(this::mostrarPaises)
                 .alFallar(mensaje -> {
                     tabla.setFilas(List.of());
@@ -274,12 +320,14 @@ public class PaisesVista extends JPanel {
                 .iniciar();
     }
 
-    private void mostrarPaises(List<Pais> paises) {
-        Integer idElegido = enEdicion == null ? null : enEdicion.id();
-        tabla.setFilas(paises);
-        tabla.setFiltro(filtro.getTexto());
-        if (idElegido != null) {
-            tabla.seleccionar(p -> idElegido.equals(p.id()));
+    private void mostrarPaises(Carga carga) {
+        chipsRegion.setConteos(opcion -> opcion.region() == null ? carga.todos().size()
+                : carga.todos().stream().filter(p -> p.region() == opcion.region()).count());
+        tabla.setFilas(carga.lista());
+        Integer id = idPorSeleccionar != null ? idPorSeleccionar : enEdicion == null ? null : enEdicion.id();
+        idPorSeleccionar = null;
+        if (id != null) {
+            tabla.seleccionar(p -> id.equals(p.id()));
         }
         actualizarResumenYVacio();
     }
@@ -290,24 +338,30 @@ public class PaisesVista extends JPanel {
         String alcance = filtroRegion == null ? " registrados" : " en " + filtroRegion.getNombre();
         String texto = Formato.paises(total) + alcance;
         if (!filtro.getTexto().isBlank()) {
-            texto += " · mostrando " + Formato.entero(visibles);
+            texto += " · " + Formato.entero(visibles) + " coinciden con «" + filtro.getTexto().strip() + "»";
         }
         resumen.setTexto(texto);
 
         if (total == 0 && filtroRegion == null) {
             mostrarVacio("Aún no hay países",
-                    "Importa todos los países desde la API REST Countries o registra uno con el formulario.",
+                    "Importa todos los países desde la API REST Countries o registra uno con «Nuevo país».",
                     botonSecundario("Importar desde la API", Iconos.Nombre.DESCARGAR, this::importar));
         } else if (total == 0) {
             mostrarVacio("No hay países en " + filtroRegion.getNombre(),
                     "Elige otra región o importa los países desde la API.",
-                    botonSecundario("Ver todas las regiones", null, () -> region.setSeleccion(OpcionRegion.TODAS)));
+                    botonSecundario("Ver todas las regiones", null, this::verTodasLasRegiones));
         } else if (visibles == 0) {
             mostrarVacio("Sin coincidencias", "Ningún país contiene «" + filtro.getTexto().strip() + "».",
-                    botonSecundario("Limpiar filtro", null, () -> filtro.setTexto("")));
+                    botonSecundario("Limpiar búsqueda", null, () -> filtro.setTexto("")));
         } else {
             cartasLista.show(contenedorLista, VISTA_TABLA);
         }
+    }
+
+    private void verTodasLasRegiones() {
+        chipsRegion.setSeleccion(OpcionRegion.TODAS);
+        filtroRegion = null;
+        cargar();
     }
 
     private void mostrarVacio(String titulo, String texto, JComponent accion) {
@@ -358,15 +412,35 @@ public class PaisesVista extends JPanel {
         return mensaje;
     }
 
-    // ================================================================ Formulario (CU-03, CU-05, CU-06)
+    // ================================================================ Panel lateral (CU-03, CU-05, CU-06)
 
-    private void nuevo() {
-        if (modificado && !confirmarDescarte()) {
+    private void abrirNuevo() {
+        if (panelLateral.estaAbierto() && modificado && !confirmarDescarte()) {
             return;
         }
         tabla.limpiarSeleccion();
         limpiarFormulario();
-        codigo.enfocar();
+        panelLateral.abrir(formulario, codigo.getCampo());
+    }
+
+    private void abrirEdicion(Pais pais) {
+        if (panelLateral.estaAbierto() && modificado && !confirmarDescarte()) {
+            return;
+        }
+        editar(pais);
+        tabla.seleccionar(p -> p.id().equals(pais.id()));
+        panelLateral.abrir(formulario, nombre.getCampo());
+    }
+
+    private void cerrarPanel() {
+        if (!panelLateral.estaAbierto() || (modificado && !confirmarDescarte())) {
+            return;
+        }
+        panelLateral.cerrar();
+        enEdicion = null;
+        modificado = false;
+        tabla.limpiarSeleccion();
+        tabla.enfocar();
     }
 
     private void editar(Pais pais) {
@@ -375,10 +449,10 @@ public class PaisesVista extends JPanel {
         sobretituloFormulario.setText(("Editando · " + pais.codigo()).toUpperCase());
         tituloFormulario.setText(pais.nombre());
         guardar.setText("Guardar cambios");
-        descartar.setText("Descartar cambios");
         eliminar.setVisible(true);
+        avisoApi.setVisible(true);
         alertaFormulario.ocultar();
-        actualizarAcciones();
+        formulario.revalidate();
     }
 
     private void limpiarFormulario() {
@@ -387,10 +461,10 @@ public class PaisesVista extends JPanel {
         sobretituloFormulario.setText("NUEVO PAÍS");
         tituloFormulario.setText("Registrar país");
         guardar.setText("Registrar país");
-        descartar.setText("Limpiar");
         eliminar.setVisible(false);
+        avisoApi.setVisible(false);
         alertaFormulario.ocultar();
-        actualizarAcciones();
+        formulario.revalidate();
     }
 
     private void rellenar(Pais pais) {
@@ -406,16 +480,9 @@ public class PaisesVista extends JPanel {
     }
 
     private void marcarModificado() {
-        if (!rellenando && !modificado) {
+        if (!rellenando) {
             modificado = true;
-            actualizarAcciones();
         }
-    }
-
-    private void actualizarAcciones() {
-        descartar.setEnabled(modificado || enEdicion == null);
-        revalidate();
-        repaint();
     }
 
     private FormularioPais leerFormulario() {
@@ -428,37 +495,31 @@ public class PaisesVista extends JPanel {
         if (!guardar.isEnabled()) {
             return;
         }
-        FormularioPais formulario = leerFormulario();
+        FormularioPais datos = leerFormulario();
         Pais original = enEdicion;
         alertaFormulario.ocultar();
         guardar.setCargando(true, "Guardando…");
         Tarea.de(() -> original == null
-                ? controlador.registrarPais(formulario)
-                : controlador.actualizarPais(original.id(), formulario))
+                ? controlador.registrarPais(datos)
+                : controlador.actualizarPais(original.id(), datos))
                 .siempre(() -> guardar.setCargando(false))
                 .alTerminar(guardado -> {
-                    editar(guardado);
-                    alertaFormulario.mostrar("«" + guardado.nombre() + "» se guardó correctamente.", TipoAlerta.EXITO);
+                    modificado = false;
+                    panelLateral.cerrar();
+                    enEdicion = null;
+                    idPorSeleccionar = guardado.id();
+                    alertaGeneral.mostrar("«" + guardado.nombre() + "» se guardó correctamente.", TipoAlerta.EXITO);
                     cargar();
+                    tabla.enfocar();
                 })
-                .alFallar(mensaje -> alertaFormulario.mostrar(conVinetas(mensaje), TipoAlerta.ERROR))
+                .alFallar(mensaje -> {
+                    alertaFormulario.mostrar(conVinetas(mensaje), TipoAlerta.ERROR);
+                    formulario.revalidate();
+                })
                 .iniciar();
     }
 
-    private void descartar() {
-        if (enEdicion != null) {
-            editar(enEdicion);
-        } else {
-            limpiarFormulario();
-            codigo.enfocar();
-        }
-    }
-
-    private void eliminar() {
-        Pais pais = enEdicion;
-        if (pais == null) {
-            return;
-        }
+    private void eliminar(Pais pais) {
         boolean confirmado = Componentes.confirmar(this, "Eliminar país",
                 "Esta acción no se puede deshacer. Si el país viene de la API, volverá a aparecer en la próxima "
                 + "importación.",
@@ -471,12 +532,22 @@ public class PaisesVista extends JPanel {
         Tarea.deAccion(() -> controlador.eliminarPais(pais.id()))
                 .siempre(() -> eliminar.setCargando(false))
                 .alTerminar(nada -> {
+                    if (enEdicion != null && enEdicion.id().equals(pais.id())) {
+                        modificado = false;
+                        panelLateral.cerrar();
+                        enEdicion = null;
+                    }
                     tabla.limpiarSeleccion();
-                    limpiarFormulario();
                     alertaGeneral.mostrar("«" + pais.nombre() + "» se eliminó de la base de datos.", TipoAlerta.EXITO);
                     cargar();
                 })
-                .alFallar(mensaje -> alertaFormulario.mostrar(mensaje, TipoAlerta.ERROR))
+                .alFallar(mensaje -> {
+                    if (panelLateral.estaAbierto()) {
+                        alertaFormulario.mostrar(mensaje, TipoAlerta.ERROR);
+                    } else {
+                        alertaGeneral.mostrar(mensaje, TipoAlerta.ERROR);
+                    }
+                })
                 .iniciar();
     }
 

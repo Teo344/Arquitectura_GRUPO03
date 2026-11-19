@@ -128,8 +128,9 @@ flowchart LR
 
 **Flujo principal**
 1. El usuario abre la pantalla de países.
-2. El sistema muestra todos los países ordenados por nombre en una tabla (JTable).
-3. El usuario selecciona un país y ve su detalle.
+2. El sistema muestra los países ordenados por nombre en una tabla (JTable) paginada, de 10 en 10.
+3. El usuario cambia de página, de filas por página (10, 25 o 50) u ordena por otra columna.
+4. El usuario selecciona un país y ve su detalle en el panel lateral.
 
 **Flujos alternos**
 - 2a. No hay países: el sistema muestra la tabla vacía y sugiere importar.
@@ -198,7 +199,7 @@ flowchart LR
 1. El usuario abre **Reportes**.
 2. El sistema calcula con la base de datos:
    - Número de países por región (de mayor a menor).
-   - País más poblado.
+   - Los cinco países más poblados (el primero es el país más poblado).
    - Región con más países.
 3. El sistema muestra el reporte.
 

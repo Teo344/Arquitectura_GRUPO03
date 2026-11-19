@@ -36,6 +36,10 @@ namespace ec.edu.monster.vista.modelo
     /// <summary>Diálogo de confirmación (componentes/_Dialogo.cshtml); paises.js lo abre.</summary>
     /// <param name="Filas">pares etiqueta-valor que resumen lo que se va a hacer</param>
     /// <param name="Peligro">la acción es destructiva: botón rojo</param>
+    /// <param name="ValoresDinamicos">
+    /// el valor de cada fila es una clave: paises.js lo completa con el atributo data-detalle-{clave}
+    /// del formulario que abre el diálogo (p. ej. el país de la fila que se elimina)
+    /// </param>
     public sealed record Dialogo(string Id, string Titulo, string Texto, IReadOnlyList<KeyValuePair<string, string>> Filas,
-        string TextoAceptar, bool Peligro);
+        string TextoAceptar, bool Peligro, bool ValoresDinamicos = false);
 }

@@ -81,16 +81,17 @@ flowchart TB
 
 ## Diseño de la vista
 
-La vista reutiliza la identidad visual "Azul" del repositorio (`template.txt`) y los
-componentes Swing del cliente de escritorio de TG.1.3: colores, Plus Jakarta Sans,
-radios y espaciado en base 4.
+La vista usa la paleta "Azul" del repositorio (`template.txt`): colores, Plus Jakarta
+Sans, radios y espaciado en base 4. La navegación es una barra superior azul oscuro con
+pestañas (Ctrl+1/2/3), el estado de MySQL y el regreso al inicio; el contenido de cada
+sección ocupa todo el ancho.
 
 | Pantalla | Patrón | Decisiones de usabilidad |
 |----------|--------|--------------------------|
-| Inicio | Foto del grupo + tarjeta | No hay usuarios, así que no se piden credenciales falsas. Se muestra el estado real de MySQL y de la clave de la API antes de entrar. |
-| Países | Lista-detalle | Tabla ordenable y filtrable sin tildes; formulario siempre visible con botón y errores fijos abajo; confirmación antes de importar (sobrescribe ediciones) y de eliminar (foco en "Cancelar"); aviso al cambiar de fila con cambios sin guardar; atajos Ctrl+F/N/S y Supr. |
-| Buscar en la API | Búsqueda + resultados | Solo busca al pulsar (cada consulta gasta cuota); si la API falla avisa que los datos son locales. |
-| Reportes | Indicadores + barras | Gráfico de una serie: un color, sin leyenda, valor en la punta, tooltip con porcentaje y descripción accesible; los empates se informan. |
+| Inicio | Foto del grupo + tarjeta | No hay usuarios, así que no se piden credenciales falsas. Se muestra el estado real de MySQL y de la clave de la API antes de entrar, con un enlace "Verificar" para comprobarlo de nuevo. |
+| Países | Tabla paginada + panel lateral | Tabla a todo el ancho con 10, 25 o 50 filas por página; el filtro y el orden se aplican a **todas** las filas antes de cortar la página. Búsqueda sin tildes y chips de región con su cantidad. Editar o registrar abre un panel lateral sobre la tabla (Esc cierra; el foco no sale del panel). Confirmación antes de importar (sobrescribe ediciones), de eliminar (foco en "Cancelar") y de descartar cambios. Atajos Ctrl+F/N/S, Enter (editar), Supr (eliminar) y RePág/AvPág (cambiar de página). |
+| Buscar en la API | Banda de búsqueda + tarjetas | Solo busca al pulsar (cada consulta gasta cuota); sugerencias de ejemplo; cada resultado indica si ya está guardado ("Guardar" o "Actualizar datos"); si la API falla avisa que los datos son locales. |
+| Reportes | Indicadores + barras + ranking | Gráfico de una serie: un color, sin leyenda, valor en la punta, tooltip con porcentaje y descripción accesible; los empates se informan. Ranking de los 5 países más poblados (`ORDER BY poblacion DESC LIMIT 5`). |
 
 Reglas comunes: un solo botón primario por pantalla; los estados se comunican con
 icono y texto, no solo con color; toda operación lenta muestra un indicador de carga;

@@ -28,7 +28,7 @@ flowchart TB
         BUS[BusquedaVista]
         REP[ReportesVista - indicadores + barras]
         UNV[UniversidadesVista]
-        PRI[PrincipalVista - layout con menú]
+        PRI[PrincipalVista - layout con barra superior]
     end
     subgraph C[Controlador]
         IC[InicioControlador]
@@ -103,14 +103,16 @@ flowchart TB
 La vista reutiliza la identidad visual "Azul" del repositorio (`template.txt`), la misma de las
 pantallas Swing del Taller 2.1 y de los clientes web .NET (`eureka.css`): colores, Plus Jakarta Sans,
 radios y espaciado en base 4, en `wwwroot/css/paises.css`. No usa Bootstrap ni librerías externas.
+El diseño es el mismo del rediseño en Java: barra superior azul oscuro con pestañas, el estado de
+SQL Server y el regreso al inicio; el contenido de cada sección ocupa todo el ancho.
 
 | Pantalla | Patrón | Decisiones de usabilidad |
 |----------|--------|--------------------------|
-| Inicio | Foto del grupo + tarjeta | No hay usuarios, así que no se piden credenciales falsas. Se muestra el estado real de SQL Server y de la clave de la API antes de entrar. |
-| Países | Lista-detalle | Búsqueda por nombre, capital o región; filtros por región con su conteo; formulario siempre visible con los errores juntos; confirmación antes de importar (sobrescribe ediciones) y de eliminar (foco en "Cancelar"); aviso al salir con cambios sin guardar. |
-| Buscar en la API | Búsqueda + resultados | Solo busca al pulsar (cada consulta gasta cuota); si la API falla avisa que los datos son locales. |
-| Reportes | Indicadores + barras | Gráficos de una serie: un color, sin leyenda, valor en la punta, porcentaje en el título emergente; los empates se informan; se muestra la consulta SQL equivalente. |
-| Universidades | Formulario + tabla | País por defecto Ecuador; filtros por país con su conteo; los sitios web se abren en otra pestaña. |
+| Inicio | Foto del grupo + tarjeta | No hay usuarios, así que no se piden credenciales falsas. Se muestra el estado real de SQL Server y de la clave de la API antes de entrar, con un enlace "Verificar". |
+| Países | Tabla paginada + panel lateral | Tabla a todo el ancho con 10, 25 o 50 filas por página (`?pagina=&tamano=`) y orden por cualquier columna (`?orden=&dir=`): el orden se aplica a **todas** las filas filtradas antes de cortar la página. Búsqueda por nombre, capital o región y chips de región con su conteo. Registrar (`/paises/nuevo`) y editar (`/paises/{id}`) abren un panel lateral sobre la tabla (Esc cierra, el foco no sale del panel); al guardar se cierra y la tabla abre la página del país, resaltado. Confirmación antes de importar, de eliminar (desde la fila o el panel, foco en "Cancelar") y de salir con cambios sin guardar. |
+| Buscar en la API | Banda de búsqueda + tarjetas | Solo busca al pulsar (cada consulta gasta cuota); sugerencias de ejemplo; cada resultado indica si ya está guardado ("Guardar en SQL Server" o "Actualizar datos"); si la API falla avisa que los datos son locales. |
+| Reportes | Indicadores + barras + ranking | Gráficos de una serie: un color, sin leyenda, valor en la punta y porcentaje; los empates se informan; ranking de los 5 países más poblados (el primero responde el Reporte 2); se muestra la consulta SQL equivalente. |
+| Universidades | Importar + tabla paginada | País por defecto Ecuador; chips por país con su conteo; la tabla se pagina igual que la de países; los sitios web se abren en otra pestaña. |
 
 Reglas comunes: un solo botón primario por pantalla; los estados se comunican con icono y texto, no
 solo con color; los botones muestran un indicador de carga mientras el servidor responde; los números

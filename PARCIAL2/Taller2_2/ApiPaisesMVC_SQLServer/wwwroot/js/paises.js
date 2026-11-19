@@ -1,5 +1,6 @@
 // Comportamiento mínimo de la vista (sin librerías): confirmaciones con <dialog>, indicador de carga
-// en los botones y aviso de cambios sin guardar. Toda la lógica de negocio está en el servidor.
+// en los botones, aviso de cambios sin guardar y el panel lateral (Esc cierra, el foco no sale de
+// él). Toda la lógica de negocio está en el servidor; sin JavaScript las pantallas siguen funcionando.
 (function () {
     "use strict";
 
@@ -15,8 +16,9 @@
         }
     }
 
-    function mostrarCargando(formulario) {
-        var boton = formulario.querySelector("button[type=submit][data-cargando]");
+    function mostrarCargando(formulario, boton) {
+        boton = boton || formulario.querySelector("button[type=submit][data-cargando]")
+            || (formulario.id && document.querySelector("button[form='" + formulario.id + "'][data-cargando]"));
         if (!boton) {
             return;
         }
@@ -46,7 +48,8 @@
         }
     });
 
-    // Formularios que piden confirmación (importar, eliminar)
+    // Formularios que piden confirmación (importar, eliminar). Los atributos data-detalle-* del
+    // formulario completan el resumen del diálogo (p. ej. el código y el nombre del país de la fila)
     document.querySelectorAll("form[data-confirmar]").forEach(function (formulario) {
         formulario.addEventListener("submit", function (evento) {
             var selector = formulario.getAttribute("data-confirmar");
@@ -58,6 +61,10 @@
                 return;
             }
             evento.preventDefault();
+            dialogo.querySelectorAll("[data-detalle]").forEach(function (celda) {
+                var clave = celda.getAttribute("data-detalle");
+                celda.textContent = formulario.getAttribute("data-detalle-" + clave) || "—";
+            });
             abrir(dialogo, function () {
                 formulario.dataset.confirmado = "si";
                 mostrarCargando(formulario);
@@ -98,6 +105,54 @@
                     window.location.href = enlace.href;
                 });
             });
+        });
+    }
+
+    // Panel lateral: el contenido de atrás no se desplaza, el foco empieza en el primer campo, Tab no
+    // sale del panel y Esc lo cierra (pasando por el aviso de cambios sin guardar)
+    var panel = document.querySelector("[data-panel]");
+    if (panel) {
+        document.body.classList.add("ap-con-panel");
+        var enfocables = function () {
+            return Array.prototype.filter.call(
+                panel.querySelectorAll("a[href], button:not([disabled]), input:not([type=hidden]), select, textarea"),
+                function (elemento) { return elemento.offsetParent !== null; });
+        };
+        var primerCampo = panel.querySelector(".ap-panel__cuerpo input:not([type=hidden]), .ap-panel__cuerpo select");
+        if (primerCampo) {
+            primerCampo.focus();
+        }
+        document.addEventListener("keydown", function (evento) {
+            if (document.querySelector("dialog[open]")) {
+                return;
+            }
+            if (evento.key === "Escape") {
+                var cerrar = panel.querySelector(".ap-panel__cerrar");
+                if (cerrar) {
+                    evento.preventDefault();
+                    cerrar.click();
+                }
+                return;
+            }
+            if (evento.key !== "Tab") {
+                return;
+            }
+            var lista = enfocables();
+            if (lista.length === 0) {
+                return;
+            }
+            var primero = lista[0];
+            var ultimo = lista[lista.length - 1];
+            if (!panel.contains(document.activeElement)) {
+                evento.preventDefault();
+                primero.focus();
+            } else if (evento.shiftKey && document.activeElement === primero) {
+                evento.preventDefault();
+                ultimo.focus();
+            } else if (!evento.shiftKey && document.activeElement === ultimo) {
+                evento.preventDefault();
+                primero.focus();
+            }
         });
     }
 })();

@@ -95,8 +95,11 @@ class PaisDAOEnMemoria implements PaisDAO {
     }
 
     @Override
-    public Optional<Pais> obtenerMasPoblado() {
-        return filas.values().stream().max(Comparator.comparingLong(Pais::poblacion));
+    public List<Pais> listarMasPoblados(int limite) {
+        return filas.values().stream()
+                .sorted(Comparator.comparingLong(Pais::poblacion).reversed().thenComparing(Pais::nombre))
+                .limit(Math.max(0, limite))
+                .toList();
     }
 
     @Override

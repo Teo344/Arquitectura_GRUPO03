@@ -62,7 +62,12 @@ public interface PaisDAO {
      */
     Map<Region, Long> contarPorRegion();
 
-    Optional<Pais> obtenerMasPoblado();
+    /**
+     * Los países con más habitantes, de mayor a menor (ante empate, por nombre).
+     *
+     * @param limite cuántos países devolver como máximo
+     */
+    List<Pais> listarMasPoblados(int limite);
 
     /**
      * Cantidad de países guardados. Sirve también para comprobar la conexión.

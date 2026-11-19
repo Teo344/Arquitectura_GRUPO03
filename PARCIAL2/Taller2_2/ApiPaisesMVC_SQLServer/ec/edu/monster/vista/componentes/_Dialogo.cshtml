@@ -7,7 +7,14 @@
         <dl class="ap-dialogo__filas">
             @foreach (KeyValuePair<string, string> fila in Model.Filas)
             {
-                <div><dt>@fila.Key</dt><dd>@fila.Value</dd></div>
+                @if (Model.ValoresDinamicos)
+                {
+                    <div><dt>@fila.Key</dt><dd data-detalle="@fila.Value"></dd></div>
+                }
+                else
+                {
+                    <div><dt>@fila.Key</dt><dd>@fila.Value</dd></div>
+                }
             }
         </dl>
     }

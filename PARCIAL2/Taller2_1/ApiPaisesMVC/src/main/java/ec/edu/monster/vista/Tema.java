@@ -36,6 +36,15 @@ public final class Tema {
     public static final Color CIAN_SUAVE = new Color(0xE8F9FC);
     public static final Color CIAN_TEXTO = new Color(0x0B6B83);
     public static final Color CIAN_TEXTO_OSCURO = new Color(0x08404F);
+    /** Cian claro sobre el azul oscuro: sobretítulos y el botón de acento de las bandas oscuras. */
+    public static final Color CIAN_CLARO = new Color(0x7FDDF0);
+    public static final Color CIAN_CLARO_HOVER = new Color(0xA6E8F5);
+
+    // ---- Sobre fondo azul oscuro (barra superior, bandas y tarjeta destacada) ----
+    /** Texto secundario sobre el azul oscuro (contraste 11:1). */
+    public static final Color TEXTO_SOBRE_OSCURO = new Color(0xD9E6FF);
+    /** Punto de estado "conectado" en la barra superior. */
+    public static final Color VERDE_ESTADO = new Color(0x3DD68C);
 
     // ---- Neutros (Slate azulado) ----
     public static final Color TEXTO = new Color(0x141C31);
@@ -75,6 +84,8 @@ public final class Tema {
     public static final Font TITULAR_MEDIANO = NEGRITA.deriveFont(34f);     // H2
     public static final Font TITULAR_PEQUENO = NEGRITA.deriveFont(26f);     // H3
     public static final Font TITULO = NEGRITA.deriveFont(20f);              // H4
+    public static final Font TITULO_TARJETA = NEGRITA.deriveFont(18f);      // H5
+    public static final Font INDICADOR = NEGRITA.deriveFont(34f);           // Cifra de un indicador
     public static final Font CUERPO_GRANDE = REGULAR.deriveFont(16f);       // Texto base
     public static final Font CUERPO = REGULAR.deriveFont(14f);              // Texto pequeño
     public static final Font LEYENDA = MEDIA.deriveFont(12f);               // Leyenda
@@ -83,6 +94,9 @@ public final class Tema {
             Map.of(TextAttribute.SIZE, 12f, TextAttribute.TRACKING, 0.08f));
 
     public static final Font CUERPO_SEMINEGRITA = SEMINEGRITA.deriveFont(14f);
+    public static final Font PEQUENO = REGULAR.deriveFont(13f);
+    public static final Font PEQUENO_SEMINEGRITA = SEMINEGRITA.deriveFont(13f);
+    public static final Font LEYENDA_NEGRITA = NEGRITA.deriveFont(12f);
     public static final Font CUERPO_GRANDE_SEMINEGRITA = SEMINEGRITA.deriveFont(16f);
     public static final Font BOTON_NEGRITA = NEGRITA.deriveFont(15f);
     public static final Font MARCA = EXTRANEGRITA.deriveFont(
@@ -106,8 +120,9 @@ public final class Tema {
 
     // ---- Medidas de estructura ----
     public static final int ANCHO_ACCESO = 440;
-    public static final int ANCHO_MENU_LATERAL = 248;
-    public static final int ANCHO_FORMULARIO_LATERAL = 384;
+    public static final int ALTO_BARRA_SUPERIOR = 64;
+    /** Panel lateral que se superpone a la tabla para registrar o editar. */
+    public static final int ANCHO_PANEL_LATERAL = 448;
     public static final int ANCHO_CONTENIDO = 1080;
     /** Alto de las filas de tabla: objetivo pulsable de al menos 44 px. */
     public static final int ALTO_FILA = 44;

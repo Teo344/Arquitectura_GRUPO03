@@ -21,19 +21,21 @@ namespace ec.edu.monster.controlador
             this.servicio = servicio ?? throw new ArgumentNullException(nameof(servicio));
         }
 
-        /// <summary>CU-10: universidades guardadas, filtradas por país.</summary>
+        /// <summary>CU-10: universidades guardadas, filtradas por país y por texto (nombre, dominio o sitio web).</summary>
         [HttpGet("universidades")]
-        public async Task<IActionResult> Index(string? pais)
+        public async Task<IActionResult> Index(string? pais, string? texto, [FromQuery] OpcionesLista lista)
         {
             UniversidadesVistaModelo modelo = new UniversidadesVistaModelo
             {
+                Lista = lista,
+                Texto = string.IsNullOrWhiteSpace(texto) ? null : texto.Trim(),
                 PaisFiltro = string.IsNullOrWhiteSpace(pais) ? null : pais.Trim(),
                 PaisImportar = string.IsNullOrWhiteSpace(pais) ? PaisPorDefecto : pais.Trim()
             };
             try
             {
                 modelo.ConteoPorPais = await servicio.ContarPorPaisAsync();
-                modelo.Universidades = await servicio.ListarAsync(modelo.PaisFiltro);
+                modelo.Universidades = await servicio.ListarAsync(modelo.PaisFiltro, modelo.Texto);
             }
             catch (ExcepcionAplicacion e)
             {

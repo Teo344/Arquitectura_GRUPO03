@@ -5,6 +5,7 @@ using ec.edu.monster.modelo.excepcion;
 using ec.edu.monster.servicio;
 using ec.edu.monster.vista.modelo;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace ec.edu.monster.controlador
 {
@@ -27,19 +28,34 @@ namespace ec.edu.monster.controlador
 
         // ------------------------------------------------ CU-04, Actividades 3 y 4
 
-        /// <summary>CU-04: lista con búsqueda (Actividad 3) y filtro por región (Actividad 4); formulario nuevo.</summary>
+        /// <summary>
+        /// CU-04: lista paginada con búsqueda (Actividad 3) y filtro por región (Actividad 4).
+        /// </summary>
+        /// <param name="resaltar">id del país recién guardado: se resalta y se abre su página</param>
         [HttpGet("paises")]
-        public async Task<IActionResult> Index(string? campo, string? texto, string? region)
+        public async Task<IActionResult> Index(string? campo, string? texto, string? region,
+            [FromQuery] OpcionesLista lista, int? resaltar)
         {
-            PaisesVistaModelo modelo = await CargarAsync(campo, texto, region);
+            PaisesVistaModelo modelo = await CargarAsync(campo, texto, region, lista);
+            modelo.Resaltar = resaltar;
             return Vista("PaisesVista", modelo);
         }
 
-        /// <summary>CU-04: el mismo listado con el país elegido en el formulario para editarlo.</summary>
-        [HttpGet("paises/{id:int}")]
-        public async Task<IActionResult> Editar(int id, string? campo, string? texto, string? region)
+        /// <summary>CU-03: el mismo listado con el panel lateral abierto para registrar un país.</summary>
+        [HttpGet("paises/nuevo")]
+        public async Task<IActionResult> Nuevo(string? campo, string? texto, string? region, [FromQuery] OpcionesLista lista)
         {
-            PaisesVistaModelo modelo = await CargarAsync(campo, texto, region);
+            PaisesVistaModelo modelo = await CargarAsync(campo, texto, region, lista);
+            modelo.RegistrandoNuevo = true;
+            return Vista("PaisesVista", modelo);
+        }
+
+        /// <summary>CU-04: el mismo listado con el país elegido en el panel lateral para editarlo.</summary>
+        [HttpGet("paises/{id:int}")]
+        public async Task<IActionResult> Editar(int id, string? campo, string? texto, string? region,
+            [FromQuery] OpcionesLista lista)
+        {
+            PaisesVistaModelo modelo = await CargarAsync(campo, texto, region, lista);
             try
             {
                 Pais pais = await servicio.ObtenerPorIdAsync(id);
@@ -85,17 +101,19 @@ namespace ec.edu.monster.controlador
 
         [HttpPost("paises/registrar")]
         public async Task<IActionResult> Registrar(FormularioPais formulario, [FromQuery] string? campo, [FromQuery] string? texto,
-            [FromQuery] string? region)
+            [FromQuery] string? region, [FromQuery] OpcionesLista lista)
         {
             try
             {
                 Pais pais = await servicio.RegistrarAsync(Convertir(null, formulario));
                 AvisarExito("País registrado: " + pais.Nombre + " (" + pais.Codigo + ").");
-                return RedirectToAction(nameof(Editar), new { id = pais.Id, campo, texto, region });
+                // El panel se cierra y la tabla muestra la página donde quedó el país, resaltado
+                return RedirectToAction(nameof(Index), Vuelta(campo, texto, region, lista, pais.Id));
             }
             catch (ExcepcionAplicacion e)
             {
-                PaisesVistaModelo modelo = await CargarAsync(campo, texto, region);
+                PaisesVistaModelo modelo = await CargarAsync(campo, texto, region, lista);
+                modelo.RegistrandoNuevo = true;
                 modelo.Formulario = formulario;
                 modelo.ErroresFormulario = Errores(e);
                 return Vista("PaisesVista", modelo);
@@ -104,22 +122,22 @@ namespace ec.edu.monster.controlador
 
         [HttpPost("paises/{id:int}/actualizar")]
         public async Task<IActionResult> Actualizar(int id, FormularioPais formulario, [FromQuery] string? campo,
-            [FromQuery] string? texto, [FromQuery] string? region)
+            [FromQuery] string? texto, [FromQuery] string? region, [FromQuery] OpcionesLista lista)
         {
             try
             {
                 Pais pais = await servicio.ActualizarAsync(Convertir(id, formulario));
                 AvisarExito("Cambios guardados en " + pais.Nombre + ".");
-                return RedirectToAction(nameof(Editar), new { id, campo, texto, region });
+                return RedirectToAction(nameof(Index), Vuelta(campo, texto, region, lista, id));
             }
             catch (ExcepcionNoEncontrado e)
             {
                 AvisarError(e.Message);
-                return RedirectToAction(nameof(Index), new { campo, texto, region });
+                return RedirectToAction(nameof(Index), Vuelta(campo, texto, region, lista));
             }
             catch (ExcepcionAplicacion e)
             {
-                PaisesVistaModelo modelo = await CargarAsync(campo, texto, region);
+                PaisesVistaModelo modelo = await CargarAsync(campo, texto, region, lista);
                 modelo.IdEditando = id;
                 modelo.CodigoEditando = formulario.Codigo?.Trim().ToUpperInvariant();
                 modelo.Formulario = formulario;
@@ -130,7 +148,7 @@ namespace ec.edu.monster.controlador
 
         [HttpPost("paises/{id:int}/eliminar")]
         public async Task<IActionResult> Eliminar(int id, [FromQuery] string? campo, [FromQuery] string? texto,
-            [FromQuery] string? region)
+            [FromQuery] string? region, [FromQuery] OpcionesLista lista)
         {
             try
             {
@@ -141,7 +159,7 @@ namespace ec.edu.monster.controlador
             {
                 AvisarError(e.Message);
             }
-            return RedirectToAction(nameof(Index), new { campo, texto, region });
+            return RedirectToAction(nameof(Index), Vuelta(campo, texto, region, lista));
         }
 
         // ------------------------------------------------ CU-02 (Actividad 1)
@@ -159,6 +177,16 @@ namespace ec.edu.monster.controlador
                 catch (ExcepcionAplicacion e)
                 {
                     modelo.Error = e.Message;
+                }
+                try
+                {
+                    // Para indicar en cada resultado si ya está guardado; si SQL Server falla, solo no se indica
+                    modelo.CodigosGuardados = (await servicio.BuscarAsync(FiltroPaises.Ninguno))
+                        .Select(p => p.Codigo).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                }
+                catch (ExcepcionAplicacion)
+                {
+                    modelo.CodigosGuardados = null;
                 }
             }
             if (TempData.Peek(BusquedaVistaModelo.ClaveGuardado) is string guardado)
@@ -190,10 +218,10 @@ namespace ec.edu.monster.controlador
 
         // ------------------------------------------------ apoyo
 
-        private async Task<PaisesVistaModelo> CargarAsync(string? campo, string? texto, string? region)
+        private async Task<PaisesVistaModelo> CargarAsync(string? campo, string? texto, string? region, OpcionesLista lista)
         {
             FiltroPaises filtro = Filtro(campo, texto, region);
-            PaisesVistaModelo modelo = new PaisesVistaModelo { Filtro = filtro };
+            PaisesVistaModelo modelo = new PaisesVistaModelo { Filtro = filtro, Lista = lista };
             try
             {
                 modelo.ConteoRegiones = await servicio.ContarPorRegionAsync();
@@ -204,6 +232,32 @@ namespace ec.edu.monster.controlador
                 modelo.ErrorCarga = e.Message;
             }
             return modelo;
+        }
+
+        /// <summary>
+        /// Parámetros para volver a la lista después de un POST: la misma búsqueda, región, página y
+        /// orden, y opcionalmente el país por resaltar.
+        /// </summary>
+        private static RouteValueDictionary Vuelta(string? campo, string? texto, string? region, OpcionesLista lista,
+            int? resaltar = null)
+        {
+            Dictionary<string, string?> ruta = new Dictionary<string, string?>();
+            if (!string.IsNullOrWhiteSpace(texto))
+            {
+                ruta["campo"] = campo;
+                ruta["texto"] = texto;
+            }
+            if (!string.IsNullOrWhiteSpace(region))
+            {
+                ruta["region"] = region;
+            }
+            // Si hay un país por resaltar, la vista abre la página donde quedó
+            lista.AgregarA(ruta, conPagina: resaltar == null);
+            if (resaltar != null)
+            {
+                ruta["resaltar"] = resaltar.ToString();
+            }
+            return new RouteValueDictionary(ruta);
         }
 
         /// <summary>Opciones para el selector de regiones.</summary>

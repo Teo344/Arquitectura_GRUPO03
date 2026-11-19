@@ -679,7 +679,11 @@ public final class Componentes {
         /** Fondo #C0392B y texto blanco: acciones destructivas. */
         PELIGRO,
         /** Solo texto #1744A3, para cancelar. */
-        TEXTO
+        TEXTO,
+        /** Fondo blanco, texto y borde rojos: acción destructiva secundaria (junto a un primario). */
+        CONTORNO_PELIGRO,
+        /** Fondo cian claro y texto azul oscuro: acción principal sobre una banda azul oscuro. */
+        ACENTO
     }
 
     /** Botón redondeado (radio 10) con icono opcional y estado de carga con indicador giratorio. */
@@ -748,7 +752,12 @@ public final class Componentes {
         }
 
         private Color colorTexto() {
-            return estilo == EstiloBoton.PRIMARIO || estilo == EstiloBoton.PELIGRO ? BLANCO : AZUL_HOVER;
+            return switch (estilo) {
+                case PRIMARIO, PELIGRO -> BLANCO;
+                case CONTORNO_PELIGRO -> ERROR_TEXTO;
+                case ACENTO -> AZUL_OSCURO;
+                default -> AZUL_HOVER;
+            };
         }
 
         private Color fondo() {
@@ -762,6 +771,8 @@ public final class Componentes {
                 case PELIGRO -> presionado ? new Color(0x8E2A20) : encima ? new Color(0xA33024) : ERROR_RELLENO;
                 case SECUNDARIO -> presionado || encima ? new Color(0xDCE8FF) : AZUL_SUAVE;
                 case TEXTO -> presionado || encima ? AZUL_SUAVE : null;
+                case CONTORNO_PELIGRO -> presionado || encima ? ERROR_FONDO : BLANCO;
+                case ACENTO -> presionado ? BORDE_SUAVE : encima ? CIAN_CLARO_HOVER : CIAN_CLARO;
             };
         }
 
@@ -785,13 +796,14 @@ public final class Componentes {
                 g.setColor(fondo);
                 g.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 2f * RADIO_CAMPO, 2f * RADIO_CAMPO));
             }
-            if (estilo == EstiloBoton.SECUNDARIO && isEnabled()) {
-                g.setColor(BORDE_SUAVE);
+            if ((estilo == EstiloBoton.SECUNDARIO || estilo == EstiloBoton.CONTORNO_PELIGRO) && isEnabled()) {
+                g.setColor(estilo == EstiloBoton.SECUNDARIO ? BORDE_SUAVE : new Color(0xF0B8B0));
                 g.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f,
                         2f * RADIO_CAMPO, 2f * RADIO_CAMPO));
             }
             if (isFocusOwner()) {
-                g.setColor(estilo == EstiloBoton.PRIMARIO || estilo == EstiloBoton.PELIGRO ? AZUL_OSCURO : AZUL_FOCO);
+                g.setColor(estilo == EstiloBoton.PRIMARIO || estilo == EstiloBoton.PELIGRO
+                        || estilo == EstiloBoton.ACENTO ? AZUL_OSCURO : AZUL_FOCO);
                 g.setStroke(new BasicStroke(2f));
                 g.draw(new RoundRectangle2D.Float(1, 1, getWidth() - 2f, getHeight() - 2f,
                         2f * RADIO_CAMPO - 2, 2f * RADIO_CAMPO - 2));
@@ -822,6 +834,40 @@ public final class Componentes {
                 return 18;
             }
         }
+    }
+
+    /** Enlace de acción: texto azul seminegrita con icono opcional, sin fondo; subrayado al pasar el ratón. */
+    public static JButton enlace(String texto, Iconos.Nombre icono, Color color) {
+        JButton enlace = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics graphics) {
+                super.paintComponent(graphics);
+                if (getModel().isRollover() || isFocusOwner()) {
+                    Graphics2D g = suave(graphics);
+                    g.setColor(getForeground());
+                    FontMetrics medidas = g.getFontMetrics(getFont());
+                    int anchoTexto = medidas.stringWidth(getText());
+                    int x = getWidth() - getInsets().right - anchoTexto;
+                    int y = (getHeight() + medidas.getAscent()) / 2 + 2;
+                    g.fillRect(x, y, anchoTexto, 1);
+                    g.dispose();
+                }
+            }
+        };
+        enlace.setFont(PEQUENO_SEMINEGRITA);
+        enlace.setForeground(color);
+        if (icono != null) {
+            enlace.setIcon(Iconos.icono(icono, color, 16));
+            enlace.setIconTextGap(6);
+        }
+        enlace.setContentAreaFilled(false);
+        enlace.setBorderPainted(false);
+        enlace.setFocusPainted(false);
+        enlace.setOpaque(false);
+        enlace.setRolloverEnabled(true);
+        enlace.setBorder(new EmptyBorder(6, XXS, 6, XXS));
+        enlace.setCursor(MANO);
+        return enlace;
     }
 
     /** Botón de solo icono con un círculo de fondo al pasar el ratón; siempre con descripción accesible. */
@@ -863,6 +909,7 @@ public final class Componentes {
     private static class MarcoCampo extends JPanel {
 
         private final JComponent control;
+        private Iconos.Nombre icono;
 
         MarcoCampo(JComponent control) {
             super(new BorderLayout());
@@ -895,6 +942,9 @@ public final class Componentes {
             g.setStroke(new BasicStroke(grosor));
             g.draw(new RoundRectangle2D.Float(mitad, mitad, getWidth() - grosor, getHeight() - grosor,
                     2f * RADIO_CAMPO, 2f * RADIO_CAMPO));
+            if (icono != null) {
+                Iconos.pintar(g, icono, PLACEHOLDER, 14, (getHeight() - 20) / 2, 20);
+            }
             g.dispose();
         }
     }
@@ -945,6 +995,13 @@ public final class Componentes {
             if (ayuda != null) {
                 agregar(new Texto(ayuda, LEYENDA, TEXTO_SECUNDARIO), XXS);
             }
+        }
+
+        /** Icono a la izquierda del texto (p. ej. una lupa en los campos de búsqueda). */
+        public CampoTexto conIcono(Iconos.Nombre icono) {
+            marco.icono = icono;
+            campo.setBorder(new EmptyBorder(0, 44, 0, 14));
+            return this;
         }
 
         public String getTexto() {

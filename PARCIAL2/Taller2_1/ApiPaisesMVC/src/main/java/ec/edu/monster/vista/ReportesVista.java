@@ -10,22 +10,27 @@ import ec.edu.monster.vista.Componentes.Alerta;
 import ec.edu.monster.vista.Componentes.Boton;
 import ec.edu.monster.vista.Componentes.Caja;
 import ec.edu.monster.vista.Componentes.EstiloBoton;
-import ec.edu.monster.vista.Componentes.IconoEnCaja;
 import ec.edu.monster.vista.Componentes.Pila;
 import ec.edu.monster.vista.Componentes.Texto;
 import ec.edu.monster.vista.Componentes.TipoAlerta;
 import ec.edu.monster.vista.GraficoBarras.Barra;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 /**
  * Reporte estadístico (CU-08, Actividad 5): tres indicadores con la respuesta
- * directa a cada pregunta del taller y el gráfico de países por región.
+ * directa a cada pregunta del taller; debajo, el gráfico de países por región
+ * y el ranking de los cinco países más poblados.
  *
  * @author carlo
  */
@@ -37,10 +42,11 @@ public class ReportesVista extends JPanel {
     private final ReporteControlador controlador;
     private final Boton actualizar = new Boton("Actualizar", EstiloBoton.SECUNDARIO, Iconos.Nombre.ACTUALIZAR);
     private final Alerta alerta = new Alerta(true);
-    private final Indicador total = new Indicador(Iconos.Nombre.PUBLICO, "Países registrados");
-    private final Indicador masPoblado = new Indicador(Iconos.Nombre.PERSONAS, "País más poblado");
-    private final Indicador regionMayor = new Indicador(Iconos.Nombre.UBICACION, "Región con más países");
+    private final Indicador total = new Indicador("Países registrados", true);
+    private final Indicador masPoblado = new Indicador("País más poblado", false);
+    private final Indicador regionMayor = new Indicador("Región con más países", false);
     private final GraficoBarras grafico = new GraficoBarras();
+    private final Pila ranking = new Pila();
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenido = new JPanel(cartas);
 
@@ -48,7 +54,7 @@ public class ReportesVista extends JPanel {
         super(new BorderLayout(0, M));
         this.controlador = controlador;
         setBackground(SUPERFICIE);
-        setBorder(new EmptyBorder(L, L, M, L));
+        setBorder(new EmptyBorder(L, XL, M, XL));
         actualizar.addActionListener(e -> cargar());
 
         add(new Pila()
@@ -84,12 +90,21 @@ public class ReportesVista extends JPanel {
         indicadores.add(regionMayor);
 
         Caja tarjetaGrafico = Componentes.tarjeta();
-        tarjetaGrafico.agregar(Componentes.etiqueta("Países por región", TITULO, TEXTO));
+        tarjetaGrafico.agregar(Componentes.etiqueta("Países por región", TITULO_TARJETA, TEXTO));
         tarjetaGrafico.agregar(new Texto("Cantidad de países guardados en cada región, de mayor a menor. Pasa el "
-                + "ratón sobre una barra para ver su porcentaje.", CUERPO, TEXTO_SECUNDARIO), XXS);
+                + "ratón sobre una barra para ver su porcentaje.", PEQUENO, TEXTO_SECUNDARIO), XXS);
         tarjetaGrafico.agregar(grafico, L);
 
-        return new Pila().agregar(indicadores).agregar(tarjetaGrafico, S);
+        Caja tarjetaRanking = Componentes.tarjeta();
+        tarjetaRanking.agregar(Componentes.etiqueta("Los 5 más poblados", TITULO_TARJETA, TEXTO));
+        tarjetaRanking.agregar(new Texto("Habitantes según los datos guardados de REST Countries.", PEQUENO,
+                TEXTO_SECUNDARIO), XXS);
+        tarjetaRanking.agregar(ranking, M);
+        ranking.getAccessibleContext().setAccessibleName("Ranking de países más poblados");
+
+        return new Pila()
+                .agregar(indicadores)
+                .agregar(Componentes.dosColumnas(tarjetaGrafico, tarjetaRanking, 0.55, XS, true), XS);
     }
 
     private void mostrar(EstadisticasPaises estadisticas) {
@@ -122,27 +137,35 @@ public class ReportesVista extends JPanel {
         grafico.setBarras(estadisticas.paisesPorRegion().entrySet().stream()
                 .map(e -> new Barra(e.getKey().getNombre(), e.getValue()))
                 .toList());
+
+        ranking.removeAll();
+        List<Pais> masPoblados = estadisticas.masPoblados();
+        for (int i = 0; i < masPoblados.size(); i++) {
+            ranking.agregar(new FilaRanking(i + 1, masPoblados.get(i), i < masPoblados.size() - 1));
+        }
         cartas.show(contenido, VISTA_DATOS);
         revalidate();
         repaint();
     }
 
-    /** Tarjeta de indicador: icono, pregunta, respuesta grande y un dato de contexto. */
+    /**
+     * Tarjeta de indicador: pregunta, respuesta grande y un dato de contexto.
+     * El primero va sobre azul oscuro para marcar el punto de entrada del reporte.
+     */
     private static final class Indicador extends Caja {
 
-        private final Texto valor = new Texto("—", TITULAR_PEQUENO, TEXTO);
-        private final Texto detalle = new Texto("", CUERPO, TEXTO_SECUNDARIO);
+        private final Texto valor;
+        private final Texto detalle;
         private final String etiqueta;
 
-        Indicador(Iconos.Nombre icono, String etiqueta) {
-            super(BLANCO, DIVISOR, RADIO_TARJETA, 4, Componentes.MARGEN_SOMBRA, L);
+        Indicador(String etiqueta, boolean destacado) {
+            super(destacado ? AZUL_OSCURO : BLANCO, destacado ? null : DIVISOR, RADIO_TARJETA, destacado ? 0 : 4,
+                    Componentes.MARGEN_SOMBRA, L);
             this.etiqueta = etiqueta;
-            JPanel cabecera = new JPanel(new BorderLayout(S, 0));
-            cabecera.setOpaque(false);
-            cabecera.add(new IconoEnCaja(icono, AZUL_SUAVE, AZUL_ACCION, 36, 20), BorderLayout.WEST);
-            cabecera.add(Componentes.sobretitulo(etiqueta, TEXTO_SECUNDARIO), BorderLayout.CENTER);
-            agregar(cabecera);
-            agregar(valor, M);
+            valor = new Texto("—", INDICADOR, destacado ? BLANCO : TEXTO);
+            detalle = new Texto("", PEQUENO, destacado ? TEXTO_SOBRE_OSCURO : TEXTO_SECUNDARIO);
+            agregar(Componentes.etiqueta(etiqueta, PEQUENO_SEMINEGRITA, destacado ? BORDE_SUAVE : TEXTO_SECUNDARIO));
+            agregar(valor, XXS);
             agregar(detalle, XXS);
         }
 
@@ -150,6 +173,57 @@ public class ReportesVista extends JPanel {
             valor.setTexto(texto);
             detalle.setTexto(contexto);
             getAccessibleContext().setAccessibleName(etiqueta + ": " + texto + ". " + contexto);
+        }
+    }
+
+    /** Fila del ranking: posición, país, región y habitantes alineados a la derecha. */
+    private static final class FilaRanking extends JPanel {
+
+        private final boolean divisor;
+
+        FilaRanking(int posicion, Pais pais, boolean divisor) {
+            super(new BorderLayout(S, 0));
+            this.divisor = divisor;
+            setOpaque(false);
+            setPreferredSize(new Dimension(0, 52));
+
+            JLabel numero = Componentes.etiqueta(String.valueOf(posicion), PEQUENO_SEMINEGRITA, AZUL_HOVER);
+            numero.setHorizontalAlignment(SwingConstants.CENTER);
+            numero.setPreferredSize(new Dimension(28, 28));
+            JPanel insignia = new JPanel(new BorderLayout()) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    java.awt.Graphics2D g2 = Componentes.suave(g);
+                    g2.setColor(AZUL_SUAVE);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
+                    g2.dispose();
+                }
+            };
+            insignia.setOpaque(false);
+            insignia.add(numero);
+            add(Componentes.enCentro(insignia), BorderLayout.WEST);
+
+            JPanel centro = new JPanel(new BorderLayout(XS, 0));
+            centro.setOpaque(false);
+            centro.add(Componentes.etiqueta(pais.nombre(), CUERPO_SEMINEGRITA, TEXTO), BorderLayout.CENTER);
+            centro.add(Componentes.enCentro(Componentes.chip(pais.region().getNombre(), AZUL_SUAVE, AZUL_HOVER)),
+                    BorderLayout.EAST);
+            add(centro, BorderLayout.CENTER);
+
+            JLabel habitantes = Componentes.etiqueta(Formato.entero(pais.poblacion()), CUERPO, TEXTO);
+            habitantes.setHorizontalAlignment(SwingConstants.RIGHT);
+            habitantes.setPreferredSize(new Dimension(128, 28));
+            add(habitantes, BorderLayout.EAST);
+            getAccessibleContext().setAccessibleName(posicion + ". " + pais.nombre() + ", "
+                    + Formato.entero(pais.poblacion()) + " habitantes");
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            if (divisor) {
+                g.setColor(new Color(FONDO_SECCION.getRGB()));
+                g.fillRect(0, getHeight() - 1, getWidth(), 1);
+            }
         }
     }
 }

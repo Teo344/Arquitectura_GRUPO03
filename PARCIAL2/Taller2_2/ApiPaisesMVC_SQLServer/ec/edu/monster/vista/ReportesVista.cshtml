@@ -1,7 +1,9 @@
 @*
-    Reportes de la Actividad 5: indicadores y gráficos de barras de una serie (un color, sin leyenda,
-    valor en la punta y porcentaje en el título emergente). Los empates se informan.
+    Reportes de la Actividad 5: indicadores, gráficos de barras de una serie (un color, sin leyenda,
+    valor en la punta y porcentaje en el título emergente) y el ranking de los cinco países más
+    poblados. Los empates se informan.
 *@
+@using System.Globalization
 @model ReportesVistaModelo
 @{
     ViewData["Titulo"] = "Reportes";
@@ -26,13 +28,13 @@
 {
     EstadoVacio sinBase = new EstadoVacio(NombreIcono.BaseDatos, "No se pudieron calcular los reportes", Model.Error,
         "Reintentar", "/reportes");
-    <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="sinBase" />
+    <div class="ap-tarjeta"><partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="sinBase" /></div>
 }
 else if (estadisticas == null || estadisticas.EstaVacio)
 {
     EstadoVacio vacio = new EstadoVacio(NombreIcono.Grafico, "Todavía no hay datos",
         "Importa o registra países para ver las estadísticas.", "Ir a Países", "/paises");
-    <partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="vacio" />
+    <div class="ap-tarjeta"><partial name="~/ec/edu/monster/vista/componentes/_EstadoVacio.cshtml" model="vacio" /></div>
 }
 else
 {
@@ -40,46 +42,37 @@ else
     KeyValuePair<Region, long> mayor = estadisticas.PaisesPorRegion[0];
     List<string> empatadas = estadisticas.PaisesPorRegion.Skip(1)
         .Where(e => e.Value == mayor.Value).Select(e => e.Key.Nombre()).ToList();
-    string contextoRegion = Formato.Paises(mayor.Value) + " (" + Formato.Porcentaje((double)mayor.Value / total) + ")"
+    string contextoRegion = Formato.Paises(mayor.Value) + " · " + Formato.Porcentaje((double)mayor.Value / total) + " del total"
         + (empatadas.Count > 0 ? " · empate con " + string.Join(", ", empatadas) : "");
     Pais? masPoblado = estadisticas.PaisMasPoblado;
     long maximoPaises = mayor.Value;
     double maximoPromedio = estadisticas.PromedioPorRegion.Count > 0 ? estadisticas.PromedioPorRegion.Max(e => e.Value) : 0;
 
     <section class="ap-indicadores" aria-label="Indicadores">
-        <div class="ap-indicador-tarjeta">
-            <span class="ap-icono-caja ap-icono-caja--azul">@Iconos.Svg(NombreIcono.Publico)</span>
-            <div class="ap-indicador-tarjeta__textos">
-                <span class="ap-leyenda ap-texto-secundario">Países registrados</span>
-                <span class="ap-indicador-tarjeta__valor ap-numero">@Formato.Entero(total)</span>
-                <span class="ap-indicador-tarjeta__detalle">En @estadisticas.PaisesPorRegion.Count regiones</span>
-            </div>
+        <div class="ap-indicador-tarjeta ap-indicador-tarjeta--destacada">
+            <span class="ap-indicador-tarjeta__etiqueta">Países registrados</span>
+            <span class="ap-indicador-tarjeta__valor ap-numero">@Formato.Entero(total)</span>
+            <span class="ap-indicador-tarjeta__detalle">En @estadisticas.PaisesPorRegion.Count regiones de la base ApiPaisesDB</span>
         </div>
         <div class="ap-indicador-tarjeta">
-            <span class="ap-icono-caja ap-icono-caja--cian">@Iconos.Svg(NombreIcono.Personas)</span>
-            <div class="ap-indicador-tarjeta__textos">
-                <span class="ap-leyenda ap-texto-secundario">País más poblado (Reporte 2)</span>
-                <span class="ap-indicador-tarjeta__valor">@Formato.Texto(masPoblado?.Nombre)</span>
-                <span class="ap-indicador-tarjeta__detalle">
-                    @(masPoblado == null ? "" : Formato.Entero(masPoblado.Poblacion) + " habitantes · " + masPoblado.Region?.Nombre())
-                </span>
-            </div>
+            <span class="ap-indicador-tarjeta__etiqueta">País más poblado</span>
+            <span class="ap-indicador-tarjeta__valor">@Formato.Texto(masPoblado?.Nombre)</span>
+            <span class="ap-indicador-tarjeta__detalle">
+                @(masPoblado == null ? "" : Formato.Entero(masPoblado.Poblacion) + " habitantes · " + masPoblado.Region?.Nombre())
+            </span>
         </div>
         <div class="ap-indicador-tarjeta">
-            <span class="ap-icono-caja ap-icono-caja--azul">@Iconos.Svg(NombreIcono.Ubicacion)</span>
-            <div class="ap-indicador-tarjeta__textos">
-                <span class="ap-leyenda ap-texto-secundario">Región con más países</span>
-                <span class="ap-indicador-tarjeta__valor">@estadisticas.RegionConMasPaises?.Nombre()</span>
-                <span class="ap-indicador-tarjeta__detalle">@contextoRegion</span>
-            </div>
+            <span class="ap-indicador-tarjeta__etiqueta">Región con más países</span>
+            <span class="ap-indicador-tarjeta__valor">@estadisticas.RegionConMasPaises?.Nombre()</span>
+            <span class="ap-indicador-tarjeta__detalle">@contextoRegion</span>
         </div>
     </section>
 
     <div class="ap-reportes">
         <section class="ap-tarjeta" aria-labelledby="titulo-reporte-1">
             <p class="ap-sobretitulo">Reporte 1</p>
-            <h2 class="ap-h4" id="titulo-reporte-1" style="margin-top:4px">Países por región</h2>
-            <p class="ap-texto-secundario" style="margin-top:4px">
+            <h2 class="ap-h5" id="titulo-reporte-1" style="margin-top:2px">Países por región</h2>
+            <p class="ap-reporte__descripcion">
                 Cantidad de países guardados en cada región, de mayor a menor. Pasa el ratón sobre una barra para ver su porcentaje.
             </p>
             <ul class="ap-barras" aria-label="Países por región">
@@ -90,89 +83,73 @@ else
                     <li class="ap-barra" title="@fila.Key.Nombre(): @Formato.Paises(fila.Value) (@porcentaje)">
                         <span class="ap-barra__etiqueta">@fila.Key.Nombre()</span>
                         <span class="ap-barra__pista">
-                            <span class="ap-barra__relleno" style="width:calc((100% - 72px) * @(ancho.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)) / 100)"></span>
+                            <span class="ap-barra__relleno" style="width:calc((100% - 120px) * @(ancho.ToString("0.##", CultureInfo.InvariantCulture)) / 100)"></span>
                             <span class="ap-barra__valor">@Formato.Entero(fila.Value)</span>
-                            <span class="ap-oculto">países, @porcentaje del total</span>
+                            <span class="ap-barra__porcentaje">@porcentaje</span>
+                            <span class="ap-oculto">países</span>
                         </span>
                     </li>
                 }
             </ul>
-            <details style="margin-top:16px">
-                <summary class="ap-leyenda ap-texto-secundario">Consulta SQL equivalente</summary>
-                <pre class="ap-codigo" style="white-space:pre-wrap;margin:8px 0 0">SELECT Region, COUNT(*) Total
+            <details class="ap-sql">
+                <summary>Consulta SQL equivalente</summary>
+                <pre class="ap-codigo">SELECT Region, COUNT(*) Total
 FROM Paises
 GROUP BY Region;</pre>
             </details>
         </section>
 
-        <section class="ap-tarjeta" aria-labelledby="titulo-reporte-3">
-            <p class="ap-sobretitulo">Reporte 3</p>
-            <h2 class="ap-h4" id="titulo-reporte-3" style="margin-top:4px">Promedio poblacional por región</h2>
-            <p class="ap-texto-secundario" style="margin-top:4px">
-                Habitantes promedio de los países de cada región, de mayor a menor.
-            </p>
-            <ul class="ap-barras ap-barras--cian" aria-label="Promedio poblacional por región">
-                @foreach (KeyValuePair<Region, double> fila in estadisticas.PromedioPorRegion)
-                {
-                    double ancho = maximoPromedio == 0 ? 0 : 100.0 * fila.Value / maximoPromedio;
-                    <li class="ap-barra" title="@fila.Key.Nombre(): @Formato.Entero((long)Math.Round(fila.Value)) habitantes en promedio">
-                        <span class="ap-barra__etiqueta">@fila.Key.Nombre()</span>
-                        <span class="ap-barra__pista">
-                            <span class="ap-barra__relleno" style="width:calc((100% - 112px) * @(ancho.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)) / 100)"></span>
-                            <span class="ap-barra__valor">@Formato.Entero((long)Math.Round(fila.Value))</span>
-                            <span class="ap-oculto">habitantes en promedio</span>
-                        </span>
-                    </li>
-                }
-            </ul>
-            <details style="margin-top:16px">
-                <summary class="ap-leyenda ap-texto-secundario">Consulta SQL equivalente</summary>
-                <pre class="ap-codigo" style="white-space:pre-wrap;margin:8px 0 0">SELECT Region, AVG(Poblacion)
-FROM Paises
-GROUP BY Region;</pre>
-            </details>
-        </section>
-    </div>
-
-    @if (masPoblado != null)
-    {
         <section class="ap-tarjeta" aria-labelledby="titulo-reporte-2">
             <p class="ap-sobretitulo">Reporte 2</p>
-            <h2 class="ap-h4" id="titulo-reporte-2" style="margin-top:4px">País más poblado</h2>
-            <div class="ap-tabla-caja" style="margin-top:16px">
-                <table class="ap-tabla">
-                    <thead>
-                        <tr>
-                            <th scope="col">Código</th>
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Capital</th>
-                            <th scope="col">Región</th>
-                            <th scope="col">Subregión</th>
-                            <th scope="col" class="ap-derecha">Población</th>
-                            <th scope="col" class="ap-derecha">Área</th>
-                            <th scope="col">Moneda</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="ap-codigo">@masPoblado.Codigo</span></td>
-                            <td>@masPoblado.Nombre</td>
-                            <td>@Formato.Texto(masPoblado.Capital)</td>
-                            <td>@masPoblado.Region?.Nombre()</td>
-                            <td>@Formato.Texto(masPoblado.SubRegion)</td>
-                            <td class="ap-derecha ap-numero">@Formato.Entero(masPoblado.Poblacion)</td>
-                            <td class="ap-derecha ap-numero">@Formato.Area(masPoblado.Area)</td>
-                            <td>@Formato.Texto(masPoblado.Moneda)</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <details style="margin-top:16px">
-                <summary class="ap-leyenda ap-texto-secundario">Consulta SQL equivalente</summary>
-                <pre class="ap-codigo" style="white-space:pre-wrap;margin:8px 0 0">SELECT TOP 1 *
+            <h2 class="ap-h5" id="titulo-reporte-2" style="margin-top:2px">Los 5 más poblados</h2>
+            <p class="ap-reporte__descripcion">El primero es el país más poblado. Habitantes según los datos guardados de REST Countries.</p>
+            <ol class="ap-ranking">
+                @for (int i = 0; i < estadisticas.MasPoblados.Count; i++)
+                {
+                    Pais pais = estadisticas.MasPoblados[i];
+                    <li>
+                        <span class="ap-ranking__posicion" aria-hidden="true">@(i + 1)</span>
+                        <span class="ap-ranking__nombre">@pais.Nombre</span>
+                        @if (pais.Region != null)
+                        {
+                            <span class="ap-region-chip">@pais.Region.Value.Nombre()</span>
+                        }
+                        <span class="ap-ranking__poblacion">@Formato.Entero(pais.Poblacion)<span class="ap-oculto"> habitantes</span></span>
+                    </li>
+                }
+            </ol>
+            <details class="ap-sql">
+                <summary>Consulta SQL equivalente</summary>
+                <pre class="ap-codigo">SELECT TOP 5 *
 FROM Paises
 ORDER BY Poblacion DESC;</pre>
             </details>
         </section>
-    }
+    </div>
+
+    <section class="ap-tarjeta" aria-labelledby="titulo-reporte-3">
+        <p class="ap-sobretitulo">Reporte 3</p>
+        <h2 class="ap-h5" id="titulo-reporte-3" style="margin-top:2px">Promedio poblacional por región</h2>
+        <p class="ap-reporte__descripcion">Habitantes promedio de los países de cada región, de mayor a menor.</p>
+        <ul class="ap-barras ap-barras--cian" aria-label="Promedio poblacional por región">
+            @foreach (KeyValuePair<Region, double> fila in estadisticas.PromedioPorRegion)
+            {
+                double ancho = maximoPromedio == 0 ? 0 : 100.0 * fila.Value / maximoPromedio;
+                <li class="ap-barra" title="@fila.Key.Nombre(): @Formato.Entero((long)Math.Round(fila.Value)) habitantes en promedio">
+                    <span class="ap-barra__etiqueta">@fila.Key.Nombre()</span>
+                    <span class="ap-barra__pista">
+                        <span class="ap-barra__relleno" style="width:calc((100% - 120px) * @(ancho.ToString("0.##", CultureInfo.InvariantCulture)) / 100)"></span>
+                        <span class="ap-barra__valor">@Formato.Entero((long)Math.Round(fila.Value))</span>
+                        <span class="ap-oculto">habitantes en promedio</span>
+                    </span>
+                </li>
+            }
+        </ul>
+        <details class="ap-sql">
+            <summary>Consulta SQL equivalente</summary>
+            <pre class="ap-codigo">SELECT Region, AVG(Poblacion)
+FROM Paises
+GROUP BY Region;</pre>
+        </details>
+    </section>
 }

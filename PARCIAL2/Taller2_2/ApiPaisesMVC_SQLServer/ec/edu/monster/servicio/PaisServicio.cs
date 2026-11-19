@@ -17,6 +17,9 @@ namespace ec.edu.monster.servicio
         /// <summary>Tamaño de las columnas NVARCHAR(100) de la tabla Paises.</summary>
         internal const int LongitudMaxima = 100;
 
+        /// <summary>Cuántos países muestra el ranking de los más poblados.</summary>
+        internal const int TopPoblados = 5;
+
         private static readonly Regex CodigoIso = new Regex("^[A-Z]{3}$");
 
         private readonly IPaisDAO dao;
@@ -205,8 +208,8 @@ namespace ec.edu.monster.servicio
         }
 
         /// <summary>
-        /// CU-08 (Actividad 5): países por región, país más poblado, región con más países y promedio
-        /// poblacional por región.
+        /// CU-08 (Actividad 5): países por región, los cinco países más poblados, región con más países
+        /// y promedio poblacional por región.
         /// </summary>
         public async Task<EstadisticasPaises> GenerarEstadisticasAsync()
         {
@@ -224,12 +227,12 @@ namespace ec.edu.monster.servicio
                 return EstadisticasPaises.Vacias();
             }
             Region regionConMasPaises = porRegion[0].Key;
-            Pais? masPoblado = await dao.ObtenerMasPobladoAsync();
+            IReadOnlyList<Pais> masPoblados = await dao.ListarMasPobladosAsync(TopPoblados);
             List<KeyValuePair<Region, double>> promedios = (await dao.PromedioPoblacionPorRegionAsync())
                 .OrderByDescending(e => e.Value)
                 .ThenBy(e => e.Key)
                 .ToList();
-            return new EstadisticasPaises(porRegion, total, masPoblado, regionConMasPaises, promedios);
+            return new EstadisticasPaises(porRegion, total, masPoblados, regionConMasPaises, promedios);
         }
 
         // ------------------------------------------------------------ validación

@@ -21,7 +21,7 @@
         ? "La API solo devolverá un país de muestra. Configura tu clave en RestCountries:Clave (appsettings.json)."
         : "Datos completos. El plan gratuito permite 1.000 consultas al mes.";
     Alerta avisoBase = new Alerta(TipoAlerta.Advertencia,
-        "Puedes entrar, pero no podrás consultar ni guardar países hasta que SQL Server responda.");
+        "Puedes entrar, pero no podrás consultar ni guardar países hasta que SQL Server responda. Usa «Verificar» para comprobarlo de nuevo.");
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -46,10 +46,10 @@
                         Consume la API pública REST Countries, guarda los datos en SQL Server y analízalos con el patrón MVC.
                     </p>
                     <div class="ap-inicio__chips">
-                        <span class="ap-chip ap-chip--cian">REST</span>
-                        <span class="ap-chip ap-chip--azul">.NET 8</span>
-                        <span class="ap-chip ap-chip--azul">SQL Server</span>
-                        <span class="ap-chip ap-chip--azul">MVC</span>
+                        <span class="ap-chip ap-chip--claro">REST</span>
+                        <span class="ap-chip ap-chip--claro">.NET 8</span>
+                        <span class="ap-chip ap-chip--claro">SQL Server</span>
+                        <span class="ap-chip ap-chip--claro">MVC</span>
                     </div>
                 </div>
             </div>
@@ -64,10 +64,15 @@
                         Importa países desde la API REST Countries, gestiónalos en SQL Server y genera reportes estadísticos.
                     </p>
 
-                    <p class="ap-sobretitulo ap-texto-secundario" style="margin-top:24px;color:var(--texto-secundario)">Estado del sistema</p>
+                    <div class="ap-estados__cabecera">
+                        <p class="ap-sobretitulo" style="color:var(--texto-secundario)">Estado del sistema</p>
+                        <a class="ap-enlace" href="/" title="Volver a comprobar SQL Server">@Iconos.Svg(NombreIcono.Actualizar, 16)Verificar</a>
+                    </div>
 
-                    <div class="ap-estado" style="margin-top:12px">
-                        <span class="ap-icono-caja @(Model.BaseDisponible ? "ap-icono-caja--azul" : "ap-icono-caja--error")">@Iconos.Svg(NombreIcono.BaseDatos)</span>
+                    @* Las dos dependencias, agrupadas en un solo recuadro *@
+                    <div class="ap-estados">
+                    <div class="ap-estado">
+                        <span class="ap-icono-caja @(Model.BaseDisponible ? "ap-icono-caja--exito" : "ap-icono-caja--error")">@Iconos.Svg(NombreIcono.BaseDatos, 18)</span>
                         <div class="ap-estado__datos">
                             <div class="ap-estado__cabecera">
                                 <span class="ap-estado__titulo">Base de datos SQL Server</span>
@@ -76,9 +81,8 @@
                             <p class="ap-estado__detalle">@detalleBase</p>
                         </div>
                     </div>
-                    <hr class="ap-divisor" />
                     <div class="ap-estado">
-                        <span class="ap-icono-caja @(Model.ApiDemostracion ? "ap-icono-caja--advertencia" : "ap-icono-caja--azul")">@Iconos.Svg(NombreIcono.Llave)</span>
+                        <span class="ap-icono-caja @(Model.ApiDemostracion ? "ap-icono-caja--advertencia" : "ap-icono-caja--exito")">@Iconos.Svg(NombreIcono.Llave, 18)</span>
                         <div class="ap-estado__datos">
                             <div class="ap-estado__cabecera">
                                 <span class="ap-estado__titulo">API REST Countries v5</span>
@@ -86,6 +90,7 @@
                             </div>
                             <p class="ap-estado__detalle">@detalleApi</p>
                         </div>
+                    </div>
                     </div>
 
                     @if (!Model.BaseDisponible)
@@ -96,15 +101,11 @@
                         </div>
                     }
 
-                    <a class="ap-boton ap-boton--primario ap-boton--ancho" style="margin-top:24px" href="/paises">
-                        @Iconos.Svg(NombreIcono.Entrar)<span>Entrar</span>
+                    @* La flecha va después del texto: indica que se avanza a la siguiente pantalla *@
+                    <a class="ap-boton ap-boton--primario ap-boton--ancho" style="margin-top:24px" href="/paises" autofocus>
+                        <span>Entrar</span>@Iconos.Svg(NombreIcono.Entrar)
                     </a>
-                    @if (!Model.BaseDisponible)
-                    {
-                        <a class="ap-boton ap-boton--secundario ap-boton--ancho" style="margin-top:8px" href="/">
-                            @Iconos.Svg(NombreIcono.Actualizar)<span>Reintentar</span>
-                        </a>
-                    }
+                    <p class="ap-inicio__atajo">o presiona Enter</p>
                 </div>
                 <p class="ap-inicio__pie">Fuente de datos: restcountries.com · Base local: SQL Server ApiPaisesDB</p>
             </div>

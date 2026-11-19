@@ -64,8 +64,8 @@ public class PaisDAOMySQL implements PaisDAO {
             + "poblacion = nuevo.poblacion, moneda = nuevo.moneda";
     private static final String SQL_CONTAR_POR_REGION
             = "SELECT region, COUNT(*) AS total FROM pais GROUP BY region ORDER BY total DESC, region";
-    private static final String SQL_MAS_POBLADO
-            = "SELECT " + COLUMNAS + " FROM pais ORDER BY poblacion DESC, nombre LIMIT 1";
+    private static final String SQL_MAS_POBLADOS
+            = "SELECT " + COLUMNAS + " FROM pais ORDER BY poblacion DESC, nombre LIMIT ?";
     private static final String SQL_CONTAR = "SELECT COUNT(*) FROM pais";
 
     private final ConexionBD conexionBD;
@@ -186,9 +186,8 @@ public class PaisDAOMySQL implements PaisDAO {
     }
 
     @Override
-    public Optional<Pais> obtenerMasPoblado() {
-        return consultar(SQL_MAS_POBLADO, ps -> {
-        }).stream().findFirst();
+    public List<Pais> listarMasPoblados(int limite) {
+        return consultar(SQL_MAS_POBLADOS, ps -> ps.setInt(1, Math.max(0, limite)));
     }
 
     @Override

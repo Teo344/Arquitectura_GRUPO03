@@ -33,6 +33,9 @@ public class PaisServicio {
 
     private static final Logger LOG = Logger.getLogger(PaisServicio.class.getName());
 
+    /** Cuántos países muestra el ranking de los más poblados. */
+    static final int TOP_POBLADOS = 5;
+
     /** Tamaño de las columnas VARCHAR(100) de la tabla pais. */
     static final int LONGITUD_MAXIMA = 100;
     private static final Pattern CODIGO_ISO = Pattern.compile("[A-Z]{3}");
@@ -175,8 +178,8 @@ public class PaisServicio {
     }
 
     /**
-     * CU-08 (Actividad 5): países por región, país más poblado y región con
-     * más países.
+     * CU-08 (Actividad 5): países por región, los cinco países más poblados
+     * y la región con más países.
      */
     public EstadisticasPaises generarEstadisticas() {
         // Se ordena aquí (y no se confía en el orden del DAO): mayor cantidad
@@ -189,11 +192,10 @@ public class PaisServicio {
 
         long total = porRegion.values().stream().mapToLong(Long::longValue).sum();
         if (total == 0) {
-            return new EstadisticasPaises(Map.of(), 0, null, null);
+            return new EstadisticasPaises(Map.of(), 0, List.of(), null);
         }
         Region regionConMasPaises = porRegion.keySet().iterator().next();
-        Pais masPoblado = dao.obtenerMasPoblado().orElse(null);
-        return new EstadisticasPaises(porRegion, total, masPoblado, regionConMasPaises);
+        return new EstadisticasPaises(porRegion, total, dao.listarMasPoblados(TOP_POBLADOS), regionConMasPaises);
     }
 
     // ------------------------------------------------------------ validación

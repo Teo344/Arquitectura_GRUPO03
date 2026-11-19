@@ -216,6 +216,22 @@ class PaisServicioTest {
         assertEquals(2L, estadisticas.paisesPorRegion().get(Region.AMERICAS));
         assertEquals(Region.AMERICAS, estadisticas.regionConMasPaises());
         assertEquals("ESP", estadisticas.paisMasPoblado().codigo());
+        // Ranking de mayor a menor población
+        assertEquals(List.of("ESP", "PER", "ECU"),
+                estadisticas.masPoblados().stream().map(Pais::codigo).toList());
+    }
+
+    @Test
+    void rankingDeMasPobladosSeLimitaACinco() {
+        for (int i = 0; i < 7; i++) {
+            servicio.registrar(Pais.nuevo("AA" + (char) ('A' + i), "País " + i, null, Region.ASIA, 1000L * (i + 1), null));
+        }
+
+        List<Pais> ranking = servicio.generarEstadisticas().masPoblados();
+
+        assertEquals(PaisServicio.TOP_POBLADOS, ranking.size());
+        assertEquals("AAG", ranking.get(0).codigo());
+        assertEquals("AAC", ranking.get(4).codigo());
     }
 
     @Test
