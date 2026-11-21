@@ -1,0 +1,34 @@
+@*
+    Botones del tema: primario (#1D56CC, 48 de alto, uno por vista), secundario (#EDF4FF con borde
+    #B8D2FF), peligro (#C0392B) y texto. Mientras carga se deshabilita, muestra el indicador giratorio
+    y, si se indica, un texto de espera ("Guardando…").
+*@
+<button @ref="boton" type="button" class="eb-boton eb-boton--@Estilo.ToString().ToLowerInvariant() @Clase"
+        disabled="@(Cargando || !Habilitado)" aria-busy="@(Cargando ? "true" : "false")" @onclick="AlPulsar">
+    @if (Cargando)
+    {
+        <span class="eb-indicador" aria-hidden="true"></span>
+    }
+    else if (IconoBoton != null)
+    {
+        <Icono Nombre="IconoBoton.Value" Tamano="18" />
+    }
+    <span>@(Cargando && TextoCargando != null ? TextoCargando : Texto)</span>
+</button>
+
+@code {
+    public enum EstiloBoton { Primario, Secundario, Peligro, Texto }
+
+    private ElementReference boton;
+
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+    [Parameter] public EventCallback AlPulsar { get; set; }
+    [Parameter] public EstiloBoton Estilo { get; set; } = EstiloBoton.Primario;
+    [Parameter] public NombreIcono? IconoBoton { get; set; }
+    [Parameter] public bool Cargando { get; set; }
+    [Parameter] public string? TextoCargando { get; set; }
+    [Parameter] public bool Habilitado { get; set; } = true;
+    [Parameter] public string? Clase { get; set; }
+
+    public ValueTask EnfocarAsync() => boton.FocusAsync();
+}

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    Biblioteca de ApiPaisesMVC .NET (Taller 2.1, Grupo 03) con las capas de la aplicación:
+    modelo (entidades, cliente de REST Countries, DAO de SQL Server), servicio, controlador y
+    vista (componentes Razor con el diseño "Azul"). El proyecto Desktop solo aloja la ventana.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ec.edu.monster</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <!-- La versión que trae SqlClient (9.0.x) tiene vulnerabilidades conocidas -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Las pruebas usan la validación y la conversión internas del servicio y el controlador -->
+    <InternalsVisibleTo Include="ApiPaises.Pruebas" />
+  </ItemGroup>
+
+</Project>

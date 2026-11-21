@@ -2,7 +2,7 @@
 # Copiar este archivo como config.properties (no se sube al repositorio) en esta
 # misma carpeta y completar las claves.
 
-# --- Base de datos (usuario creado con bdd/00_usuario_local.sql) ---
+# --- Base de datos (usuario creado con bdd/mysql/00_usuario_local.sql) ---
 db.url=jdbc:mysql://localhost:3306/api_paises?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guayaquil
 db.usuario=paises
 db.clave=cambiar_paises

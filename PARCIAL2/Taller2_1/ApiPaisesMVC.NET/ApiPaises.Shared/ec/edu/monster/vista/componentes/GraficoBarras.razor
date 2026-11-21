@@ -1,0 +1,36 @@
+@*
+    Barras horizontales de una sola serie (magnitud por categoría), según la guía de visualización:
+    un solo color sin leyenda (el título nombra la serie), barras de 24 px con la punta redondeada
+    (4 px) y la base recta sobre una línea base, valor escrito en la punta con tinta de texto, sin
+    cuadrícula ni eje (cada barra lleva su valor) y tooltip con el porcentaje. Se marca como lista
+    para que los lectores de pantalla lean cada etiqueta con su valor.
+*@
+<ul class="ap-grafico" aria-label="@Titulo">
+    @foreach (ConteoRegion barra in Barras)
+    {
+        double fraccion = maximo == 0 ? 0 : (double)barra.Cantidad / maximo;
+        string detalle = $"{barra.Region.Nombre()}: {Formato.Paises(barra.Cantidad)} ({Formato.Porcentaje(total == 0 ? 0 : (double)barra.Cantidad / total)})";
+        <li>
+            <span class="ap-grafico__etiqueta">@barra.Region.Nombre()</span>
+            <span class="ap-grafico__pista" title="@detalle" aria-label="@detalle">
+                <span class="ap-grafico__barra" style="width: calc((100% - 64px) * @fraccion.ToString(CultureInfo.InvariantCulture))"></span>
+                <span class="ap-grafico__valor" aria-hidden="true">@Formato.Entero(barra.Cantidad)</span>
+            </span>
+        </li>
+    }
+</ul>
+
+@code {
+    private long maximo;
+    private long total;
+
+    /// <summary>Barras en el orden en que se muestran (el reporte ya llega de mayor a menor).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<ConteoRegion> Barras { get; set; } = [];
+    [Parameter] public string Titulo { get; set; } = "Países por región";
+
+    protected override void OnParametersSet()
+    {
+        maximo = Barras.Count == 0 ? 0 : Barras.Max(b => b.Cantidad);
+        total = Barras.Sum(b => b.Cantidad);
+    }
+}

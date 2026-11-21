@@ -1,0 +1,45 @@
+@typeparam T
+@*
+    Lista desplegable nativa (accesible con teclado y lectores de pantalla) con el mismo aspecto que
+    los campos de texto: etiqueta encima, 48 de alto y flecha a la derecha. Si hay marcador, se
+    muestra como primera opción mientras no hay nada elegido.
+*@
+<div class="eb-campo">
+    <label class="eb-campo__etiqueta" for="@id">@Etiqueta</label>
+    <div class="eb-campo__caja @(Habilitado ? "" : "eb-campo__caja--deshabilitada")">
+        <select id="@id" class="ap-select @(Valor is null ? "ap-select--vacio" : "")" disabled="@(!Habilitado)"
+                @onchange="Cambiar">
+            @if (Marcador != null)
+            {
+                <option value="" selected="@(Valor is null)">@Marcador</option>
+            }
+            @for (int i = 0; i < Opciones.Count; i++)
+            {
+                T opcion = Opciones[i];
+                <option value="@i" selected="@(EqualityComparer<T>.Default.Equals(opcion, Valor))">@TextoDe(opcion)</option>
+            }
+        </select>
+    </div>
+</div>
+
+@code {
+    private static int contador;
+
+    private readonly string id = "seleccion-" + Interlocked.Increment(ref contador);
+
+    [Parameter, EditorRequired] public string Etiqueta { get; set; } = "";
+    [Parameter, EditorRequired] public IReadOnlyList<T> Opciones { get; set; } = [];
+    [Parameter, EditorRequired] public Func<T, string> TextoDe { get; set; } = o => o?.ToString() ?? "";
+    [Parameter] public T? Valor { get; set; }
+    [Parameter] public EventCallback<T?> ValorChanged { get; set; }
+    [Parameter] public string? Marcador { get; set; }
+    [Parameter] public bool Habilitado { get; set; } = true;
+
+    private Task Cambiar(ChangeEventArgs e)
+    {
+        Valor = int.TryParse(e.Value?.ToString(), out int indice) && indice >= 0 && indice < Opciones.Count
+            ? Opciones[indice]
+            : default;
+        return ValorChanged.InvokeAsync(Valor);
+    }
+}

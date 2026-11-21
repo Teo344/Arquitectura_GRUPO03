@@ -1,0 +1,10 @@
+{
+  "baseDatos": {
+    "cadenaConexion": "Server=.\\SQLEXPRESS;Database=api_paises;Integrated Security=True;Encrypt=True;TrustServerCertificate=True"
+  },
+  "api": {
+    "urlBase": "https://api.restcountries.com/countries/v5",
+    "clave": "rc_live_75ad9e25e9524f1e918536e349587511",
+    "timeoutSegundos": 15
+  }
+}

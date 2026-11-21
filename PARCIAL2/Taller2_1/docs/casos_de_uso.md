@@ -1,7 +1,7 @@
 # Casos de uso — ApiPaisesMVC (Taller 2.1)
 
 Sistema de escritorio en Java que consulta países en la API pública REST Countries,
-los guarda en MySQL y permite gestionarlos.
+los guarda en una base de datos (MySQL en la versión Java, SQL Server en la versión .NET) y permite gestionarlos.
 
 ## Actores
 
@@ -9,7 +9,7 @@ los guarda en MySQL y permite gestionarlos.
 |-------|------|-------------|
 | Usuario | Principal | Persona que opera la aplicación de escritorio. |
 | API REST Countries | Secundario (sistema externo) | Proveedor de datos de países (v5, requiere API key). |
-| Base de datos MySQL | Secundario (sistema) | Almacena los países (`api_paises.pais`). |
+| Base de datos (MySQL / SQL Server) | Secundario (sistema) | Almacena los países (`api_paises.pais`). |
 
 ## Diagrama general
 
@@ -17,7 +17,7 @@ los guarda en MySQL y permite gestionarlos.
 flowchart LR
     U([Usuario])
     API[[API REST Countries]]
-    BD[(MySQL)]
+    BD[(Base de datos)]
 
     subgraph Sistema ApiPaisesMVC
         CU01((CU-01 Importar países))
@@ -48,7 +48,7 @@ flowchart LR
 | CU-01 | Base del taller (botón "Importar países") |
 | CU-02 | Actividad 1: consulta de un país por nombre |
 | CU-03 a CU-06 | Actividad 2: CRUD (crear, leer, actualizar, eliminar) |
-| CU-04 | Actividad 3: mostrar los países en un JTable |
+| CU-04 | Actividad 3: mostrar los países en una tabla (JTable en Java, tabla HTML en .NET) |
 | CU-07 | Actividad 4: búsqueda por región |
 | CU-08 | Actividad 5: reportes estadísticos |
 
@@ -59,7 +59,7 @@ flowchart LR
 | | |
 |---|---|
 | **Actor** | Usuario |
-| **Precondición** | La API key está configurada y MySQL está disponible. |
+| **Precondición** | La API key está configurada y la base de datos está disponible. |
 | **Postcondición** | La tabla `pais` tiene todos los países de la API, sin duplicados. |
 
 **Flujo principal**
@@ -98,7 +98,7 @@ flowchart LR
 | | |
 |---|---|
 | **Actor** | Usuario |
-| **Precondición** | MySQL está disponible. |
+| **Precondición** | La base de datos está disponible. |
 | **Postcondición** | El país queda guardado con un id nuevo. |
 
 **Flujo principal**
@@ -123,12 +123,12 @@ flowchart LR
 | | |
 |---|---|
 | **Actor** | Usuario |
-| **Precondición** | MySQL está disponible. |
+| **Precondición** | La base de datos está disponible. |
 | **Postcondición** | Ninguna (solo lectura). |
 
 **Flujo principal**
 1. El usuario abre la pantalla de países.
-2. El sistema muestra todos los países ordenados por nombre en una tabla (JTable).
+2. El sistema muestra todos los países ordenados por nombre en una tabla.
 3. El usuario selecciona un país y ve su detalle.
 
 **Flujos alternos**
@@ -175,7 +175,7 @@ flowchart LR
 | | |
 |---|---|
 | **Actor** | Usuario |
-| **Precondición** | MySQL está disponible. |
+| **Precondición** | La base de datos está disponible. |
 | **Postcondición** | Ninguna (solo lectura). |
 
 **Flujo principal**
@@ -191,7 +191,7 @@ flowchart LR
 | | |
 |---|---|
 | **Actor** | Usuario |
-| **Precondición** | MySQL está disponible. |
+| **Precondición** | La base de datos está disponible. |
 | **Postcondición** | Ninguna (solo lectura). |
 
 **Flujo principal**

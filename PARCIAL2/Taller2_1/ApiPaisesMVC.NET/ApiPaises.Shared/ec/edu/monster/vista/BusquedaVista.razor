@@ -1,0 +1,142 @@
+@page "/busqueda"
+@layout LayoutPrincipal
+@inject PaisControlador Controlador
+@inject ILogger<BusquedaVista> Logger
+
+@*
+    Búsqueda de países por nombre en la API (CU-02). La consulta se hace solo al pulsar "Buscar" (no
+    mientras se escribe) porque cada consulta consume la cuota mensual de la clave. Si la API falla
+    se muestra lo guardado en SQL Server y se avisa claramente el origen.
+*@
+<EncabezadoPagina Sobretitulo="Actividad 1" Titulo="Buscar en la API"
+                  Apoyo="Consulta REST Countries por nombre común, oficial o nativo y guarda los países que necesites." />
+
+<Tarjeta Etiqueta="Búsqueda">
+    <div class="ap-busqueda">
+        <CampoTexto @ref="campo" Etiqueta="Nombre del país" Marcador="Ej. ecuador" @bind-Valor="texto" AlConfirmar="BuscarAsync" />
+        <Boton Texto="Buscar" IconoBoton="NombreIcono.Buscar" Cargando="buscando" TextoCargando="Buscando…" AlPulsar="BuscarAsync" />
+    </div>
+    <p class="ap-leyenda eb-espacio-xs">
+        Escribe el nombre en inglés o en su idioma oficial, por ejemplo «ecuador», «germany» o «españa».
+        Cada búsqueda usa una de las solicitudes mensuales de tu clave.
+    </p>
+</Tarjeta>
+
+@if (mensaje != null)
+{
+    <Alerta Texto="@mensaje.Texto" Tipo="mensaje.Tipo" AlCerrar="() => mensaje = null" />
+}
+
+@if (resultado is null)
+{
+    <EstadoVacio IconoVacio="NombreIcono.Buscar" Titulo="Busca un país en la API"
+                 Texto="Los resultados aparecerán aquí. Podrás guardar en la base de datos los que necesites." />
+}
+else if (resultado.EstaVacio)
+{
+    <EstadoVacio IconoVacio="NombreIcono.Buscar" Titulo="Sin coincidencias"
+                 Texto="@($"{(DesdeApi ? "La API" : "La base local")} no tiene países con «{textoBuscado}». Prueba con el nombre en inglés o en su idioma oficial.")" />
+}
+else
+{
+    <section class="ap-resultados" aria-label="Resultados">
+        <div class="eb-sobretitulo eb-texto-secundario" role="status">
+            @($"{resultado.Paises.Count} {(resultado.Paises.Count == 1 ? "resultado" : "resultados")} {(DesdeApi ? "de la API" : "guardados localmente")}")
+        </div>
+        @foreach (Pais pais in resultado.Paises)
+        {
+            <article class="ap-resultado" aria-label="@pais.Nombre">
+                <IconoEnCaja IconoCaja="NombreIcono.Publico" Tamano="44" />
+                <div class="ap-resultado__datos">
+                    <div class="ap-resultado__nombre">@pais.Nombre <Chip Texto="@(pais.Codigo ?? "")" Estilo="neutro" /></div>
+                    <div class="ap-resultado__detalle">
+                        Capital: @Formato.Texto(pais.Capital) · @pais.Region?.Nombre() · @Formato.Entero(pais.Poblacion) habitantes
+                        · Moneda: @Formato.Texto(pais.Moneda)
+                    </div>
+                </div>
+                @if (!DesdeApi)
+                {
+                    <Chip Texto="En la base local" Estilo="info" IconoChip="NombreIcono.Info" />
+                }
+                else if (guardados.Contains(pais.Codigo!))
+                {
+                    <Chip Texto="Guardado" Estilo="exito" IconoChip="NombreIcono.Exito" />
+                }
+                else
+                {
+                    <Boton Texto="Guardar" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Guardar"
+                           Cargando="guardando.Contains(pais.Codigo!)" TextoCargando="Guardando…" AlPulsar="() => GuardarAsync(pais)" />
+                }
+            </article>
+        }
+    </section>
+}
+
+@code {
+    private CampoTexto? campo;
+    private string? texto;
+    private string textoBuscado = string.Empty;
+    private bool buscando;
+    private ResultadoBusqueda? resultado;
+    private Mensaje? mensaje;
+    private readonly HashSet<string> guardando = [];
+    private readonly HashSet<string> guardados = [];
+
+    private bool DesdeApi => resultado?.Origen == OrigenDatos.ApiExterna;
+
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        if (primeraVez && campo != null)
+        {
+            await campo.EnfocarAsync();
+        }
+    }
+
+    private async Task BuscarAsync()
+    {
+        if (buscando)
+        {
+            return;
+        }
+        string buscado = texto?.Trim() ?? string.Empty;
+        if (buscado.Length == 0)
+        {
+            mensaje = new Mensaje("Escribe el nombre del país que quieres buscar.", TipoAlerta.Info);
+            return;
+        }
+        mensaje = null;
+        buscando = true;
+        Resultado<ResultadoBusqueda> respuesta = await Intento.EjecutarAsync(() => Controlador.BuscarEnApiAsync(buscado), Logger);
+        buscando = false;
+        if (respuesta.Valor is not ResultadoBusqueda encontrado)
+        {
+            mensaje = new Mensaje(respuesta.Error!, TipoAlerta.Error);
+            return;
+        }
+        textoBuscado = buscado;
+        resultado = encontrado;
+        guardados.Clear();
+        if (encontrado.Origen == OrigenDatos.BaseLocal && encontrado.Aviso != null)
+        {
+            mensaje = new Mensaje(encontrado.Aviso, TipoAlerta.Advertencia);
+        }
+    }
+
+    private async Task GuardarAsync(Pais pais)
+    {
+        string codigo = pais.Codigo!;
+        mensaje = null;
+        guardando.Add(codigo);
+        Resultado<ResultadoImportacion> respuesta = await Intento.EjecutarAsync(() => Controlador.GuardarResultadoAsync(pais), Logger);
+        guardando.Remove(codigo);
+        if (respuesta.Valor is not ResultadoImportacion guardado)
+        {
+            mensaje = new Mensaje(respuesta.Error!, TipoAlerta.Error);
+            return;
+        }
+        guardados.Add(codigo);
+        mensaje = new Mensaje(guardado.Nuevos > 0
+            ? $"«{pais.Nombre}» se agregó a la base de datos."
+            : $"«{pais.Nombre}» ya estaba guardado: se actualizaron sus datos.", TipoAlerta.Exito);
+    }
+}

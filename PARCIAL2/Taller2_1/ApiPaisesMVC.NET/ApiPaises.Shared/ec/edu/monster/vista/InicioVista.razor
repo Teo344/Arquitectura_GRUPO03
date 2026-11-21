@@ -1,0 +1,151 @@
+@page "/"
+@inject InicioControlador Controlador
+@inject NavigationManager Navegacion
+@inject ILogger<InicioVista> Logger
+
+@*
+    Pantalla de inicio con la foto de los talleres anteriores. La aplicación no maneja usuarios, así
+    que en lugar de pedir credenciales (que no protegerían nada) muestra si SQL Server responde y
+    cómo está configurada la API, para que el usuario sepa qué esperar antes de entrar.
+*@
+<div class="eb-login">
+    @* Foto del grupo con un velo sólido azul oscuro (sin degradados) y los textos de marca *@
+    <div class="eb-login__marca">
+        <img class="eb-login__foto" src="_content/ApiPaises.Shared/imagenes/fotoLogin.jpg" alt="Foto del Grupo 03" />
+        <div class="eb-login__marca-contenido">
+            <div class="eb-logo">
+                <IconoEnCaja IconoCaja="NombreIcono.Publico" Estilo="accion" Tamano="36" TamanoIcono="20" />
+                <span class="eb-sobretitulo eb-texto-blanco">PAÍSES API</span>
+            </div>
+            <div>
+                <div class="eb-login__lema">Los países del mundo,<br />en tu base de datos</div>
+                <p class="eb-cuerpo eb-login__detalle">
+                    Consume la API pública REST Countries, guarda los datos en SQL Server y analízalos con el patrón MVC.
+                </p>
+                <div class="eb-login__chips">
+                    <Chip Texto="REST" Estilo="cian" />
+                    <Chip Texto=".NET 10" />
+                    <Chip Texto="SQL Server" />
+                    <Chip Texto="MVC" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="eb-login__lado">
+        <div class="eb-login__columna">
+            <Tarjeta>
+                <div class="eb-sobretitulo">Taller 2.1 · Grupo 03</div>
+                <h1 class="eb-h3 eb-espacio-xs" tabindex="-1">Países del mundo</h1>
+                <p class="eb-cuerpo eb-texto-secundario eb-espacio-xxs">
+                    Importa países desde la API REST Countries, gestiónalos en SQL Server y genera reportes estadísticos.
+                </p>
+
+                <div class="eb-sobretitulo eb-texto-secundario eb-espacio-l">Estado del sistema</div>
+                <div class="ap-estado eb-espacio-s" role="status">
+                    <IconoEnCaja IconoCaja="NombreIcono.BaseDatos" Estilo="@EstiloIcono(estadoBase.Tipo)" Tamano="40" />
+                    <div class="ap-estado__textos">
+                        <div class="ap-estado__cabecera">
+                            SQL Server
+                            <Chip Texto="@estadoBase.Chip" Estilo="@Chip.DeTipo(estadoBase.Tipo).Estilo" IconoChip="@Chip.DeTipo(estadoBase.Tipo).Icono" />
+                        </div>
+                        <div class="ap-estado__detalle">@estadoBase.Detalle</div>
+                    </div>
+                </div>
+                <hr class="eb-divisor eb-espacio-s" />
+                <div class="ap-estado eb-espacio-s" role="status">
+                    <IconoEnCaja IconoCaja="NombreIcono.Llave" Estilo="@EstiloIcono(estadoApi.Tipo)" Tamano="40" />
+                    <div class="ap-estado__textos">
+                        <div class="ap-estado__cabecera">
+                            API REST Countries v5
+                            <Chip Texto="@estadoApi.Chip" Estilo="@Chip.DeTipo(estadoApi.Tipo).Estilo" IconoChip="@Chip.DeTipo(estadoApi.Tipo).Icono" />
+                        </div>
+                        <div class="ap-estado__detalle">@estadoApi.Detalle</div>
+                    </div>
+                </div>
+
+                @if (aviso != null)
+                {
+                    <div class="eb-espacio-m"><Alerta Texto="@aviso" Tipo="TipoAlerta.Advertencia" /></div>
+                }
+                <div class="eb-espacio-l">
+                    <Boton @ref="entrar" Texto="Entrar" IconoBoton="NombreIcono.Entrar" AlPulsar="Entrar" />
+                </div>
+                @if (baseCaida)
+                {
+                    <div class="eb-espacio-xs">
+                        <Boton Texto="Reintentar" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Actualizar"
+                               Cargando="verificando" TextoCargando="Comprobando…" AlPulsar="VerificarAsync" />
+                    </div>
+                }
+            </Tarjeta>
+            <p class="eb-pie">Fuente de datos: restcountries.com · Base local: SQL Server api_paises</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private sealed record EstadoFila(string Chip, string Detalle, TipoAlerta Tipo);
+
+    private static readonly EstadoFila Comprobando = new("Verificando", "Comprobando…", TipoAlerta.Info);
+
+    private Boton? entrar;
+    private EstadoFila estadoBase = Comprobando;
+    private EstadoFila estadoApi = Comprobando;
+    private string? aviso;
+    private bool baseCaida;
+    private bool verificando;
+
+    protected override Task OnInitializedAsync() => VerificarAsync();
+
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        // Enter entra directamente: el botón principal tiene el foco
+        if (primeraVez && entrar != null)
+        {
+            await entrar.EnfocarAsync();
+        }
+    }
+
+    private async Task VerificarAsync()
+    {
+        verificando = true;
+        estadoBase = estadoApi = Comprobando;
+        aviso = null;
+        Resultado<EstadoSistema> resultado = await Intento.EjecutarAsync(Controlador.VerificarEstadoAsync, Logger);
+        verificando = false;
+        if (resultado.Valor is not EstadoSistema estado)
+        {
+            Mostrar(new EstadoSistema(false, 0, resultado.Error, false));
+            return;
+        }
+        Mostrar(estado);
+    }
+
+    private void Mostrar(EstadoSistema estado)
+    {
+        baseCaida = !estado.BaseDisponible;
+        estadoBase = estado.BaseDisponible
+            ? new EstadoFila("Conectada", estado.TotalPaises == 0
+                ? "Aún no hay países guardados: impórtalos desde la API al entrar."
+                : Formato.Paises(estado.TotalPaises) + " guardados en api_paises.", TipoAlerta.Exito)
+            : new EstadoFila("Sin conexión", estado.DetalleBase ?? "No se pudo conectar.", TipoAlerta.Error);
+        aviso = baseCaida
+            ? "Puedes entrar, pero no podrás consultar ni guardar países hasta que SQL Server responda."
+            : null;
+        estadoApi = estado.ApiDemostracion
+            ? new EstadoFila("Clave demo", "La API solo devolverá un país de muestra. Configura tu clave en "
+                + "api.clave (configuracion.json).", TipoAlerta.Advertencia)
+            : new EstadoFila("Clave propia", "Datos completos. El plan gratuito permite 1.000 consultas al mes.",
+                TipoAlerta.Exito);
+    }
+
+    private static string EstiloIcono(TipoAlerta tipo) => tipo switch
+    {
+        TipoAlerta.Error => "error",
+        TipoAlerta.Advertencia => "advertencia",
+        _ => "azul"
+    };
+
+    private void Entrar() => Navegacion.NavigateTo("paises");
+}

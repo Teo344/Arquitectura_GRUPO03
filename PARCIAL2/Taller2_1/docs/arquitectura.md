@@ -1,5 +1,9 @@
 # Arquitectura — ApiPaisesMVC (Taller 2.1)
 
+El taller tiene dos versiones con la misma arquitectura: **Java + MySQL** (`ApiPaisesMVC/`) y
+**.NET + SQL Server** (`ApiPaisesMVC.NET/`). Este documento describe la versión Java; la
+[sección final](#versión-net-sql-server) muestra la equivalencia de cada pieza en .NET.
+
 Aplicación de escritorio Java SE 21 (Maven) con el patrón **MVC** y una capa de
 **servicio** entre los controladores y el modelo. Consume la API **REST** pública
 REST Countries.
@@ -163,3 +167,41 @@ sequenceDiagram
 | Controlador que parsea JSON y crea `new PaisDAO()` | El mapper parsea; la dependencia se inyecta | Respeta SRP y DIP y permite probar el código. |
 | Capital y moneda guardadas como `""` | Se extraen del JSON | Datos completos. |
 | Tabla sin clave natural | `codigo` UNIQUE + upsert | Reimportar no duplica países. |
+
+## Versión .NET (SQL Server)
+
+`ApiPaisesMVC.NET/` reproduce la misma aplicación en .NET 10, siguiendo la convención de los
+clientes de escritorio .NET del repositorio (TG.1.4): una aplicación **MAUI Blazor Hybrid** para
+Windows que solo aloja la ventana, y una biblioteca Razor con todas las capas.
+
+| Proyecto | Contenido |
+|----------|-----------|
+| `ApiPaises.Shared` | `modelo` (entidad, api, dao, excepcion), `servicio`, `controlador`, `vista` (componentes Razor) y `config` |
+| `ApiPaises.Desktop` | Ventana MAUI, `MauiProgram` (raíz de composición) y `configuracion.json` |
+| `ApiPaises.Pruebas` | Pruebas xUnit con DAO y API en memoria |
+
+Cada pieza tiene su equivalente directo:
+
+| Responsabilidad | Java | .NET |
+|-----------------|------|------|
+| Raíz de composición | `App` (crea e inyecta a mano) | `MauiProgram` (contenedor de dependencias de .NET) |
+| Configuración | `config.properties` | `Resources/Raw/configuracion.json` |
+| Entidades | `record` de Java | `record` de C# |
+| Cliente HTTP | `java.net.http.HttpClient` | `System.Net.Http.HttpClient` |
+| Lectura del JSON | Gson | `System.Text.Json` |
+| DAO | `PaisDAOMySQL` (JDBC, `PreparedStatement`) | `PaisDAOSqlServer` (ADO.NET, `SqlCommand` con parámetros) |
+| Liberación de recursos | try-with-resources | `await using` |
+| Trabajo en segundo plano | `Tarea` sobre `SwingWorker` | `async`/`await` (la vista Blazor no se bloquea) |
+| Errores en la vista | `Tarea.alFallar` | `Intento.EjecutarAsync` |
+| Vista | Swing con componentes propios | Razor + CSS con la hoja `paises.css` |
+| Pruebas | JUnit 5 | xUnit |
+
+Diferencias propias de SQL Server:
+
+- **Autenticación de Windows** (`Integrated Security`): no hay usuario ni clave de base de datos
+  que guardar.
+- **Intercalación `Latin1_General_100_CI_AI`**: las búsquedas ignoran mayúsculas y tildes, igual
+  que `utf8mb4_unicode_ci` en MySQL; los textos son `NVARCHAR`.
+- **Clave duplicada**: los errores 2627 y 2601 se traducen a un mensaje de validación (en MySQL,
+  el 1062).
+- **LIKE**: también se escapa `[`, que en SQL Server es un comodín.

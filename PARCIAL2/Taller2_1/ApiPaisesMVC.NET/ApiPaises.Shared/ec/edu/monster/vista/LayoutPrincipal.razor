@@ -1,0 +1,37 @@
+@inherits LayoutComponentBase
+@*
+    Pantalla principal: menú lateral fijo (#0B1D44) y el contenido de la sección elegida. La opción
+    actual se distingue por fondo, barra cian, texto blanco en negrita y aria-current (NavLink).
+*@
+<div class="ap-principal">
+    <nav class="ap-menu" aria-label="Menú principal">
+        <div class="ap-menu__marca">
+            <IconoEnCaja IconoCaja="NombreIcono.Publico" Estilo="accion" Tamano="40" TamanoIcono="22" />
+            <div>
+                <div class="ap-menu__titulo">PAÍSES API</div>
+                <div class="ap-menu__subtitulo">Taller 2.1 · Grupo 03</div>
+            </div>
+        </div>
+
+        <div class="ap-menu__seccion">Menú</div>
+        <NavLink class="ap-menu__item" href="paises">
+            <Icono Nombre="NombreIcono.Tabla" /> Países
+        </NavLink>
+        <NavLink class="ap-menu__item" href="busqueda">
+            <Icono Nombre="NombreIcono.Buscar" /> Buscar en la API
+        </NavLink>
+        <NavLink class="ap-menu__item" href="reportes">
+            <Icono Nombre="NombreIcono.Grafico" /> Reportes
+        </NavLink>
+
+        <div class="ap-menu__pie">
+            <NavLink class="ap-menu__item" href="" Match="NavLinkMatch.All">
+                <Icono Nombre="NombreIcono.Salir" /> Volver al inicio
+            </NavLink>
+        </div>
+    </nav>
+
+    <main class="ap-contenido">
+        @Body
+    </main>
+</div>

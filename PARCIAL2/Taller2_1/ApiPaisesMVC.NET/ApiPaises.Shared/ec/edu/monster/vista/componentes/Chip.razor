@@ -1,0 +1,23 @@
+@* Etiqueta pequeña (chip) con radio 6. Estilo: azul, cian, neutro, info, exito, advertencia o error. *@
+<span class="eb-chip eb-chip--@Estilo">
+    @if (IconoChip != null)
+    {
+        <Icono Nombre="IconoChip.Value" Tamano="14" Clase="eb-chip__icono" />
+    }
+    @Texto
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+    [Parameter] public string Estilo { get; set; } = "azul";
+    [Parameter] public NombreIcono? IconoChip { get; set; }
+
+    /// <summary>Chip de estado con el color semántico del tipo y su icono (el estado no depende solo del color).</summary>
+    public static (string Estilo, NombreIcono Icono) DeTipo(TipoAlerta tipo) => tipo switch
+    {
+        TipoAlerta.Exito => ("exito", NombreIcono.Exito),
+        TipoAlerta.Advertencia => ("advertencia", NombreIcono.Advertencia),
+        TipoAlerta.Error => ("error", NombreIcono.Error),
+        _ => ("info", NombreIcono.Info)
+    };
+}

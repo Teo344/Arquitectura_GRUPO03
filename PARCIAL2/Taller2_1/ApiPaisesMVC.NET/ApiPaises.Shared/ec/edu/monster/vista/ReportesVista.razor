@@ -1,0 +1,111 @@
+@page "/reportes"
+@layout LayoutPrincipal
+@inject ReporteControlador Controlador
+@inject NavigationManager Navegacion
+@inject ILogger<ReportesVista> Logger
+
+@* Reporte estadístico (CU-08, Actividad 5): tres indicadores con la respuesta directa a cada pregunta del taller y el gráfico de países por región. *@
+<EncabezadoPagina Sobretitulo="Actividad 5" Titulo="Reportes" Apoyo="Estadísticas calculadas con los países guardados en SQL Server.">
+    <Acciones>
+        <Boton Texto="Actualizar" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Actualizar"
+               Cargando="cargando" TextoCargando="Actualizando…" AlPulsar="CargarAsync" />
+    </Acciones>
+</EncabezadoPagina>
+
+@if (error != null)
+{
+    <Alerta Texto="@error" Tipo="TipoAlerta.Error" AlCerrar="() => error = null" />
+}
+
+@if (estadisticas is null)
+{
+    @if (cargando)
+    {
+        <EstadoVacio IconoVacio="NombreIcono.Grafico" Titulo="Calculando estadísticas…" Texto="Consultando SQL Server." />
+    }
+}
+else if (estadisticas.EstaVacio)
+{
+    <EstadoVacio IconoVacio="NombreIcono.Grafico" Titulo="Todavía no hay datos" Texto="Importa o registra países para ver las estadísticas.">
+        <Boton Texto="Ir a Países" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Tabla" Clase="eb-espacio-l eb-boton--compacto"
+               AlPulsar="@(() => Navegacion.NavigateTo("paises"))" />
+    </EstadoVacio>
+}
+else
+{
+    <div class="ap-indicadores">
+        <Tarjeta Etiqueta="Países registrados">
+            <div class="ap-indicador__cabecera">
+                <IconoEnCaja IconoCaja="NombreIcono.Publico" Tamano="36" TamanoIcono="20" />
+                <span class="eb-sobretitulo eb-texto-secundario">Países registrados</span>
+            </div>
+            <div class="ap-indicador__valor">@Formato.Entero(estadisticas.TotalPaises)</div>
+            <div class="ap-indicador__detalle">En @estadisticas.PaisesPorRegion.Count regiones de la base api_paises.</div>
+        </Tarjeta>
+        <Tarjeta Etiqueta="País más poblado">
+            <div class="ap-indicador__cabecera">
+                <IconoEnCaja IconoCaja="NombreIcono.Personas" Tamano="36" TamanoIcono="20" />
+                <span class="eb-sobretitulo eb-texto-secundario">País más poblado</span>
+            </div>
+            <div class="ap-indicador__valor">@estadisticas.PaisMasPoblado?.Nombre</div>
+            <div class="ap-indicador__detalle">
+                @Formato.Entero(estadisticas.PaisMasPoblado?.Poblacion ?? 0) habitantes · @estadisticas.PaisMasPoblado?.Region?.Nombre()
+            </div>
+        </Tarjeta>
+        <Tarjeta Etiqueta="Región con más países">
+            <div class="ap-indicador__cabecera">
+                <IconoEnCaja IconoCaja="NombreIcono.Ubicacion" Tamano="36" TamanoIcono="20" />
+                <span class="eb-sobretitulo eb-texto-secundario">Región con más países</span>
+            </div>
+            <div class="ap-indicador__valor">@estadisticas.RegionConMasPaises?.Nombre()</div>
+            <div class="ap-indicador__detalle">@DetalleRegionMayor()</div>
+        </Tarjeta>
+    </div>
+
+    <Tarjeta Etiqueta="Países por región">
+        <h2 class="eb-h4">Países por región</h2>
+        <p class="eb-cuerpo eb-texto-secundario eb-espacio-xxs">
+            Cantidad de países guardados en cada región, de mayor a menor. Pasa el ratón sobre una barra para ver su porcentaje.
+        </p>
+        <GraficoBarras Barras="estadisticas.PaisesPorRegion" />
+    </Tarjeta>
+}
+
+@code {
+    private EstadisticasPaises? estadisticas;
+    private bool cargando;
+    private string? error;
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        error = null;
+        cargando = true;
+        Resultado<EstadisticasPaises> resultado = await Intento.EjecutarAsync(Controlador.GenerarReporteAsync, Logger);
+        cargando = false;
+        if (resultado.Valor is EstadisticasPaises nuevas)
+        {
+            estadisticas = nuevas;
+        }
+        else
+        {
+            error = resultado.Error;
+        }
+    }
+
+    /// <summary>Si otras regiones tienen la misma cantidad se dice: elegir una en silencio sería engañoso.</summary>
+    private string DetalleRegionMayor()
+    {
+        if (estadisticas?.RegionConMasPaises is not Region primera)
+        {
+            return string.Empty;
+        }
+        long enRegion = estadisticas.PaisesPorRegion.First(c => c.Region == primera).Cantidad;
+        string detalle = $"{Formato.Paises(enRegion)} · {Formato.Porcentaje((double)enRegion / estadisticas.TotalPaises)} del total";
+        List<string> empatadas = [.. estadisticas.PaisesPorRegion
+            .Where(c => c.Region != primera && c.Cantidad == enRegion)
+            .Select(c => c.Region.Nombre())];
+        return empatadas.Count == 0 ? detalle : detalle + " · empate con " + string.Join(", ", empatadas);
+    }
+}

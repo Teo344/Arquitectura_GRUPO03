@@ -1,0 +1,16 @@
+@* Mensaje centrado para cuando todavía no hay datos, con una acción opcional para salir de ese estado. *@
+<div class="@(Plano ? "ap-vacio-plano" : "eb-vacio")" role="status">
+    <IconoEnCaja IconoCaja="IconoVacio" Tamano="56" />
+    <div class="eb-vacio__titulo">@Titulo</div>
+    <div class="eb-vacio__texto">@Texto</div>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public NombreIcono IconoVacio { get; set; }
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+    /// <summary>Sin fondo ni borde propios (para usar dentro de otra superficie).</summary>
+    [Parameter] public bool Plano { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

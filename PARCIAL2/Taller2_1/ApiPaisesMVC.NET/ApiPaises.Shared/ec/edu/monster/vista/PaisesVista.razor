@@ -1,0 +1,463 @@
+@page "/paises"
+@layout LayoutPrincipal
+@inject PaisControlador Controlador
+@inject ILogger<PaisesVista> Logger
+
+@*
+    Gestión de países (CU-01, CU-03 a CU-07) con el patrón lista-detalle: la tabla a la izquierda y
+    el formulario siempre visible a la derecha. Solo muestra datos y delega cada acción en
+    PaisControlador.
+*@
+<EncabezadoPagina Sobretitulo="Gestión" Titulo="Países" Apoyo="@Resumen">
+    <Acciones>
+        <Boton Texto="Importar desde la API" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Descargar"
+               Cargando="importando" TextoCargando="Importando…" AlPulsar="ImportarAsync" />
+        <Boton Texto="Nuevo país" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Agregar" AlPulsar="NuevoAsync" />
+    </Acciones>
+</EncabezadoPagina>
+
+@if (mensajeGeneral != null)
+{
+    <Alerta Texto="@mensajeGeneral.Texto" Tipo="mensajeGeneral.Tipo" AlCerrar="() => mensajeGeneral = null" />
+}
+
+<div class="ap-lista-detalle">
+    @* ---------------------------------------------------------------- Lista (CU-04, CU-07) *@
+    <section class="ap-lista" aria-label="Lista de países">
+        <div class="ap-filtros">
+            <CampoTexto Etiqueta="Filtrar en la tabla" Marcador="Ej. ecuador, ECU o Quito" Valor="@filtro"
+                        ValorChanged="v => filtro = v ?? string.Empty" />
+            <CampoSeleccion T="Region?" Etiqueta="Región" Opciones="OpcionesRegion" Valor="filtroRegion"
+                            TextoDe="@(r => r is Region region ? region.Nombre() : "Todas las regiones")"
+                            ValorChanged="CambiarRegionAsync" />
+        </div>
+
+        <div class="ap-marco-tabla">
+            @{ IReadOnlyList<Pais> visibles = Visibles(); }
+            @if (cargando && paises.Count == 0)
+            {
+                <EstadoVacio Plano="true" IconoVacio="NombreIcono.Publico" Titulo="Cargando países…" Texto="Consultando SQL Server." />
+            }
+            else if (errorCarga)
+            {
+                <EstadoVacio Plano="true" IconoVacio="NombreIcono.BaseDatos" Titulo="No se pudo cargar la lista"
+                             Texto="Revisa que SQL Server esté en ejecución y vuelve a intentar.">
+                    <Boton Texto="Reintentar" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Actualizar" AlPulsar="CargarAsync" />
+                </EstadoVacio>
+            }
+            else if (paises.Count == 0 && filtroRegion is null)
+            {
+                <EstadoVacio Plano="true" IconoVacio="NombreIcono.Publico" Titulo="Aún no hay países"
+                             Texto="Importa todos los países desde la API REST Countries o registra uno con el formulario.">
+                    <Boton Texto="Importar desde la API" Estilo="Boton.EstiloBoton.Secundario" IconoBoton="NombreIcono.Descargar"
+                           Cargando="importando" TextoCargando="Importando…" AlPulsar="ImportarAsync" />
+                </EstadoVacio>
+            }
+            else if (paises.Count == 0)
+            {
+                <EstadoVacio Plano="true" IconoVacio="NombreIcono.Ubicacion" Titulo="@($"No hay países en {filtroRegion!.Value.Nombre()}")"
+                             Texto="Elige otra región o importa los países desde la API.">
+                    <Boton Texto="Ver todas las regiones" Estilo="Boton.EstiloBoton.Secundario" AlPulsar="() => CambiarRegionAsync(null)" />
+                </EstadoVacio>
+            }
+            else if (visibles.Count == 0)
+            {
+                <EstadoVacio Plano="true" IconoVacio="NombreIcono.Buscar" Titulo="Sin coincidencias"
+                             Texto="@($"Ningún país contiene «{filtro.Trim()}».")">
+                    <Boton Texto="Limpiar filtro" Estilo="Boton.EstiloBoton.Secundario" AlPulsar="() => filtro = string.Empty" />
+                </EstadoVacio>
+            }
+            else
+            {
+                <table class="ap-tabla" aria-label="Países registrados">
+                    <colgroup>
+                        <col class="ap-col-iso" />
+                        <col />
+                        <col />
+                        <col class="ap-col-region" />
+                        <col class="ap-col-poblacion" />
+                        <col />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            @foreach (Columna columna in Enum.GetValues<Columna>())
+                            {
+                                <th class="@(columna == Columna.Poblacion ? "ap-num" : "")" scope="col"
+                                    aria-sort="@(columna == orden ? (ascendente ? "ascending" : "descending") : null)">
+                                    <button type="button" title="@($"Ordenar por {TituloDe(columna).ToLowerInvariant()}")"
+                                            @onclick="() => Ordenar(columna)">
+                                        @TituloDe(columna)
+                                        @if (columna == orden)
+                                        {
+                                            <Icono Nombre="@(ascendente ? NombreIcono.FlechaArriba : NombreIcono.FlechaAbajo)" Tamano="14" />
+                                        }
+                                    </button>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Pais pais in visibles)
+                        {
+                            <tr @key="pais.Id" tabindex="0" aria-selected="@(pais.Id == seleccionado?.Id ? "true" : "false")"
+                                @onclick="() => SeleccionarAsync(pais)" @onkeydown="e => TeclaFilaAsync(e, pais)">
+                                <td>@pais.Codigo</td>
+                                <td class="ap-fuerte" title="@pais.Nombre">@pais.Nombre</td>
+                                <td class="@(pais.Capital is null ? "ap-sin-dato" : "")" title="@pais.Capital">@Formato.Texto(pais.Capital)</td>
+                                <td>@pais.Region?.Nombre()</td>
+                                <td class="ap-num">@Formato.Entero(pais.Poblacion)</td>
+                                <td class="@(pais.Moneda is null ? "ap-sin-dato" : "")" title="@pais.Moneda">@Formato.Texto(pais.Moneda)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+        <p class="ap-leyenda">
+            Clic en una fila para editarla · Enter edita la fila enfocada · Supr la elimina · clic en un encabezado para ordenar
+        </p>
+    </section>
+
+    @* ---------------------------------------------------------------- Formulario (CU-03, CU-05, CU-06) *@
+    <Tarjeta Clase="ap-formulario" Etiqueta="Formulario de país">
+        <div>
+            <div class="eb-sobretitulo">@(seleccionado is null ? "Nuevo país" : $"Editando · {seleccionado.Codigo}")</div>
+            <h2 class="eb-h4 eb-espacio-xxs">@(seleccionado?.Nombre ?? "Registrar país")</h2>
+        </div>
+
+        <div class="ap-formulario__campos">
+            <CampoTexto @ref="campoCodigo" Etiqueta="Código ISO" Marcador="Ej. ECU" Ayuda="3 letras (ISO 3166 alfa-3)."
+                        Valor="@codigo" ValorChanged="v => Cambiar(() => codigo = v)" AlConfirmar="GuardarAsync" />
+            <CampoTexto Etiqueta="Nombre" Marcador="Ej. Ecuador" Valor="@nombre"
+                        ValorChanged="v => Cambiar(() => nombre = v)" AlConfirmar="GuardarAsync" />
+            <CampoTexto Etiqueta="Capital (opcional)" Marcador="Ej. Quito" Valor="@capital"
+                        ValorChanged="v => Cambiar(() => capital = v)" AlConfirmar="GuardarAsync" />
+            <CampoSeleccion T="Region?" Etiqueta="Región" Opciones="OpcionesRegionFormulario" Valor="region"
+                            TextoDe="@(r => r?.Nombre() ?? "")" Marcador="Selecciona una región"
+                            ValorChanged="v => Cambiar(() => region = v)" />
+            <CampoTexto Etiqueta="Población" Marcador="Ej. 18.001.000" Ayuda="Número entero de habitantes."
+                        Valor="@poblacion" ValorChanged="v => Cambiar(() => poblacion = v)" AlConfirmar="GuardarAsync" />
+            <CampoTexto Etiqueta="Moneda (opcional)" Marcador="Ej. Dólar estadounidense" Valor="@moneda"
+                        ValorChanged="v => Cambiar(() => moneda = v)" AlConfirmar="GuardarAsync" />
+        </div>
+
+        @* Acciones fijas: el botón y los errores siempre quedan a la vista *@
+        <div class="ap-formulario__pie">
+            @if (mensajeFormulario != null)
+            {
+                <Alerta Texto="@mensajeFormulario.Texto" Tipo="mensajeFormulario.Tipo" AlCerrar="() => mensajeFormulario = null" />
+            }
+            <Boton Texto="@(seleccionado is null ? "Registrar país" : "Guardar cambios")" IconoBoton="NombreIcono.Guardar"
+                   Cargando="guardando" TextoCargando="Guardando…" AlPulsar="GuardarAsync" />
+            <div class="ap-formulario__secundarias">
+                <Boton Texto="@(seleccionado is null ? "Limpiar" : "Descartar cambios")" Estilo="Boton.EstiloBoton.Texto"
+                       Habilitado="@(modificado || seleccionado is null)" AlPulsar="Descartar" />
+                @if (seleccionado != null)
+                {
+                    <Boton Texto="Eliminar" Estilo="Boton.EstiloBoton.Peligro" Clase="ap-boton--normal" IconoBoton="NombreIcono.Eliminar"
+                           Cargando="eliminando" TextoCargando="Eliminando…" AlPulsar="EliminarAsync" />
+                }
+            </div>
+        </div>
+    </Tarjeta>
+</div>
+
+@if (confirmador.Actual is DatosConfirmacion datos)
+{
+    <DialogoConfirmacion Datos="datos" AlResponder="confirmador.Responder" />
+}
+
+@code {
+    private enum Columna { Codigo, Nombre, Capital, Region, Poblacion, Moneda }
+
+    private static readonly IReadOnlyList<Region?> OpcionesRegion = [null, .. Regiones.Todas.Select(r => (Region?)r)];
+    private static readonly IReadOnlyList<Region?> OpcionesRegionFormulario = [.. Regiones.Todas.Select(r => (Region?)r)];
+
+    private readonly Confirmador confirmador = new();
+    private CampoTexto? campoCodigo;
+
+    // ---- Lista ----
+    private IReadOnlyList<Pais> paises = [];
+    private Region? filtroRegion;
+    private string filtro = string.Empty;
+    private Columna orden = Columna.Nombre;
+    private bool ascendente = true;
+    private bool cargando;
+    private bool errorCarga;
+    private bool importando;
+    private Mensaje? mensajeGeneral;
+
+    // ---- Formulario ----
+    private Pais? seleccionado;
+    private string? codigo, nombre, capital, poblacion, moneda;
+    private Region? region;
+    private bool modificado;
+    private bool guardando;
+    private bool eliminando;
+    private Mensaje? mensajeFormulario;
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    // ================================================================ Lista (CU-04, CU-07)
+
+    private string Resumen
+    {
+        get
+        {
+            if (cargando && paises.Count == 0)
+            {
+                return "Cargando países…";
+            }
+            string texto = Formato.Paises(paises.Count)
+                + (filtroRegion is Region r ? " en " + r.Nombre() : " registrados");
+            return string.IsNullOrWhiteSpace(filtro) ? texto : texto + " · mostrando " + Formato.Entero(Visibles().Count);
+        }
+    }
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        Region? filtroActual = filtroRegion;
+        Resultado<IReadOnlyList<Pais>> resultado = await Intento.EjecutarAsync(() => filtroActual is Region elegida
+            ? Controlador.BuscarPorRegionAsync(elegida)
+            : Controlador.ListarPaisesAsync(), Logger);
+        cargando = false;
+        errorCarga = !resultado.Exito;
+        if (!resultado.Exito)
+        {
+            paises = [];
+            mensajeGeneral = new Mensaje(resultado.Error!, TipoAlerta.Error);
+            return;
+        }
+        paises = resultado.Valor!;
+        // Si el país en edición sigue en la lista se conserva la selección con sus datos actuales
+        if (seleccionado != null && !modificado && paises.FirstOrDefault(p => p.Id == seleccionado.Id) is Pais actual)
+        {
+            seleccionado = actual;
+        }
+    }
+
+    private Task CambiarRegionAsync(Region? nueva)
+    {
+        if (nueva == filtroRegion)
+        {
+            return Task.CompletedTask;
+        }
+        filtroRegion = nueva;
+        return CargarAsync();
+    }
+
+    /// <summary>Filtra sin distinguir mayúsculas ni tildes y ordena según la columna elegida.</summary>
+    private IReadOnlyList<Pais> Visibles()
+    {
+        string buscado = string.IsNullOrWhiteSpace(filtro) ? "" : Regiones.Normalizar(filtro);
+        IEnumerable<Pais> filas = buscado.Length == 0
+            ? paises
+            : paises.Where(p => new[] { p.Codigo, p.Nombre, p.Capital, p.Moneda, p.Region?.Nombre() }
+                .Any(valor => valor != null && Regiones.Normalizar(valor).Contains(buscado, StringComparison.Ordinal)));
+
+        Comparison<Pais> comparar = orden switch
+        {
+            Columna.Codigo => (a, b) => Formato.Comparar(a.Codigo, b.Codigo),
+            Columna.Capital => (a, b) => Formato.Comparar(a.Capital, b.Capital),
+            Columna.Region => (a, b) => Formato.Comparar(a.Region?.Nombre(), b.Region?.Nombre()),
+            Columna.Poblacion => (a, b) => a.Poblacion.CompareTo(b.Poblacion),
+            Columna.Moneda => (a, b) => Formato.Comparar(a.Moneda, b.Moneda),
+            _ => (a, b) => Formato.Comparar(a.Nombre, b.Nombre)
+        };
+        List<Pais> lista = [.. filas];
+        lista.Sort((a, b) => ascendente ? comparar(a, b) : comparar(b, a));
+        return lista;
+    }
+
+    private void Ordenar(Columna columna)
+    {
+        ascendente = columna != orden || !ascendente;
+        orden = columna;
+    }
+
+    private static string TituloDe(Columna columna) => columna switch
+    {
+        Columna.Codigo => "ISO",
+        Columna.Capital => "Capital",
+        Columna.Region => "Región",
+        Columna.Poblacion => "Población",
+        Columna.Moneda => "Moneda",
+        _ => "Nombre"
+    };
+
+    private async Task TeclaFilaAsync(KeyboardEventArgs e, Pais pais)
+    {
+        if (e.Key == "Enter")
+        {
+            await SeleccionarAsync(pais);
+        }
+        else if (e.Key == "Delete")
+        {
+            await SeleccionarAsync(pais);
+            if (seleccionado?.Id == pais.Id)
+            {
+                await EliminarAsync();
+            }
+        }
+    }
+
+    // ================================================================ Importar (CU-01)
+
+    private async Task ImportarAsync()
+    {
+        if (paises.Count > 0 && !await confirmador.PedirAsync(new DatosConfirmacion("Importar desde la API",
+                "Se descargarán todos los países de REST Countries. Los que ya existen (mismo código) se actualizarán "
+                + "con los datos de la API y se perderán los cambios manuales hechos en ellos.",
+                [("Países en la lista", Formato.Entero(paises.Count))], "Importar", false)))
+        {
+            return;
+        }
+        mensajeGeneral = null;
+        importando = true;
+        Resultado<ResultadoImportacion> resultado = await Intento.EjecutarAsync(Controlador.ImportarPaisesAsync, Logger);
+        importando = false;
+        if (resultado.Valor is not ResultadoImportacion importacion)
+        {
+            mensajeGeneral = new Mensaje("No se pudo importar: " + resultado.Error, TipoAlerta.Error);
+            return;
+        }
+        string texto = $"Importación completa: {Formato.Paises(importacion.Recibidos)} recibidos · "
+            + $"{Formato.Entero(importacion.Nuevos)} nuevos · {Formato.Entero(importacion.Actualizados)} actualizados.";
+        if (importacion.Recibidos <= 1)
+        {
+            texto += " Si esperabas más, revisa api.clave en configuracion.json: la clave demo solo devuelve un país de muestra.";
+        }
+        mensajeGeneral = new Mensaje(texto, TipoAlerta.Exito);
+        await CargarAsync();
+    }
+
+    // ================================================================ Formulario (CU-03, CU-05, CU-06)
+
+    private async Task SeleccionarAsync(Pais pais)
+    {
+        if (pais.Id == seleccionado?.Id || (modificado && !await ConfirmarDescarteAsync()))
+        {
+            return;
+        }
+        Editar(pais);
+    }
+
+    private async Task NuevoAsync()
+    {
+        if (modificado && !await ConfirmarDescarteAsync())
+        {
+            return;
+        }
+        Limpiar();
+        if (campoCodigo != null)
+        {
+            await campoCodigo.EnfocarAsync();
+        }
+    }
+
+    private void Editar(Pais pais)
+    {
+        seleccionado = pais;
+        Rellenar(pais);
+        mensajeFormulario = null;
+    }
+
+    private void Limpiar()
+    {
+        seleccionado = null;
+        Rellenar(null);
+        mensajeFormulario = null;
+    }
+
+    private void Rellenar(Pais? pais)
+    {
+        codigo = pais?.Codigo;
+        nombre = pais?.Nombre;
+        capital = pais?.Capital;
+        region = pais?.Region;
+        poblacion = pais is null ? null : Formato.Entero(pais.Poblacion);
+        moneda = pais?.Moneda;
+        modificado = false;
+    }
+
+    private void Cambiar(Action asignar)
+    {
+        asignar();
+        modificado = true;
+    }
+
+    private void Descartar()
+    {
+        if (seleccionado != null)
+        {
+            Editar(seleccionado);
+        }
+        else
+        {
+            Limpiar();
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (guardando)
+        {
+            return;
+        }
+        FormularioPais formulario = new(codigo, nombre, capital, region?.Nombre(), poblacion, moneda);
+        Pais? original = seleccionado;
+        mensajeFormulario = null;
+        guardando = true;
+        Resultado<Pais> resultado = await Intento.EjecutarAsync(() => original?.Id is int id
+            ? Controlador.ActualizarPaisAsync(id, formulario)
+            : Controlador.RegistrarPaisAsync(formulario), Logger);
+        guardando = false;
+        if (resultado.Valor is not Pais guardado)
+        {
+            mensajeFormulario = new Mensaje(ConVinetas(resultado.Error!), TipoAlerta.Error);
+            return;
+        }
+        Editar(guardado);
+        mensajeFormulario = new Mensaje($"«{guardado.Nombre}» se guardó correctamente.", TipoAlerta.Exito);
+        await CargarAsync();
+    }
+
+    private async Task EliminarAsync()
+    {
+        if (seleccionado is not { Id: int id } pais || eliminando)
+        {
+            return;
+        }
+        bool confirmado = await confirmador.PedirAsync(new DatosConfirmacion("Eliminar país",
+            "Esta acción no se puede deshacer. Si el país viene de la API, volverá a aparecer en la próxima importación.",
+            [("Código", pais.Codigo ?? ""), ("Nombre", pais.Nombre ?? "")], "Eliminar", true));
+        if (!confirmado)
+        {
+            return;
+        }
+        eliminando = true;
+        Resultado<bool> resultado = await Intento.EjecutarAsync(() => Controlador.EliminarPaisAsync(id), Logger);
+        eliminando = false;
+        if (!resultado.Exito)
+        {
+            mensajeFormulario = new Mensaje(resultado.Error!, TipoAlerta.Error);
+            return;
+        }
+        Limpiar();
+        mensajeGeneral = new Mensaje($"«{pais.Nombre}» se eliminó de la base de datos.", TipoAlerta.Exito);
+        await CargarAsync();
+    }
+
+    private Task<bool> ConfirmarDescarteAsync()
+    {
+        return confirmador.PedirAsync(new DatosConfirmacion("Descartar cambios",
+            "Hay cambios sin guardar en el formulario. Si continúas, se perderán.", [], "Descartar", true));
+    }
+
+    /// <summary>Varios errores de validación llegan en líneas separadas: se presentan como lista.</summary>
+    private static string ConVinetas(string mensaje)
+    {
+        return mensaje.Contains('\n') ? "Revisa estos datos:\n• " + mensaje.Replace("\n", "\n• ") : mensaje;
+    }
+}

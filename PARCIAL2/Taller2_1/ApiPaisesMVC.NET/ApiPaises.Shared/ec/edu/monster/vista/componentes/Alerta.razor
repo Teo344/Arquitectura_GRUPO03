@@ -1,0 +1,22 @@
+@*
+    Alerta con icono y texto: el estado nunca se comunica solo con color. Los errores se anuncian de
+    inmediato a los lectores de pantalla (role=alert); el resto, con cortesía (role=status).
+*@
+<div class="eb-alerta eb-alerta--@Tipo.ToString().ToLowerInvariant()" role="@(Tipo == TipoAlerta.Error ? "alert" : "status")">
+    <Icono Nombre="@Chip.DeTipo(Tipo).Icono" Tamano="20" />
+    <span>@Texto</span>
+    @if (AlCerrar.HasDelegate)
+    {
+        <button type="button" class="eb-boton-icono ap-alerta__cerrar" title="Cerrar mensaje" aria-label="Cerrar mensaje"
+                @onclick="AlCerrar">
+            <Icono Nombre="NombreIcono.Cerrar" Tamano="16" />
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Texto { get; set; } = "";
+    [Parameter] public TipoAlerta Tipo { get; set; } = TipoAlerta.Info;
+    /// <summary>Si se indica, la alerta muestra un botón para cerrarla.</summary>
+    [Parameter] public EventCallback AlCerrar { get; set; }
+}

@@ -1,0 +1,11 @@
+@* Navegación entre pantallas; la aplicación de escritorio lo usa como componente raíz. *@
+<Router AppAssembly="typeof(Rutas).Assembly">
+    <Found Context="datosRuta">
+        <RouteView RouteData="datosRuta" />
+        @* Al cambiar de pantalla el foco va al título: los lectores de pantalla anuncian dónde se está *@
+        <FocusOnNavigate RouteData="datosRuta" Selector="h1" />
+    </Found>
+    <NotFound>
+        <InicioVista />
+    </NotFound>
+</Router>

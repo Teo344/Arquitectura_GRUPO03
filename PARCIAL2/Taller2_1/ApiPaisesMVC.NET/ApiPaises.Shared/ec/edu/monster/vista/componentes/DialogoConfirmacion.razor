@@ -1,0 +1,57 @@
+@*
+    Confirmación modal con resumen de datos y dos acciones; Esc o clic fuera cancelan. En las
+    acciones destructivas el botón es rojo y el foco inicial queda en "Cancelar", para que Enter no
+    borre por accidente.
+*@
+<div class="eb-velo" @onclick="() => AlResponder.InvokeAsync(false)">
+    <div class="eb-dialogo" role="alertdialog" aria-modal="true" aria-labelledby="dialogo-titulo"
+         aria-describedby="dialogo-descripcion" tabindex="-1"
+         @onclick:stopPropagation="true" @onkeydown="TeclaPulsada">
+        <div class="eb-encabezado">
+            <IconoEnCaja IconoCaja="@(Datos.Destructiva ? NombreIcono.Advertencia : NombreIcono.Info)"
+                         Estilo="@(Datos.Destructiva ? "error" : "azul")" Tamano="40" />
+            <div id="dialogo-titulo" class="eb-h4 eb-encabezado__textos">@Datos.Titulo</div>
+        </div>
+        <p id="dialogo-descripcion" class="eb-cuerpo eb-texto-secundario">@Datos.Descripcion</p>
+        @if (Datos.Filas.Count > 0)
+        {
+            <div class="eb-dialogo__filas">
+                @foreach ((string etiqueta, string valor) in Datos.Filas)
+                {
+                    <FilaDato Etiqueta="@etiqueta" Valor="@valor" />
+                }
+            </div>
+        }
+        <div class="eb-dialogo__acciones">
+            <Boton @ref="cancelar" Texto="Cancelar" Estilo="Boton.EstiloBoton.Texto" AlPulsar="() => AlResponder.InvokeAsync(false)" />
+            <Boton @ref="aceptar" Texto="@Datos.TextoConfirmar" Clase="eb-boton--compacto ap-boton--normal"
+                   Estilo="@(Datos.Destructiva ? Boton.EstiloBoton.Peligro : Boton.EstiloBoton.Primario)"
+                   AlPulsar="() => AlResponder.InvokeAsync(true)" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private Boton? cancelar;
+    private Boton? aceptar;
+
+    [Parameter, EditorRequired] public DatosConfirmacion Datos { get; set; } = default!;
+    [Parameter] public EventCallback<bool> AlResponder { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        Boton? inicial = Datos.Destructiva ? cancelar : aceptar;
+        if (primeraVez && inicial != null)
+        {
+            await inicial.EnfocarAsync();
+        }
+    }
+
+    private async Task TeclaPulsada(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await AlResponder.InvokeAsync(false);
+        }
+    }
+}

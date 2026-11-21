@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ApiPaises.Desktop/ApiPaises.Desktop.csproj" />
+  <Project Path="ApiPaises.Shared/ApiPaises.Shared.csproj" />
+  <Project Path="ApiPaises.Pruebas/ApiPaises.Pruebas.csproj" />
+</Solution>
